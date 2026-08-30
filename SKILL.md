@@ -63,6 +63,41 @@ edit an order in flight — issue a new annex, and say at the top which item it 
 ## Rules of engagement (the Executor follows these)
 
 Put these at the head of the execution guide, ordered by how often they get broken.
+Items 1-7 are fixed — copy them as they are. **Item 8 is not written from memory or
+inherited from a different run; it is the first concrete step of starting a new run,
+done before task 1 is drafted:**
+
+- Check whether this codebase or team already states these somewhere authoritative — a
+  CONTRIBUTING file, CI config, an existing style guide, a prior run's execution guide.
+  If so, cite it; do not restate it.
+- If nothing authoritative exists, **look at the project before asking** — grep for
+  what's already there rather than handing the user a blank checklist:
+
+  | Rule | Look for |
+  |---|---|
+  | Version bump per change | A version field (`package.json`, `pyproject.toml`, a `VERSION` file) and any script that already bumps it |
+  | No AI co-author trailers | `git log --grep="Co-Authored-By"` — existing trailers (or their consistent absence) |
+  | Fetch-before-push | Multiple contributors or branches in `git log`/`git branch -a` — a solo, single-branch repo needs this less |
+  | Quality gate green before push | CI config (`.github/workflows/`, `.gitlab-ci.yml`) or a `test`/`lint`/`build` script already wired together |
+  | i18n/locale parity | A locales/translations directory with more than one language file |
+  | Dependency lockstep | A lockfile and how strict its existing commit history is about touching it |
+
+  **Then ask with the finding attached, not a blank menu** — turn each hit into a
+  yes/no the user can answer in one word instead of a checklist they have to reason
+  through from nothing: *"Found `package.json` version `0.2.1` and no bump script — want
+  every task to bump it, and if so, how (semver rule, or you decide per task)?"* /
+  *"No CI config found — is there a command that should gate every push, or does this
+  repo not have one yet?"* This matters most for a user who isn't deep in the codebase
+  themselves (vibe-coding a project, not maintaining one they know by heart) — inspecting
+  first is the difference between a real choice and homework.
+  A rule with nothing detected for it is still offered, just without a finding attached.
+- **Custom rules stay first-class** — a rule is usable as item 8 once it names what it
+  enforces, how it's checked, and what triggers it, whether or not it came from the
+  table above. Example: *"No schema migration touches a table over 10k rows without a
+  stated rollback plan in the task text, and the migration is run once with `--dry-run`
+  before it lands for real."* Names the trigger (a migration over the row threshold),
+  the requirement (a rollback plan, in the task text), and the check (`--dry-run` first).
+- Settle it once, at the start of the run. Item 8 does not change task to task.
 
 1. **One task at a time, in order.** No batching. No starting a phase whose predecessor
    is not `APPROVED`.
@@ -70,6 +105,13 @@ Put these at the head of the execution guide, ordered by how often they get brok
    domains, permission keys, versions, enum members — read them. Needing to ask for one
    means a file was skipped.
 3. **Never guess a cause. Observe it.** Read the log, run the query, print the value.
+   When investigating a claim about the code, prefer whatever fast navigation tool this
+   project already has over blind grep — a code graph, ctags, an LSP, anything that
+   answers "who else reads this" faster than a full-text search. Never assume one is
+   installed or working; grep is the guaranteed fallback, not a default to reach past a
+   faster tool for. This check is quiet, not a topic — look, then use whatever's there.
+   Finding nothing is not itself worth telling the user; only bring it up if a tool was
+   found and is why the next command looks unusual.
 4. **Verification is running the thing, not reading the code.** "I reviewed it and it
    looks correct" is reported as `FAILED`.
 5. **Scope is the task text.** Note unrelated problems in *Observations*; do not fix
@@ -84,7 +126,7 @@ Put these at the head of the execution guide, ordered by how often they get brok
 8. Project-specific rules go here: version bumping, commit attribution, dependency
    sync before pushing, i18n parity, design-system checks, whatever this codebase
    already enforces elsewhere. Cite the source file instead of restating it — one
-   source of truth.
+   source of truth. **Settled above, before task 1 — not filled in retroactively.**
 
 ## Writing a task (Auditor)
 
@@ -131,6 +173,70 @@ privacy, or financial-integrity boundary, a **negative control**: the Executor m
 remove the protection, observe the check fail, restore it, and observe it pass. A
 check never seen failing has not been verified. `auditkit negcontrol` runs this
 sequence and produces a paste-ready transcript.
+
+## Handing off a task (Auditor)
+
+Writing the execution guide is not the handoff. The Executor's session starts cold — it
+has none of the investigation behind the guide, and "read the execution guide, task
+`<ID>`" is a pointer to an instruction, not the instruction itself. Producing the actual,
+paste-ready message for a fresh Executor session is Auditor work, not something left for
+whoever is relaying the plan to assemble by hand.
+
+**The rules-of-engagement block in the template below is item 8, settled when the run
+started** ("Rules of engagement" above) — not re-derived here, and not re-asked per
+task. If you're about to write a handoff and item 8 is still blank, that's the actual
+problem: go settle it before drafting the message, don't paste a rule set from a
+different project or a different run to fill the gap. A rule copied in from elsewhere
+either asserts something false about this codebase or hands the Executor a stop it has
+no way to satisfy.
+
+### Handoff template
+
+One task per message, addressed to a fresh Executor session with no shared context. Fill
+every section — do not leave "see the execution guide" where a fact belongs.
+
+```
+ROLE: Executor. Work from <EXECUTION_GUIDE> (Phase <n>, `<TASK-ID>`) only; report in
+<COMPLIANCE_LOG>, section `<TASK-ID>` (already exists, empty).
+
+REPORTED STATE: <what is already DONE in the log, and whether it was audited or only
+self-reported — do not conflate the two>. Do not reopen <prior tasks>.
+
+TASK: <TASK-ID> — <imperative title>
+Source: <EXECUTION_GUIDE>, section "<TASK-ID>" in full.
+
+Goal: <one sentence — what is true after this that was not before>.
+
+Key finding (already verified, do not re-check it): <the concrete fact driving this
+task, with the file/line/command that established it>.
+
+Decided points, not reopenable without evidence that contradicts them:
+1. <decision>
+2. <decision>
+...
+
+Failure to avoid explicitly: <the specific mistake a context-free Executor would make by
+reflex — copying a neighboring task's filter that doesn't apply here, re-deriving a
+fact that was already established and getting it wrong, etc.>.
+
+Verify (literal):
+<exact command>
+
+Success, minimum: <what the check(s) must prove, in terms of cases — not "it passes">.
+
+Report: <TASK-ID>, in <COMPLIANCE_LOG>, section already created.
+
+RULES OF ENGAGEMENT (this run's — confirmed at the start, not a default):
+<the block settled above>
+```
+
+`Key finding` and `Failure to avoid` exist because a fresh Executor has no memory of the
+investigation behind the task — it will make exactly the mistake full context would have
+prevented. Naming the specific reflex to avoid is cheaper than an Executor discovering it
+mid-task.
+
+Do not paste a rules-of-engagement block from one project's run into another's handoff
+without re-confirming it applies. It is a per-run artifact, not part of this skill.
 
 ## Auditing (Auditor)
 
