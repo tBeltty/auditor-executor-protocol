@@ -1,0 +1,31 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "auditkit"
+version = "0.1.0"
+description = "Mechanical support for the Auditor/Executor protocol: scaffold, lint, and negative-control the document set for a multi-phase, multi-agent execution."
+readme = "README.md"
+requires-python = ">=3.9"
+license = { text = "MIT" }
+authors = [{ name = "tBeltty" }]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Environment :: Console",
+    "Topic :: Software Development :: Quality Assurance",
+]
+
+[project.urls]
+Homepage = "https://github.com/tBeltty/auditor-executor-protocol"
+
+[project.scripts]
+auditkit = "auditkit.cli:main"
+
+[tool.setuptools.package-data]
+auditkit = ["templates/*.md"]
+
+[tool.setuptools.packages.find]
+where = ["src"]
