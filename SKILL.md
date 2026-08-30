@@ -352,6 +352,14 @@ The "candidate fix, not a decided point" framing matters — the Auditor found t
 by running a probe, not by running the fix. Presenting it as settled would violate the
 Auditor's own rule 4 below.
 
+**`APPROVED` does not end the loop either, if a phase remains.** Only `APPROVED` with
+nothing left to run closes without a handoff. Otherwise: hand off the next phase's first
+task using the "Handing off a task" template above, in the same message as the verdict —
+same reasoning as the remediation handoff, a different verdict feeding the same next
+step. The Executor's next session starts cold whether the previous phase failed or
+passed; "Phase 2 is APPROVED, go start Phase 3" is exactly the kind of pointer-not-an-
+instruction this whole document exists to close.
+
 ## The Auditor is bound by rule 4 too
 
 An order can be wrong in the same way a delivery can be wrong, and it is more
