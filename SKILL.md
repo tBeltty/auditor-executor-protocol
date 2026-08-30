@@ -52,8 +52,9 @@ a discussion.
    expected output. Gates (`P<phase>-G<n>`) close each phase.
 3. **Compliance log** — where the Executor reports. Pre-generate one empty row per task
    and gate ID so nothing can be quietly skipped.
-4. **Remediation order (annex)** — written by the Auditor after an audit. Self-contained:
-   the Executor must not need the audit conversation or the full log to act on it.
+4. **Remediation order (annex)** — written by the Auditor after an audit that isn't a
+   clean `APPROVED`. Self-contained: the Executor must not need the audit conversation
+   or the full log to act on it. Template and reasoning: "Remediation handoff" below.
 
 **Annexes** supersede a document that is already open in the Executor's session. Never
 edit an order in flight — issue a new annex, and say at the top which item it replaces.
@@ -238,6 +239,33 @@ mid-task.
 Do not paste a rules-of-engagement block from one project's run into another's handoff
 without re-confirming it applies. It is a per-run artifact, not part of this skill.
 
+## Reporting back (Executor)
+
+A compliance log entry is not addressed to anyone — it is a record. When a task, or the
+last task of a phase, is done, close with a message back to the Auditor, same reasoning
+as the handoff that started the work: whoever picks up the audit may be a fresh session
+too, with nothing but the log to go on unless this exists.
+
+```
+ROLE: Executor, reporting on <TASK-ID or "Phase <n>, tasks <first>-<last>">.
+
+STATUS: <DONE | BLOCKED | FAILED> — logged in <COMPLIANCE_LOG>, section(s) already
+filled in with literal command output.
+
+Verify results: <the one-line summary an Auditor would want before deciding whether to
+re-run everything themselves — not a substitute for that re-run>.
+
+Deviations from the task text: <any, with the reasoning — or "none">.
+
+Stops logged: <any "Blocked" entries raised mid-task per rule 6 — or "none">.
+
+Ready for: <"Audit of Phase <n>" | "the next task, <ID>, once this is reviewed">.
+```
+
+Do not narrate confidence ("this should be solid now") in place of the verify results —
+the Auditor is about to re-run everything regardless (rule 4 applies to them too); a
+report's job is to point at the evidence, not to argue for a verdict.
+
 ## Auditing (Auditor)
 
 **Re-run. Do not read the report and agree with it.**
@@ -278,6 +306,51 @@ merits while the control that should have caught a defect is recorded as failed.
 outcomes do not validate a broken process backward. A condition holds as written or it
 stays open — do not fold an unmet condition into "recorded, not blocking" just to avoid
 holding up a phase; that turns a defect into paperwork.
+
+### Remediation handoff
+
+A verdict is not the deliverable — a well-evidenced `CONDITIONAL` or `REJECTED` that
+ends in prose still leaves the Executor with nothing to act on. This is the
+`Remediation order (annex)` from "The document set": write it, and hand it off the same
+way the first task was handed off, not as a narrative the reader has to translate into
+next steps themselves.
+
+```
+ROLE: Executor. Work from this remediation only; the rest of <EXECUTION_GUIDE> is
+unaffected unless named below. Report in <COMPLIANCE_LOG>, appended under <GATE-ID> —
+do not overwrite the original entry.
+
+AUDIT RESULT: <Phase/Task> — <CONDITIONAL | REJECTED>. <one line: what was
+independently re-verified and passed, so the Executor knows what not to touch>.
+
+BLOCKED: <GATE-ID> — <what's actually wrong, in the Auditor's own re-run terms, not a
+restatement of what the original delivery claimed>.
+
+Root cause (verified — carries the command that established it, not reasoned from the
+code): <the mechanism, with file/line and the falsifying probe or command that proved
+it wrong>.
+
+Candidate fix — a recommendation, not a decided point; the Auditor has not run it:
+<the shape of a fix. Mark explicitly as unverified — the Executor confirms it, and may
+find a better one, per "a factual claim always is reopenable">.
+
+Do not touch: <what already passed and must not be disturbed by this fix — the other
+approved gates or tasks in this delivery>.
+
+Verify (literal): <the exact re-run command(s), including re-running the falsifying
+probe that caught this — it must now pass>.
+
+Success, minimum: <what must be true afterward — the probe that failed now passes, the
+original suite stays green, nothing named under "Do not touch" moved>.
+
+Report: <GATE-ID>, in <COMPLIANCE_LOG>, as a remediation entry.
+
+RULES OF ENGAGEMENT: <this run's block>
+```
+
+The "candidate fix, not a decided point" framing matters — the Auditor found the defect
+by running a probe, not by running the fix. Presenting it as settled would violate the
+Auditor's own rule 4 below.
 
 ## The Auditor is bound by rule 4 too
 
