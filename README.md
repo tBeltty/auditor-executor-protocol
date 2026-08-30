@@ -134,8 +134,8 @@ dependency on this repo; it's self-contained.
 
 ## Contributing
 
-Failure modes this protocol doesn't yet name, or a place where `SKILL.md` and
-`auditkit`'s behavior disagree, are the most useful kind of issue.
+Open an issue if you hit a failure mode this protocol doesn't yet name, or a case where
+`auditkit`'s behavior doesn't match what `SKILL.md` says it should do.
 
 ## License
 
