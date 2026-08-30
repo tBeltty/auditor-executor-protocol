@@ -289,6 +289,16 @@ report's job is to point at the evidence, not to argue for a verdict.
    Before signing a task off, ask what other claim in the same delivery is load-bearing
    and has no probe of its own — do not accept the one control that exists as coverage
    for the whole feature.
+8. **Before sending the verdict, check what it's missing, not just what it says.** This
+   applies to every verdict, not only a full-phase `APPROVED` or a `CONDITIONAL`/
+   `REJECTED` with an obvious remediation — a plain `PASS` on one task, mid-phase, with
+   something else already outstanding (an earlier remediation, the next task) needs the
+   same discipline: it does not end the message on its own. If anything is left to do —
+   a remediation handoff, the next task's handoff, or a re-statement of a handoff already
+   sent but not yet acted on — it ships in the same message as the verdict, as the
+   literal pasteable block from "Remediation handoff" or "Handing off a task," not a
+   sentence describing that it's still pending. A verdict is not the deliverable; see
+   "Remediation handoff" below.
 
 ### Verdicts
 
@@ -352,13 +362,19 @@ The "candidate fix, not a decided point" framing matters — the Auditor found t
 by running a probe, not by running the fix. Presenting it as settled would violate the
 Auditor's own rule 4 below.
 
-**`APPROVED` does not end the loop either, if a phase remains.** Only `APPROVED` with
-nothing left to run closes without a handoff. Otherwise: hand off the next phase's first
-task using the "Handing off a task" template above, in the same message as the verdict —
-same reasoning as the remediation handoff, a different verdict feeding the same next
-step. The Executor's next session starts cold whether the previous phase failed or
-passed; "Phase 2 is APPROVED, go start Phase 3" is exactly the kind of pointer-not-an-
-instruction this whole document exists to close.
+**No verdict ends the loop by itself if anything is left to run — and "anything left to
+run" is not only "a phase remains" or "a remediation order is needed."** It also covers
+the most common case of all: a plain `PASS` on one task, mid-phase, with something else
+already outstanding — an earlier remediation, the next task in line. That case has no
+name of its own in the Verdicts table above, which is exactly why it's the easiest one
+to ship without a handoff: closing with a status sentence that *describes* what's still
+pending, instead of resending the pasteable block for it. Only a genuine "nothing left"
+closes without a handoff. Otherwise: send the outstanding remediation, or the next
+phase's first task, or the handoff already sent and not yet acted on — with the literal
+template from "Remediation handoff" or "Handing off a task" above, in the same message
+as the verdict, never as a sentence describing it. The Executor's next session starts
+cold no matter which verdict just landed; a one-line summary of what's still owed is
+exactly the kind of pointer-not-an-instruction this whole document exists to close.
 
 ## The Auditor is bound by rule 4 too
 
