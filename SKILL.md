@@ -376,6 +376,30 @@ as the verdict, never as a sentence describing it. The Executor's next session s
 cold no matter which verdict just landed; a one-line summary of what's still owed is
 exactly the kind of pointer-not-an-instruction this whole document exists to close.
 
+### Closing the run
+
+A verdict says whether one phase or task passed. It does not say whether the *run* is
+over — those are different claims, and leaving the second one to tone or inference
+means the user ends up asking "so is that everything?" directly, which is the signal
+this section exists to make unnecessary.
+
+Before saying a run is over, check the plan of record itself for a phase that exists on
+paper but was never turned into tasks — not just for a next task in the current
+execution guide. A phase can be planned and never scheduled; "nothing left in the guide
+I'm looking at" and "nothing left in the plan" are not the same check.
+
+When every phase is `APPROVED` and the plan of record declares no further phase, say so
+as its own line, not folded into other prose:
+
+```
+RUN COMPLETE — <plan of record name>. Every phase APPROVED. No further phase declared.
+Nothing outstanding.
+```
+
+Anything short of that — one phase closing, a conditional approval, work still queued —
+uses the verdict-plus-handoff shapes above instead. `RUN COMPLETE` is reserved for the
+one message that actually ends the need for another Auditor turn on this plan of record.
+
 ## The Auditor is bound by rule 4 too
 
 An order can be wrong in the same way a delivery can be wrong, and it is more
