@@ -3,9 +3,9 @@ task IDs that exist in one document but not the other, gates with no stated nega
 control, near-duplicate paragraphs from append-only logging, and an annex count that
 signals an under-verified plan rather than a healthy one.
 """
+
 from __future__ import annotations
 
-import hashlib
 import re
 import sys
 from collections import Counter, defaultdict
@@ -13,7 +13,9 @@ from pathlib import Path
 
 REPORT_ID_RE = re.compile(r"\*\*Report:\*\*\s*`?([A-Za-z0-9_.\-]+)`?")
 GUIDE_HEADER_RE = re.compile(r"^###\s+([A-Za-z0-9_.\-]+)\s+[\u2014\u2013\-]\s*(.*)$", re.MULTILINE)
-LOG_HEADER_RE = re.compile(r"^###\s+([A-Za-z0-9_.\-]+)\s+[\u2014\u2013\-]\s+([A-Za-z_]+)\s*$", re.MULTILINE)
+LOG_HEADER_RE = re.compile(
+    r"^###\s+([A-Za-z0-9_.\-]+)\s+[\u2014\u2013\-]\s+([A-Za-z_]+)\s*$", re.MULTILINE
+)
 GATE_ID_RE = re.compile(r"-G\d+$|^G\d+$", re.IGNORECASE)
 
 MIN_DUP_LEN = 120
@@ -65,7 +67,9 @@ def run(target_dir: str, annex_threshold: int = DEFAULT_ANNEX_THRESHOLD) -> int:
     missing = [i for i in guide_ids if i not in log_ids]
     if missing:
         problems += len(missing)
-        print(f"[missing report] {len(missing)} task(s) in execution-guide.md have no entry in compliance-log.md:")
+        print(
+            f"[missing report] {len(missing)} task(s) in execution-guide.md have no entry in compliance-log.md:"
+        )
         for i in missing:
             print(f"  - {i}")
 
@@ -76,7 +80,9 @@ def run(target_dir: str, annex_threshold: int = DEFAULT_ANNEX_THRESHOLD) -> int:
             gate_gaps.append(task_id)
     if gate_gaps:
         problems += len(gate_gaps)
-        print(f"[gate w/o negative control] {len(gate_gaps)} gate(s) don't mention a negative control:")
+        print(
+            f"[gate w/o negative control] {len(gate_gaps)} gate(s) don't mention a negative control:"
+        )
         for i in gate_gaps:
             print(f"  - {i}")
 
@@ -84,7 +90,9 @@ def run(target_dir: str, annex_threshold: int = DEFAULT_ANNEX_THRESHOLD) -> int:
     dups = _duplicate_paragraphs(log_text)
     if dups:
         problems += len(dups)
-        print(f"[duplicate content] {len(dups)} paragraph(s) repeated verbatim in compliance-log.md:")
+        print(
+            f"[duplicate content] {len(dups)} paragraph(s) repeated verbatim in compliance-log.md:"
+        )
         for p, n in dups:
             preview = p[:100] + ("…" if len(p) > 100 else "")
             print(f"  - x{n}: {preview}")
@@ -124,7 +132,7 @@ def run(target_dir: str, annex_threshold: int = DEFAULT_ANNEX_THRESHOLD) -> int:
     return 1
 
 
-def main(argv=None) -> int:
+def main(argv: list[str] | None = None) -> int:
     import argparse
 
     parser = argparse.ArgumentParser(prog="auditkit lint")

@@ -41,3 +41,24 @@ def test_status_counts_rejected_and_handles_hyphens(tmp_path, capsys):
     assert "1 open" in out
     assert "P0-T2: REJECTED" in out
 
+
+def test_status_missing_log_returns_error(tmp_path, capsys):
+    code = status.run(str(tmp_path))
+    out = capsys.readouterr().out
+    assert code == 2
+    assert "not found" in out
+
+
+def test_status_empty_log(tmp_path, capsys):
+    (tmp_path / "compliance-log.md").write_text("# Empty log\n", encoding="utf-8")
+    code = status.run(str(tmp_path))
+    out = capsys.readouterr().out
+    assert code == 0
+    assert "no task entries found" in out
+
+
+def test_status_main_cli(tmp_path):
+    log = "### P0-T1 — DONE\n"
+    (tmp_path / "compliance-log.md").write_text(log, encoding="utf-8")
+    code = status.main([str(tmp_path)])
+    assert code == 0

@@ -3,6 +3,7 @@
 Runs all tests using standard library shims for tmp_path and capsys
 when running in pure Python environments without pytest installed.
 """
+
 from __future__ import annotations
 
 import importlib

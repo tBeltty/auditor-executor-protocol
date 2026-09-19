@@ -6,9 +6,39 @@ on:
   pull_request:
     branches: [main]
 
+permissions:
+  contents: read
+
 jobs:
+  lint:
+    name: Lint, Format & Strict Types
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e ".[dev]"
+
+      - name: Run Ruff Linter
+        run: ruff check .
+
+      - name: Verify Code Formatting
+        run: ruff format --check .
+
+      - name: Verify Strict Typing (Mypy)
+        run: mypy --strict src
+
   test:
     name: Python ${{ matrix.python-version }} on ${{ matrix.os }}
+    needs: [lint]
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -36,8 +66,8 @@ jobs:
       - name: Install package with test extras
         run: pip install -e ".[test]"
 
-      - name: Run test suite via pytest
-        run: pytest
+      - name: Run test suite via pytest with coverage gate
+        run: pytest --cov=auditkit --cov-report=term-missing --cov-fail-under=90
 
       - name: Verify CLI commands
         shell: bash
@@ -50,3 +80,25 @@ jobs:
           auditkit install-skill docs/ci-test --agent antigravity
           auditkit install-skill docs/ci-test --agent claude
           auditkit install-skill docs/ci-test --agent cursor
+
+  build:
+    name: Verify Distribution Package
+    needs: [lint]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install build tool
+        run: pip install build
+
+      - name: Build sdist and wheel
+        run: python -m build
+
+      - name: Check build outputs
+        run: ls -lh dist/

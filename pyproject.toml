@@ -4,15 +4,23 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "auditkit"
-version = "0.1.0"
+version = "0.2.0"
 description = "Mechanical support for the Auditor/Executor protocol: scaffold, lint, and negative-control the document set for a multi-phase, multi-agent execution."
 readme = "README.md"
 requires-python = ">=3.9"
-license = { text = "MIT" }
-authors = [{ name = "tBeltty" }]
+license = "MIT"
+authors = [{ name = "tBeltty", email = "jhonatan@tbelt.online" }]
+keywords = [
+    "audit",
+    "executor",
+    "ai-agents",
+    "llm-protocols",
+    "quality-assurance",
+    "verification",
+    "compliance",
+]
 classifiers = [
     "Programming Language :: Python :: 3",
-    "License :: OSI Approved :: MIT License",
     "Operating System :: OS Independent",
     "Environment :: Console",
     "Topic :: Software Development :: Quality Assurance",
@@ -20,17 +28,65 @@ classifiers = [
 
 [project.urls]
 Homepage = "https://github.com/tBeltty/auditor-executor-protocol"
+Repository = "https://github.com/tBeltty/auditor-executor-protocol"
+Issues = "https://github.com/tBeltty/auditor-executor-protocol/issues"
+Changelog = "https://github.com/tBeltty/auditor-executor-protocol/blob/main/CHANGELOG.md"
 
 [project.optional-dependencies]
 test = [
     "pytest>=7.0",
+    "pytest-cov>=4.0",
+]
+dev = [
+    "pytest>=7.0",
+    "pytest-cov>=4.0",
+    "ruff>=0.1.0",
+    "mypy>=1.0.0",
+    "build>=1.0.0",
 ]
 
 [project.scripts]
 auditkit = "auditkit.cli:main"
 
 [tool.setuptools.package-data]
-auditkit = ["templates/*.md"]
+auditkit = ["templates/*.md", "py.typed"]
 
 [tool.setuptools.packages.find]
 where = ["src"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py39"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "UP", "B", "PL", "RUF"]
+ignore = [
+    "E501",     # Line length violations (handled by ruff format)
+    "PLR2004",  # Magic value comparison
+    "PLR0911",  # Too many return statements
+    "PLR0912",  # Too many branches
+    "PLR0913",  # Too many arguments
+    "PLR0915",  # Too many statements
+    "PLC0415",  # Import outside top-level
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["RUF001", "BLE001"]
+
+[tool.mypy]
+python_version = "3.10"
+strict = true
+warn_unused_configs = true
+disallow_untyped_defs = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+
+[tool.coverage.run]
+source = ["auditkit"]
+branch = true
+
+[tool.coverage.report]
+fail_under = 90
+show_missing = true
