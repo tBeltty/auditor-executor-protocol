@@ -30,3 +30,8 @@ None yet.
 **Verify output:**
 **Observations:**
 **Decisions made without stopping:**
+
+### P0-G1 — PENDING
+**Verify output:**
+**Observations:**
+
