@@ -1,5 +1,3 @@
-from pathlib import Path
-
 from auditkit import lint
 
 
@@ -116,3 +114,8 @@ def test_annex_phase_breakdown_warns(tmp_path, capsys):
     assert "Phase 1" in out
     assert "Phase 2" in out
 
+
+def test_lint_main_cli(tmp_path):
+    _write(tmp_path, guide="", log="")
+    code = lint.main([str(tmp_path), "--annex-threshold", "10"])
+    assert code == 0

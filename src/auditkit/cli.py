@@ -5,15 +5,15 @@ parts of it that are checklist work, not judgment: scaffolding the document set,
 cross-checking it for drift, running a negative control end to end, and reporting
 status.
 """
+
 from __future__ import annotations
 
 import sys
 
-from . import install_skill, lint, negcontrol, scaffold, status
-from . import __version__
+from . import __version__, install_skill, lint, negcontrol, scaffold, status
 
 
-def main(argv=None) -> int:
+def main(argv: list[str] | None = None) -> int:
     import argparse
 
     parser = argparse.ArgumentParser(prog="auditkit", description=__doc__)
@@ -38,12 +38,33 @@ def main(argv=None) -> int:
     p_status = sub.add_parser("status", help="tally verdicts in the compliance log")
     p_status.add_argument("target_dir")
 
-    p_install = sub.add_parser("install-skill", help="provision SKILL.md into an agent skills directory")
-    p_install.add_argument("target_dir", nargs="?", default=".", help="target project directory (defaults to current directory)")
-    p_install.add_argument("--agent", choices=["antigravity", "claude", "cursor", "auto"], default="auto", help="target agent framework (default: auto-detect)")
-    p_install.add_argument("--global", dest="is_global", action="store_true", help="install to user-level global configuration directory")
-    p_install.add_argument("--dest", dest="dest_path", default=None, help="explicit destination file path")
-    p_install.add_argument("--force", action="store_true", help="overwrite existing destination file")
+    p_install = sub.add_parser(
+        "install-skill", help="provision SKILL.md into an agent skills directory"
+    )
+    p_install.add_argument(
+        "target_dir",
+        nargs="?",
+        default=".",
+        help="target project directory (defaults to current directory)",
+    )
+    p_install.add_argument(
+        "--agent",
+        choices=["antigravity", "claude", "cursor", "auto"],
+        default="auto",
+        help="target agent framework (default: auto-detect)",
+    )
+    p_install.add_argument(
+        "--global",
+        dest="is_global",
+        action="store_true",
+        help="install to user-level global configuration directory",
+    )
+    p_install.add_argument(
+        "--dest", dest="dest_path", default=None, help="explicit destination file path"
+    )
+    p_install.add_argument(
+        "--force", action="store_true", help="overwrite existing destination file"
+    )
 
     args = parser.parse_args(argv)
 
