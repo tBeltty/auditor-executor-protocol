@@ -52,3 +52,27 @@ def test_install_skill_auto_detects_claude(tmp_path):
     assert code == 0
     expected = tmp_path / ".claude" / "skills" / "auditor-executor-protocol" / "SKILL.md"
     assert expected.exists()
+
+
+def test_install_skill_auto_detects_via_env_var(tmp_path, monkeypatch=None):
+    import os
+
+    old_claude = os.environ.get("CLAUDE_CODE")
+    old_antigravity = os.environ.get("ANTIGRAVITY_AGENT")
+    try:
+        os.environ["CLAUDE_CODE"] = "1"
+        if "ANTIGRAVITY_AGENT" in os.environ:
+            del os.environ["ANTIGRAVITY_AGENT"]
+        code = install_skill.run(target_dir=str(tmp_path), agent="auto")
+        assert code == 0
+        expected = tmp_path / ".claude" / "skills" / "auditor-executor-protocol" / "SKILL.md"
+        assert expected.exists()
+    finally:
+        if old_claude is not None:
+            os.environ["CLAUDE_CODE"] = old_claude
+        elif "CLAUDE_CODE" in os.environ:
+            del os.environ["CLAUDE_CODE"]
+
+        if old_antigravity is not None:
+            os.environ["ANTIGRAVITY_AGENT"] = old_antigravity
+

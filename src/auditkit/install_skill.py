@@ -14,13 +14,27 @@ def _get_skill_content() -> str:
     raise FileNotFoundError("SKILL.md could not be found.")
 
 
+import os
+
+
 def _detect_agent(target: Path) -> str:
+    # 1. Check workspace marker directories
     if (target / ".agents").exists() or (target / ".gemini").exists():
         return "antigravity"
     if (target / ".claude").exists():
         return "claude"
     if (target / ".cursor").exists():
         return "cursor"
+
+    # 2. Check runtime environment variables
+    if os.environ.get("ANTIGRAVITY_AGENT") or os.environ.get("GEMINI_CLI"):
+        return "antigravity"
+    if os.environ.get("CLAUDE_CODE") or os.environ.get("CLAUDE_PROJECT_DIR"):
+        return "claude"
+    if os.environ.get("CURSOR_PROJECT_DIR"):
+        return "cursor"
+
+    # 3. Default fallback
     return "antigravity"
 
 
