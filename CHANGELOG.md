@@ -10,6 +10,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Conventional Commits specification documented in `CONTRIBUTING.md` and enforced in `AGENTS.md`.
 
+### Changed
+- Bumped `actions/checkout` and `actions/setup-python` to v7 in GitHub Actions CI workflow.
+- Configured grouped updates in `.github/dependabot.yml` to bundle action and pip dependency bumps.
+
 ## [0.2.0] - 2026-09-19
 
 ### Added
