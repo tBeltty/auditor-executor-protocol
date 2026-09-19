@@ -21,6 +21,11 @@ classifiers = [
 [project.urls]
 Homepage = "https://github.com/tBeltty/auditor-executor-protocol"
 
+[project.optional-dependencies]
+test = [
+    "pytest>=7.0",
+]
+
 [project.scripts]
 auditkit = "auditkit.cli:main"
 

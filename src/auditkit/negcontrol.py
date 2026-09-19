@@ -7,6 +7,7 @@ tends to get shortened under time pressure.
 """
 from __future__ import annotations
 
+import filecmp
 import shutil
 import subprocess
 import sys
@@ -36,63 +37,70 @@ def run(
         print("error: without --file, --restore-cmd is required (nothing to copy back).")
         return 2
 
-    backup_path = None
-    transcript = []
+    tmp_dir: Path | None = None
+    backup_path: Path | None = None
+    transcript: list[str] = []
 
-    if file_path:
-        src = Path(file_path)
-        if not src.exists():
-            print(f"error: {file_path} does not exist.")
-            return 2
-        tmp_dir = Path(tempfile.mkdtemp(prefix="auditkit-negcontrol-"))
-        backup_path = tmp_dir / src.name
-        shutil.copy2(src, backup_path)
-        transcript.append(f"$ backed up {file_path} -> {backup_path}")
+    try:
+        if file_path:
+            src = Path(file_path)
+            if not src.exists():
+                print(f"error: {file_path} does not exist.")
+                return 2
+            tmp_dir = Path(tempfile.mkdtemp(prefix="auditkit-negcontrol-"))
+            backup_path = tmp_dir / src.name
+            shutil.copy2(src, backup_path)
+            transcript.append(f"$ backed up {file_path} -> {backup_path}")
 
-    if break_cmd:
-        transcript.append(f"$ {break_cmd}")
-        code, out = _run(break_cmd)
-        transcript.append(out.rstrip("\n"))
-        if code != 0:
-            print(f"warning: break command exited {code}. Continuing, but check it did what you meant.")
+        broke_as_expected = False
+        try:
+            if break_cmd:
+                transcript.append(f"$ {break_cmd}")
+                code, out = _run(break_cmd)
+                transcript.append(out.rstrip("\n"))
+                if code != 0:
+                    print(f"warning: break command exited {code}. Continuing, but check it did what you meant.")
 
-    transcript.append(f"$ {test_cmd}   # expect FAILURE")
-    code1, out1 = _run(test_cmd)
-    transcript.append(out1.rstrip("\n"))
-    broke_as_expected = code1 != 0
-    transcript.append(f"(exit {code1})")
+            transcript.append(f"$ {test_cmd}   # expect FAILURE")
+            code1, out1 = _run(test_cmd)
+            transcript.append(out1.rstrip("\n"))
+            broke_as_expected = code1 != 0
+            transcript.append(f"(exit {code1})")
+        finally:
+            if file_path and not restore_cmd and backup_path and backup_path.exists():
+                shutil.copy2(backup_path, file_path)
+                transcript.append(f"$ restored {file_path} from backup (diff -q should show no output)")
+                is_identical = filecmp.cmp(file_path, str(backup_path), shallow=False)
+                transcript.append("(no output — byte-identical)" if is_identical else "WARNING: restored file differs from backup!")
+            elif restore_cmd:
+                transcript.append(f"$ {restore_cmd}")
+                _, out = _run(restore_cmd)
+                transcript.append(out.rstrip("\n"))
 
-    if file_path and not restore_cmd:
-        shutil.copy2(backup_path, file_path)
-        transcript.append(f"$ restored {file_path} from backup (diff -q should show no output)")
-        rc, diff_out = _run(f"diff -q {file_path!r} {str(backup_path)!r}")
-        transcript.append((diff_out or "(no output — byte-identical)").rstrip("\n"))
-    elif restore_cmd:
-        transcript.append(f"$ {restore_cmd}")
-        _, out = _run(restore_cmd)
-        transcript.append(out.rstrip("\n"))
+        transcript.append(f"$ {test_cmd}   # expect SUCCESS")
+        code2, out2 = _run(test_cmd)
+        transcript.append(out2.rstrip("\n"))
+        restored_to_green = code2 == 0
+        transcript.append(f"(exit {code2})")
 
-    transcript.append(f"$ {test_cmd}   # expect SUCCESS")
-    code2, out2 = _run(test_cmd)
-    transcript.append(out2.rstrip("\n"))
-    restored_to_green = code2 == 0
-    transcript.append(f"(exit {code2})")
+        print("\n".join(transcript))
+        print()
 
-    print("\n".join(transcript))
-    print()
+        if not broke_as_expected:
+            print(
+                "FAIL: the test did not fail when the protection was removed. "
+                "Either the break command didn't do what you meant, or the protection isn't real."
+            )
+            return 1
+        if not restored_to_green:
+            print("FAIL: the test did not return to passing after restore. The tree may be dirty.")
+            return 1
 
-    if not broke_as_expected:
-        print(
-            "FAIL: the test did not fail when the protection was removed. "
-            "Either the break command didn't do what you meant, or the protection isn't real."
-        )
-        return 1
-    if not restored_to_green:
-        print("FAIL: the test did not return to passing after restore. The tree may be dirty.")
-        return 1
-
-    print("OK: negative control verified — the check fails without the protection and passes with it.")
-    return 0
+        print("OK: negative control verified — the check fails without the protection and passes with it.")
+        return 0
+    finally:
+        if tmp_dir and tmp_dir.exists():
+            shutil.rmtree(tmp_dir, ignore_errors=True)
 
 
 def main(argv=None) -> int:

@@ -90,3 +90,29 @@ def test_annex_threshold_warns(tmp_path):
     _write(tmp_path, annexes=annexes)
     assert lint.run(str(tmp_path), annex_threshold=6) == 1
     assert lint.run(str(tmp_path), annex_threshold=10) == 0
+
+
+def test_headers_with_hyphens_and_endash_pass(tmp_path):
+    guide = """
+### P0-T1 - Standard hyphen
+**Report:** `P0-T1`
+
+### P0-T2 – En-dash
+**Report:** `P0-T2`
+"""
+    log = """
+### P0-T1 - DONE
+### P0-T2 – DONE
+"""
+    _write(tmp_path, guide, log)
+    assert lint.run(str(tmp_path)) == 0
+
+
+def test_annex_phase_breakdown_warns(tmp_path, capsys):
+    annexes = [f"P1-ANNEX-{i}.md" for i in range(4)] + [f"P2-ANNEX-{i}.md" for i in range(4)]
+    _write(tmp_path, annexes=annexes)
+    assert lint.run(str(tmp_path), annex_threshold=5) == 1
+    out = capsys.readouterr().out
+    assert "Phase 1" in out
+    assert "Phase 2" in out
+

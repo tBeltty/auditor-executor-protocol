@@ -27,3 +27,19 @@ def test_negcontrol_flags_a_fake_protection(tmp_path, capsys):
     out = capsys.readouterr().out
     assert code == 1
     assert "did not fail" in out
+    assert guarded_file.read_text() == "protected\n"
+
+
+def test_negcontrol_restores_file_on_break_failure(tmp_path):
+    guarded_file = tmp_path / "flag.txt"
+    guarded_file.write_text("protected\n")
+
+    test_cmd = f'grep -q protected "{guarded_file}"'
+    # Break cmd alters the file and then exits with non-zero
+    break_cmd = f'echo broken > "{guarded_file}" && exit 42'
+
+    code = negcontrol.run(test_cmd=test_cmd, break_cmd=break_cmd, file_path=str(guarded_file))
+    # It broke as expected and then restored
+    assert code == 0
+    assert guarded_file.read_text() == "protected\n"
+

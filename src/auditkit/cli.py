@@ -9,7 +9,7 @@ from __future__ import annotations
 
 import sys
 
-from . import lint, negcontrol, scaffold, status
+from . import install_skill, lint, negcontrol, scaffold, status
 from . import __version__
 
 
@@ -38,6 +38,13 @@ def main(argv=None) -> int:
     p_status = sub.add_parser("status", help="tally verdicts in the compliance log")
     p_status.add_argument("target_dir")
 
+    p_install = sub.add_parser("install-skill", help="provision SKILL.md into an agent skills directory")
+    p_install.add_argument("target_dir", nargs="?", default=".", help="target project directory (defaults to current directory)")
+    p_install.add_argument("--agent", choices=["antigravity", "claude", "cursor", "auto"], default="auto", help="target agent framework (default: auto-detect)")
+    p_install.add_argument("--global", dest="is_global", action="store_true", help="install to user-level global configuration directory")
+    p_install.add_argument("--dest", dest="dest_path", default=None, help="explicit destination file path")
+    p_install.add_argument("--force", action="store_true", help="overwrite existing destination file")
+
     args = parser.parse_args(argv)
 
     if args.command == "init":
@@ -48,6 +55,14 @@ def main(argv=None) -> int:
         return negcontrol.run(args.test_cmd, args.break_cmd, args.file_path, args.restore_cmd)
     if args.command == "status":
         return status.run(args.target_dir)
+    if args.command == "install-skill":
+        return install_skill.run(
+            target_dir=args.target_dir,
+            agent=args.agent,
+            is_global=args.is_global,
+            dest_path=args.dest_path,
+            force=args.force,
+        )
 
     parser.print_help()
     return 2
