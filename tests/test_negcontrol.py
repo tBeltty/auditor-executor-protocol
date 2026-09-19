@@ -75,7 +75,7 @@ def test_negcontrol_custom_restore_cmd(tmp_path):
         restore_cmd=f'echo initial > "{target}"',
     )
     assert code == 0
-    assert target.read_text() == "initial\n"
+    assert target.read_text().strip() == "initial"
 
 
 def test_negcontrol_fails_if_not_restored_to_green(tmp_path, capsys):
