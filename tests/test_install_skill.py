@@ -1,5 +1,3 @@
-from pathlib import Path
-
 from auditkit import install_skill
 
 
@@ -76,3 +74,55 @@ def test_install_skill_auto_detects_via_env_var(tmp_path, monkeypatch=None):
         if old_antigravity is not None:
             os.environ["ANTIGRAVITY_AGENT"] = old_antigravity
 
+
+def test_install_skill_global_flag():
+    dest_claude = install_skill.resolve_dest_path(agent="claude", is_global=True)
+    assert ".claude" in str(dest_claude)
+    dest_cursor = install_skill.resolve_dest_path(agent="cursor", is_global=True)
+    assert ".cursor" in str(dest_cursor)
+    dest_anti = install_skill.resolve_dest_path(agent="antigravity", is_global=True)
+    assert ".gemini" in str(dest_anti)
+
+
+def test_install_skill_main_cli(tmp_path):
+    dest = tmp_path / "installed_skill.md"
+    code = install_skill.main(["--dest", str(dest), "--force"])
+    assert code == 0
+    assert dest.exists()
+
+
+def test_install_skill_markers_and_env(tmp_path):
+    import os
+
+    # Marker .gemini
+    gemini_dir = tmp_path / "gemini_proj"
+    (gemini_dir / ".gemini").mkdir(parents=True)
+    assert install_skill._detect_agent(gemini_dir) == "antigravity"
+
+    # Marker .cursor
+    cursor_dir = tmp_path / "cursor_proj"
+    (cursor_dir / ".cursor").mkdir(parents=True)
+    assert install_skill._detect_agent(cursor_dir) == "cursor"
+
+    # Env CURSOR_PROJECT_DIR
+    clean_dir = tmp_path / "clean_proj"
+    clean_dir.mkdir(parents=True)
+    old_cursor = os.environ.get("CURSOR_PROJECT_DIR")
+    old_anti = os.environ.get("ANTIGRAVITY_AGENT")
+    old_gemini = os.environ.get("GEMINI_CLI")
+    try:
+        os.environ["CURSOR_PROJECT_DIR"] = "/fake"
+        if "ANTIGRAVITY_AGENT" in os.environ:
+            del os.environ["ANTIGRAVITY_AGENT"]
+        if "GEMINI_CLI" in os.environ:
+            del os.environ["GEMINI_CLI"]
+        assert install_skill._detect_agent(clean_dir) == "cursor"
+    finally:
+        if old_cursor is not None:
+            os.environ["CURSOR_PROJECT_DIR"] = old_cursor
+        elif "CURSOR_PROJECT_DIR" in os.environ:
+            del os.environ["CURSOR_PROJECT_DIR"]
+        if old_anti is not None:
+            os.environ["ANTIGRAVITY_AGENT"] = old_anti
+        if old_gemini is not None:
+            os.environ["GEMINI_CLI"] = old_gemini

@@ -1,4 +1,5 @@
 """Scaffold the four-document set into a target directory."""
+
 from __future__ import annotations
 
 import sys
@@ -44,7 +45,7 @@ def run(target_dir: str, project_name: str | None = None, force: bool = False) -
     return 0
 
 
-def main(argv=None) -> int:
+def main(argv: list[str] | None = None) -> int:
     import argparse
 
     parser = argparse.ArgumentParser(prog="auditkit init")
