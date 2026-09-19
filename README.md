@@ -1,5 +1,12 @@
 # Auditor/Executor Protocol
 
+[![CI](https://github.com/tBeltty/auditor-executor-protocol/actions/workflows/ci.yml/badge.svg)](https://github.com/tBeltty/auditor-executor-protocol/actions/workflows/ci.yml)
+[![Python 3.9+](https://img.shields.io/badge/python-3.9+-blue.svg)](https://www.python.org/downloads/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Code style: ruff](https://img.shields.io/badge/code%20style-ruff-000000.svg)](https://github.com/astral-sh/ruff)
+[![Checked with mypy](https://img.shields.io/badge/mypy-strict-blue)](https://mypy-lang.org/)
+[![Zero Dependencies](https://img.shields.io/badge/dependencies-0-brightgreen)](pyproject.toml)
+
 A two-role protocol for running multi-phase work through AI agents without the plan drifting into open-ended discussion and without "all tests pass" masquerading as verification.
 
 The **Auditor** defines what "done" means and proves it independently. The **Executor** implements one numbered task at a time and logs command output. Neither role crosses into the other.
@@ -145,7 +152,7 @@ pytest
 
 ## Contributing
 
-Open an issue if you hit a failure mode not covered in the protocol, or if `auditkit` behavior deviates from [`SKILL.md`](SKILL.md).
+Contributions are welcome! Please read [`CONTRIBUTING.md`](CONTRIBUTING.md) for development guidelines, testing instructions, and our PR checklist. For security disclosures, refer to [`SECURITY.md`](SECURITY.md). Releases and historical updates are tracked in [`CHANGELOG.md`](CHANGELOG.md).
 
 ## License
 

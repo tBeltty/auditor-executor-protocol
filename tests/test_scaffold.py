@@ -1,6 +1,4 @@
-from pathlib import Path
-
-from auditkit import scaffold
+from auditkit import lint, scaffold
 
 
 def test_init_creates_all_four_documents(tmp_path):
@@ -38,9 +36,13 @@ def test_init_force_overwrites(tmp_path):
 
 
 def test_init_scaffold_passes_lint(tmp_path):
-    from auditkit import lint
-
     target = tmp_path / "run"
     scaffold.run(str(target), project_name="Clean Run")
     assert lint.run(str(target)) == 0
 
+
+def test_init_main_cli(tmp_path):
+    target = tmp_path / "run_cli"
+    code = scaffold.main([str(target), "--name", "CLI Project", "--force"])
+    assert code == 0
+    assert (target / "plan-of-record.md").exists()

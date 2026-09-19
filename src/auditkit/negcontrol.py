@@ -5,6 +5,7 @@ financial-integrity boundary, and print a paste-ready transcript.
 This replaces doing the same four shell commands by hand, which is where the sequence
 tends to get shortened under time pressure.
 """
+
 from __future__ import annotations
 
 import filecmp
@@ -16,7 +17,7 @@ from pathlib import Path
 
 
 def _run(cmd: str) -> tuple[int, str]:
-    proc = subprocess.run(cmd, shell=True, capture_output=True, text=True)
+    proc = subprocess.run(cmd, shell=True, capture_output=True, text=True, check=False)
     output = (proc.stdout or "") + (proc.stderr or "")
     return proc.returncode, output
 
@@ -59,7 +60,9 @@ def run(
                 code, out = _run(break_cmd)
                 transcript.append(out.rstrip("\n"))
                 if code != 0:
-                    print(f"warning: break command exited {code}. Continuing, but check it did what you meant.")
+                    print(
+                        f"warning: break command exited {code}. Continuing, but check it did what you meant."
+                    )
 
             transcript.append(f"$ {test_cmd}   # expect FAILURE")
             code1, out1 = _run(test_cmd)
@@ -69,9 +72,15 @@ def run(
         finally:
             if file_path and not restore_cmd and backup_path and backup_path.exists():
                 shutil.copy2(backup_path, file_path)
-                transcript.append(f"$ restored {file_path} from backup (diff -q should show no output)")
+                transcript.append(
+                    f"$ restored {file_path} from backup (diff -q should show no output)"
+                )
                 is_identical = filecmp.cmp(file_path, str(backup_path), shallow=False)
-                transcript.append("(no output — byte-identical)" if is_identical else "WARNING: restored file differs from backup!")
+                transcript.append(
+                    "(no output — byte-identical)"
+                    if is_identical
+                    else "WARNING: restored file differs from backup!"
+                )
             elif restore_cmd:
                 transcript.append(f"$ {restore_cmd}")
                 _, out = _run(restore_cmd)
@@ -96,21 +105,40 @@ def run(
             print("FAIL: the test did not return to passing after restore. The tree may be dirty.")
             return 1
 
-        print("OK: negative control verified — the check fails without the protection and passes with it.")
+        print(
+            "OK: negative control verified — the check fails without the protection and passes with it."
+        )
         return 0
     finally:
         if tmp_dir and tmp_dir.exists():
             shutil.rmtree(tmp_dir, ignore_errors=True)
 
 
-def main(argv=None) -> int:
+def main(argv: list[str] | None = None) -> int:
     import argparse
 
     parser = argparse.ArgumentParser(prog="auditkit negcontrol")
-    parser.add_argument("--file", dest="file_path", default=None, help="file to back up and restore")
-    parser.add_argument("--break-cmd", dest="break_cmd", default=None, help="shell command that removes the protection")
-    parser.add_argument("--test-cmd", dest="test_cmd", required=True, help="shell command that should fail without the protection")
-    parser.add_argument("--restore-cmd", dest="restore_cmd", default=None, help="shell command to restore, instead of copying --file back")
+    parser.add_argument(
+        "--file", dest="file_path", default=None, help="file to back up and restore"
+    )
+    parser.add_argument(
+        "--break-cmd",
+        dest="break_cmd",
+        default=None,
+        help="shell command that removes the protection",
+    )
+    parser.add_argument(
+        "--test-cmd",
+        dest="test_cmd",
+        required=True,
+        help="shell command that should fail without the protection",
+    )
+    parser.add_argument(
+        "--restore-cmd",
+        dest="restore_cmd",
+        default=None,
+        help="shell command to restore, instead of copying --file back",
+    )
     args = parser.parse_args(argv)
     return run(args.test_cmd, args.break_cmd, args.file_path, args.restore_cmd)
 

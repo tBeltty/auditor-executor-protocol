@@ -1,6 +1,8 @@
 """Provision SKILL.md into an agent or workspace directory."""
+
 from __future__ import annotations
 
+import os
 from pathlib import Path
 
 
@@ -12,9 +14,6 @@ def _get_skill_content() -> str:
     if repo_skill.exists():
         return repo_skill.read_text(encoding="utf-8")
     raise FileNotFoundError("SKILL.md could not be found.")
-
-
-import os
 
 
 def _detect_agent(target: Path) -> str:
@@ -78,7 +77,9 @@ def run(
         print(f"error: {e}")
         return 2
 
-    dest = resolve_dest_path(target_dir=target_dir, agent=agent, is_global=is_global, dest_path=dest_path)
+    dest = resolve_dest_path(
+        target_dir=target_dir, agent=agent, is_global=is_global, dest_path=dest_path
+    )
 
     if dest.exists() and not force:
         print(f"skip: {dest} already exists (use --force to overwrite)")
@@ -90,7 +91,7 @@ def run(
     return 0
 
 
-def main(argv=None) -> int:
+def main(argv: list[str] | None = None) -> int:
     import argparse
 
     parser = argparse.ArgumentParser(prog="auditkit install-skill")

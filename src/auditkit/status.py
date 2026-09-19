@@ -1,4 +1,5 @@
 """Tally verdicts in the compliance log and print what's still open."""
+
 from __future__ import annotations
 
 import re
@@ -6,7 +7,9 @@ import sys
 from collections import Counter, OrderedDict
 from pathlib import Path
 
-LOG_HEADER_RE = re.compile(r"^###\s+([A-Za-z0-9_.\-]+)\s+[\u2014\u2013\-]\s+([A-Za-z_]+)\s*$", re.MULTILINE)
+LOG_HEADER_RE = re.compile(
+    r"^###\s+([A-Za-z0-9_.\-]+)\s+[\u2014\u2013\-]\s+([A-Za-z_]+)\s*$", re.MULTILINE
+)
 
 TERMINAL_STATUSES = {"APPROVED", "DONE"}
 OPEN_STATUSES = {"PENDING", "BLOCKED", "FAILED", "CONDITIONAL", "REJECTED"}
@@ -22,7 +25,7 @@ def run(target_dir: str) -> int:
     text = log_path.read_text(encoding="utf-8")
 
     # Last occurrence of each ID wins — a task can be reported more than once.
-    latest: "OrderedDict[str, str]" = OrderedDict()
+    latest: OrderedDict[str, str] = OrderedDict()
     for m in LOG_HEADER_RE.finditer(text):
         latest[m.group(1)] = m.group(2).upper()
 
@@ -47,7 +50,7 @@ def run(target_dir: str) -> int:
     return 0
 
 
-def main(argv=None) -> int:
+def main(argv: list[str] | None = None) -> int:
     import argparse
 
     parser = argparse.ArgumentParser(prog="auditkit status")
