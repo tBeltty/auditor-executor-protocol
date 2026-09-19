@@ -53,6 +53,21 @@ ruff format .
 mypy --strict src
 ```
 
+## Commit Guidelines
+
+We adhere to [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/). Commit messages should follow the structure:
+
+`<type>(<optional scope>): <description>`
+
+Common types:
+- `feat`: A new feature, CLI command, or mechanical check
+- `fix`: A bug fix or test correction
+- `docs`: Documentation, README, or rule updates
+- `refactor`: Code refactoring with no functional change
+- `test`: Adding or refining tests
+- `chore`: Packaging, CI workflow, or dependency updates
+- `release`: Version bump and formal release
+
 ## Pull Request Checklist
 
 Before submitting a PR:
@@ -61,4 +76,7 @@ Before submitting a PR:
 - [ ] Test coverage is >= 90%.
 - [ ] `ruff check .` and `ruff format --check .` report no issues.
 - [ ] `mypy --strict src` reports 0 errors.
+- [ ] Commit messages follow Conventional Commits.
+- [ ] [`CHANGELOG.md`](CHANGELOG.md) is updated under `## [Unreleased]`.
 - [ ] Documentation is updated if relevant.
+
