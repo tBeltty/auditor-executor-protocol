@@ -26,3 +26,7 @@ pytest --cov=auditkit --cov-report=term-missing --cov-fail-under=90
 ## 3. Architecture Constraints
 * **Zero Runtime Dependencies**: The `auditkit` runtime must strictly depend only on the Python Standard Library. Never add runtime dependencies to `[project.dependencies]`.
 * **Mechanical Verification**: Ensure all new features or bug fixes have corresponding automated unit tests and, when testing security or critical boundary guarantees, negative controls.
+
+## 4. Semantic Commit Convention
+* **Conventional Commits**: Every commit message created by an agent MUST strictly follow [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/) format: `<type>(<optional scope>): <description>`. Permitted types: `feat`, `fix`, `docs`, `refactor`, `test`, `chore`, `release`.
+
