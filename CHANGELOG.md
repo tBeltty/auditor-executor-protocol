@@ -23,6 +23,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Standardized `pyproject.toml` metadata (SPDX license expression, project URLs, and keywords).
 - Updated maintainer contact email to `jhonatan@tbelt.online` in `SECURITY.md` and `pyproject.toml`.
 
+### Fixed
+- Fixed cross-platform Windows newline and whitespace handling in negative control tests.
+
 ## [0.1.0] - 2026-08-30
 
 ### Added
