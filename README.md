@@ -1,67 +1,60 @@
 # Auditor/Executor Protocol
 
-A two-role protocol for running multi-phase work through an AI agent, a subagent, or a
-human collaborator, without the plan quietly turning back into a discussion and without
-"all tests pass" quietly turning into the whole verification.
+A two-role protocol for running multi-phase work through AI agents without the plan drifting into open-ended discussion and without "all tests pass" masquerading as verification.
 
-One role — the Auditor — decides what "done" means and proves it independently. The
-other — the Executor — implements one task at a time and reports evidence. Neither does
-the other's job. `SKILL.md` is the protocol; `auditkit` is a small CLI that handles the
-mechanical parts of following it.
+One role—the **Auditor**—defines what "done" means and independently proves it. The other—the **Executor**—implements one numbered task at a time and logs concrete command output. Neither crosses into the other's domain.
 
-## Vibe coding, and where this picks up
+[`SKILL.md`](SKILL.md) specifies the protocol; `auditkit` is a zero-dependency Python CLI that automates scaffolding, drift linting, and negative control execution.
 
-Vibe coding (describing what you want, letting an agent write it, judging the result by
-whether it feels right) is a legitimate way to build, worth experiencing on its own
-terms. A lot of real software gets made this way, and none of what follows argues
-against it.
+---
 
-It runs into a specific wall: once a mistake is expensive to catch late (money moves,
-permissions change, one user's data reaches another's screen), "it feels right" stops
-being enough evidence, no matter how good the agent is. The gap is in verification, not
-generation, and closing it takes a different process than vibe coding was ever built to
-run. This repo calls that process Structured AI Engineering: an unambiguous instruction
-sheet instead of a feel, and evidence that gets independently re-checked instead of a
-diff that looks plausible.
+## When to Reach for This
 
-Reach for it when the task is the kind above, not by default; vibe coding stays the
-right tool for everything else. One role, the Auditor, decides what "done" means and
-proves it independently; the other, the Executor, implements one task at a time and
-reports evidence instead of an impression. You don't need a second person to run it —
-they can be two sessions of the same agent, with you switching hats between them.
+Vibe coding—prompting an agent, reviewing the diff, and shipping when it feels right—is fast and effective for exploratory builds.
 
-Handed to an agent that didn't write the plan, that instruction sheet still degrades
-into a set of suggestions unless something forces two things to hold: the instructions
-stay unambiguous, and the verification stays real. Two failure modes show up constantly
-once work spans more than a session:
+It breaks down when late mistakes carry high costs:
+* Financial transactions and balances
+* Authentication, authorization, and tenant isolation
+* Destructive database schema migrations
+* Automated background jobs that fire without human intervention
 
-- **The plan drifts.** An implementing agent fills gaps with its own judgment, quietly,
-  because nobody told it a gap was a stop rather than a choice.
-- **The report isn't evidence.** "I reviewed it and it looks correct" reads exactly
-  like "I ran it and it passed" unless the reporting format forces a difference.
+In these scenarios, plausible-looking diffs are not enough. Two failure modes reliably surface across multi-session agent work:
 
-The protocol closes both: a document set that can't be casually merged back into prose,
-and a verification discipline built around negative controls. For anything that guards
-money, permissions, or privacy, the Executor removes the protection, watches the check
-fail, restores it, and watches the check pass. A check never seen failing has not been
-verified.
+1. **Silent Plan Drift:** Implementing agents fill specification gaps with silent assumptions rather than stopping for clarification.
+2. **Evidence-Free Completion:** Reports stating "I checked the implementation and it looks correct" pass unnoticed alongside actual test executions. Tests pass because fixtures bypass the assertion, not because the boundary holds.
 
-It came out of running a real schema migration this way, over many days, and writing
-down what broke, including two cases where the Auditor's own order was the thing that
-was wrong, not the implementation. `SKILL.md` carries the rule that came out of each
-one.
+The Auditor/Executor Protocol eliminates both with a strict four-document paper trail and mandatory **negative controls**: if a check has never been observed failing with the protection removed, it has not been verified.
 
-## What's in this repo
+---
 
-- **`SKILL.md`** — the protocol. Written to be loaded directly by an agent (Claude Code,
-  a similar tool, or read by a person) and to work without any project-specific content
-  stripped in first.
-- **`auditkit`** — a Python CLI for the parts of this that are checklist work, not
-  judgment.
-- **`src/auditkit/templates/`** — the starting shape of the three documents the
-  protocol produces.
+## The Two Roles
 
-## Install
+| | Auditor | Executor |
+|---|---|---|
+| **Owns** | Instructions, gates, verdicts | Implementation, terminal evidence |
+| **Never** | Writes feature code | Redesigns architecture, or expands scope |
+| **Output** | Task expansions, verdicts, remediation orders | Working code, unedited command output |
+
+You do not need two people. You can run this with two isolated agent sessions, switching hats between Auditor and Executor.
+
+---
+
+## The Four-Document Paper Trail
+
+`auditkit init` scaffolds four separate documents. Keeping them separate prevents instructions from degrading back into discussion:
+
+1. **Plan of Record (`plan-of-record.md`):** The *what* and the *why*. Architecture decisions, rejected alternatives, and phase roadmaps. Nobody implements directly from this file.
+2. **Execution Guide (`execution-guide.md`):** The *how*. Numbered tasks (`P0-T1`) with files, exact steps, literal verify commands, and phase gates (`P0-G1`).
+3. **Compliance Log (`compliance-log.md`):** The record of evidence. Pre-populated with every task and gate ID. The Executor pastes unedited terminal transcripts here.
+4. **Remediation Annexes (`annexes/`):** When an audit yields `CONDITIONAL` or `REJECTED`, the Auditor writes a self-contained annex rather than editing in-flight tasks. High annex counts warn of an under-verified plan.
+
+---
+
+## Quickstart
+
+### 1. Install `auditkit`
+
+Requires only Python 3.9+ standard library:
 
 ```bash
 git clone https://github.com/tBeltty/auditor-executor-protocol.git
@@ -69,40 +62,43 @@ cd auditor-executor-protocol
 pip install -e .
 ```
 
-No dependencies beyond the Python standard library — it runs against any project,
-regardless of what that project is written in.
+### 2. Install the Protocol into Your Agent
 
-To run the test suite using `pytest`:
-
-```bash
-pip install -e ".[test]"
-pytest
-```
-
-Or run the tests directly with zero external dependencies:
+Provision `SKILL.md` directly into your workspace or global configuration:
 
 ```bash
-python3 tests/run.py
+auditkit install-skill                     # auto-detects Antigravity, Claude Code, or Cursor
+auditkit install-skill --agent antigravity # writes to .agents/skills/auditor-executor-protocol/
+auditkit install-skill --agent claude      # writes to .claude/skills/auditor-executor-protocol/
+auditkit install-skill --agent cursor      # writes to .cursor/rules/auditor-executor-protocol.mdc
+auditkit install-skill --global            # installs to user home skills directory
 ```
 
-
-## Quickstart
+### 3. Scaffold a New Phased Task
 
 ```bash
 auditkit init docs/<task-name> --name "<Task Name>"
 ```
 
-This writes `plan-of-record.md`, `execution-guide.md`, `compliance-log.md`, and an empty
-`annexes/` directory. Read `SKILL.md` for what belongs in each, then start writing tasks.
+Creates `plan-of-record.md`, `execution-guide.md`, `compliance-log.md`, and `annexes/`.
 
-While work is in progress:
+### 4. Track and Verify Progress
+
+Inspect pending items and tallied verdicts:
 
 ```bash
-auditkit status docs/<task-name>     # what's open, what's approved
-auditkit lint docs/<task-name>       # cross-document consistency
+auditkit status docs/<task-name>
 ```
 
-When a gate needs a negative control:
+Lint cross-document integrity (missing reports, gates lacking negative controls, repeated log paragraphs, and annex buildup):
+
+```bash
+auditkit lint docs/<task-name>
+```
+
+### 5. Execute a Negative Control
+
+When validating a security, authorization, or schema boundary:
 
 ```bash
 auditkit negcontrol \
@@ -111,53 +107,44 @@ auditkit negcontrol \
   --test-cmd "npm test -- auth.test.js"
 ```
 
-This backs the file up, applies the break, runs the test and expects it to fail, restores
-the file from the backup, runs the test again and expects it to pass, then prints the
-whole transcript in a shape that pastes directly into a compliance log entry.
+`negcontrol` creates an isolated backup, applies the mutation, confirms the test fails, restores the original file with atomic byte-level verification, confirms the test returns to green, and prints a paste-ready transcript for `compliance-log.md`.
 
-## The two roles
+---
 
-| | Auditor | Executor |
-|---|---|---|
-| Owns | Instructions, gates, verdicts | Implementation, evidence |
-| Never | Writes feature code | Redesigns, or decides scope |
-| Output | Task expansions, verdicts, remediation orders | Working code, pasted command output |
+## CLI Reference
 
-Full rules — how to write a task, how to write a gate, how to audit instead of just
-reading a report, the verdict vocabulary, and the failure modes this has actually hit —
-are in [`SKILL.md`](SKILL.md).
-
-## The CLI
-
-| Command | Does |
+| Command | Description |
 |---|---|
-| `auditkit init <dir>` | Scaffold the four-document set from templates |
-| `auditkit lint <dir>` | Cross-check task IDs between the guide and the log, flag gates with no stated negative control, flag near-duplicate paragraphs left by append-only logging, warn when a phase's annex count signals an under-verified plan |
-| `auditkit negcontrol` | Run the backup / break / test / restore / test sequence and print a paste-ready transcript |
-| `auditkit status <dir>` | Tally verdicts in the compliance log and list what's still open |
-| `auditkit install-skill` | Provision `SKILL.md` into Antigravity, Claude, or Cursor environments |
+| `auditkit init <dir>` | Scaffold the 4-document protocol set from templates |
+| `auditkit install-skill` | Provision `SKILL.md` into Antigravity, Claude Code, or Cursor |
+| `auditkit lint <dir>` | Cross-check IDs, detect missing negative controls, and flag log rot |
+| `auditkit negcontrol` | Run automated backup / break / fail / restore / pass cycle |
+| `auditkit status <dir>` | Tally compliance log verdicts and list open items |
 
-Every command works on plain Markdown files. Nothing is stored outside the directory you
-point it at.
+Every command operates on local Markdown files. Zero external state or network dependencies.
 
-## Using this with an agent
+---
 
-Install the protocol directly into your workspace:
+## Running the Tests
+
+Run the full suite using the zero-dependency test runner:
 
 ```bash
-auditkit install-skill                     # auto-detects Antigravity, Claude, or Cursor
-auditkit install-skill --agent claude      # installs to .claude/skills/auditor-executor-protocol/
-auditkit install-skill --agent antigravity # installs to .agents/skills/auditor-executor-protocol/
-auditkit install-skill --global            # installs to user-level configuration
+python3 tests/run.py
 ```
 
-Or manually copy `SKILL.md` into your agent's skill path. The document itself has no
-dependency on this repo; it's self-contained.
+Or run via `pytest` by installing test extras:
+
+```bash
+pip install -e ".[test]"
+pytest
+```
+
+---
 
 ## Contributing
 
-Open an issue if you hit a failure mode this protocol doesn't yet name, or a case where
-`auditkit`'s behavior doesn't match what `SKILL.md` says it should do.
+Open an issue if you encounter a failure mode not yet covered in the protocol, or if `auditkit` behavior deviates from [`SKILL.md`](SKILL.md).
 
 ## License
 
