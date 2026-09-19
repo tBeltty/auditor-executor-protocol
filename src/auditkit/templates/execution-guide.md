@@ -20,14 +20,12 @@
 6. **Stop and ask** when this document contradicts the code, when a task needs a
    decision this document does not make, or when a previously passing check starts
    failing for reasons unrelated to your change. If you resolve an ambiguity without
-   stopping, log the decision.
+   stopping, log the decision. A decision in the plan of record is settled; a factual
+   claim never is — if this document states something the code contradicts, the
+   evidence outranks the order.
 7. **When the system cannot do what a task asks, that is the deliverable.** Report it
    and stop. A task that ends in a well-argued finding is a success.
-8. **Decisions in the plan of record are settled.** Believing otherwise mid-task is a
-   stop, not a choice. A decision is settled; a factual claim never is — if this
-   document states something the code contradicts, the evidence outranks the order.
-   Report it and stop.
-9. Project-specific rules that apply to every task — list them here, cited from their
+8. Project-specific rules that apply to every task — list them here, cited from their
    source rather than restated:
    -
    -
@@ -71,6 +69,6 @@ A `DONE` with no pasted output is recorded as `FAILED`.
 ### P0-G1 — Gate: <claim under test>
 
 **Proven by:**
-1.
+1. A negative control — remove the protection, observe the check fail, restore, observe it pass.
 
 **Report:** `P0-G1`

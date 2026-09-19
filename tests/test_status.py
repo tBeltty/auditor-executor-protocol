@@ -26,3 +26,18 @@ def test_status_last_entry_wins_on_resubmission(tmp_path, capsys):
     status.run(str(tmp_path))
     out = capsys.readouterr().out
     assert "0 open" in out
+
+
+def test_status_counts_rejected_and_handles_hyphens(tmp_path, capsys):
+    log = """
+### P0-T1 - DONE
+### P0-T2 - REJECTED
+"""
+    (tmp_path / "compliance-log.md").write_text(log, encoding="utf-8")
+    code = status.run(str(tmp_path))
+    out = capsys.readouterr().out
+    assert code == 0
+    assert "REJECTED" in out
+    assert "1 open" in out
+    assert "P0-T2: REJECTED" in out
+

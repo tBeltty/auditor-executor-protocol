@@ -1,0 +1,52 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    name: Python ${{ matrix.python-version }} on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest]
+        python-version: ['3.9', '3.10', '3.11', '3.12', '3.13', '3.14']
+        include:
+          - os: macos-latest
+            python-version: '3.12'
+          - os: windows-latest
+            python-version: '3.12'
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Run zero-dependency test runner (Standard Library)
+        run: python tests/run.py
+
+      - name: Install package with test extras
+        run: pip install -e ".[test]"
+
+      - name: Run test suite via pytest
+        run: pytest
+
+      - name: Verify CLI commands
+        shell: bash
+        run: |
+          auditkit --version
+          auditkit --help
+          auditkit init docs/ci-test --name "CI Smoke Test"
+          auditkit lint docs/ci-test
+          auditkit status docs/ci-test
+          auditkit install-skill docs/ci-test --agent antigravity
+          auditkit install-skill docs/ci-test --agent claude
+          auditkit install-skill docs/ci-test --agent cursor

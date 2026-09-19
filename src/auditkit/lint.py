@@ -12,8 +12,8 @@ from collections import Counter, defaultdict
 from pathlib import Path
 
 REPORT_ID_RE = re.compile(r"\*\*Report:\*\*\s*`?([A-Za-z0-9_.\-]+)`?")
-GUIDE_HEADER_RE = re.compile(r"^###\s+([A-Za-z0-9_.\-]+)\s+—\s*(.*)$", re.MULTILINE)
-LOG_HEADER_RE = re.compile(r"^###\s+([A-Za-z0-9_.\-]+)\s+—\s+([A-Za-z]+)\s*$", re.MULTILINE)
+GUIDE_HEADER_RE = re.compile(r"^###\s+([A-Za-z0-9_.\-]+)\s+[\u2014\u2013\-]\s*(.*)$", re.MULTILINE)
+LOG_HEADER_RE = re.compile(r"^###\s+([A-Za-z0-9_.\-]+)\s+[\u2014\u2013\-]\s+([A-Za-z_]+)\s*$", re.MULTILINE)
 GATE_ID_RE = re.compile(r"-G\d+$|^G\d+$", re.IGNORECASE)
 
 MIN_DUP_LEN = 120
@@ -93,7 +93,18 @@ def run(target_dir: str, annex_threshold: int = DEFAULT_ANNEX_THRESHOLD) -> int:
     annex_dir = target / "annexes"
     if annex_dir.exists():
         annex_files = [f for f in annex_dir.iterdir() if f.is_file() and f.name != ".gitkeep"]
-        if len(annex_files) > annex_threshold:
+        phase_pattern = re.compile(r"^(?:P(\d+)|phase[-_]?(\d+))", re.IGNORECASE)
+        phase_counts: defaultdict[str, int] = defaultdict(int)
+        for f in annex_files:
+            m = phase_pattern.search(f.stem)
+            if m:
+                phase_num = m.group(1) or m.group(2)
+                phase_counts[f"Phase {phase_num}"] += 1
+            else:
+                phase_counts["General"] += 1
+
+        phase_exceeded = {p: c for p, c in phase_counts.items() if c > annex_threshold}
+        if len(annex_files) > annex_threshold or phase_exceeded:
             problems += 1
             print(
                 f"[annex count] {len(annex_files)} annexes exceeds the threshold of "
@@ -101,6 +112,9 @@ def run(target_dir: str, annex_threshold: int = DEFAULT_ANNEX_THRESHOLD) -> int:
                 f"before work started, not that it hit unusual surprises. Worth naming as a "
                 f"planning finding, not only fixing task by task."
             )
+            if len(phase_counts) > 1 or (len(phase_counts) == 1 and "General" not in phase_counts):
+                for p_name, count in sorted(phase_counts.items()):
+                    print(f"  - {p_name}: {count} annex(es)")
 
     if problems == 0:
         print("clean — no cross-document gaps found.")

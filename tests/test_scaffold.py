@@ -35,3 +35,12 @@ def test_init_force_overwrites(tmp_path):
     (target / "plan-of-record.md").write_text("edited by hand")
     scaffold.run(str(target), project_name="Second", force=True)
     assert "edited by hand" not in (target / "plan-of-record.md").read_text()
+
+
+def test_init_scaffold_passes_lint(tmp_path):
+    from auditkit import lint
+
+    target = tmp_path / "run"
+    scaffold.run(str(target), project_name="Clean Run")
+    assert lint.run(str(target)) == 0
+

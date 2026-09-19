@@ -72,6 +72,20 @@ pip install -e .
 No dependencies beyond the Python standard library — it runs against any project,
 regardless of what that project is written in.
 
+To run the test suite using `pytest`:
+
+```bash
+pip install -e ".[test]"
+pytest
+```
+
+Or run the tests directly with zero external dependencies:
+
+```bash
+python3 tests/run.py
+```
+
+
 ## Quickstart
 
 ```bash
@@ -121,15 +135,23 @@ are in [`SKILL.md`](SKILL.md).
 | `auditkit lint <dir>` | Cross-check task IDs between the guide and the log, flag gates with no stated negative control, flag near-duplicate paragraphs left by append-only logging, warn when a phase's annex count signals an under-verified plan |
 | `auditkit negcontrol` | Run the backup / break / test / restore / test sequence and print a paste-ready transcript |
 | `auditkit status <dir>` | Tally verdicts in the compliance log and list what's still open |
+| `auditkit install-skill` | Provision `SKILL.md` into Antigravity, Claude, or Cursor environments |
 
 Every command works on plain Markdown files. Nothing is stored outside the directory you
 point it at.
 
 ## Using this with an agent
 
-Point your agent's skill loader at `SKILL.md` — for Claude Code, copy it to
-`.claude/skills/auditor-executor-protocol/SKILL.md` in the target project, or reference
-this repo directly if your tooling supports remote skills. The document itself has no
+Install the protocol directly into your workspace:
+
+```bash
+auditkit install-skill                     # auto-detects Antigravity, Claude, or Cursor
+auditkit install-skill --agent claude      # installs to .claude/skills/auditor-executor-protocol/
+auditkit install-skill --agent antigravity # installs to .agents/skills/auditor-executor-protocol/
+auditkit install-skill --global            # installs to user-level configuration
+```
+
+Or manually copy `SKILL.md` into your agent's skill path. The document itself has no
 dependency on this repo; it's self-contained.
 
 ## Contributing

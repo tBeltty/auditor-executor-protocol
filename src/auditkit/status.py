@@ -6,9 +6,10 @@ import sys
 from collections import Counter, OrderedDict
 from pathlib import Path
 
-LOG_HEADER_RE = re.compile(r"^###\s+([A-Za-z0-9_.\-]+)\s+—\s+([A-Za-z]+)\s*$", re.MULTILINE)
+LOG_HEADER_RE = re.compile(r"^###\s+([A-Za-z0-9_.\-]+)\s+[\u2014\u2013\-]\s+([A-Za-z_]+)\s*$", re.MULTILINE)
 
-OPEN_STATUSES = {"PENDING", "BLOCKED", "FAILED", "CONDITIONAL"}
+TERMINAL_STATUSES = {"APPROVED", "DONE"}
+OPEN_STATUSES = {"PENDING", "BLOCKED", "FAILED", "CONDITIONAL", "REJECTED"}
 
 
 def run(target_dir: str) -> int:
@@ -34,7 +35,7 @@ def run(target_dir: str) -> int:
     for status, n in sorted(counts.items(), key=lambda kv: -kv[1]):
         print(f"  {status:<12} {n}")
 
-    open_items = [(tid, st) for tid, st in latest.items() if st in OPEN_STATUSES]
+    open_items = [(tid, st) for tid, st in latest.items() if st not in TERMINAL_STATUSES]
     print(f"\n{len(open_items)} open (not APPROVED/DONE):")
     for tid, st in open_items:
         print(f"  - {tid}: {st}")
