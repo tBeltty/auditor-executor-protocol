@@ -13,7 +13,9 @@ deleted only once the file is verified identical; otherwise its path is printed.
 from __future__ import annotations
 
 import filecmp
+import os
 import shutil
+import signal
 import subprocess
 import sys
 import tempfile
@@ -22,15 +24,41 @@ from pathlib import Path
 TIMEOUT_EXIT = 124
 
 
-def _run(cmd: str, timeout: float | None = None) -> tuple[int, str]:
-    try:
-        proc = subprocess.run(
-            cmd, shell=True, capture_output=True, text=True, check=False, timeout=timeout
+def _kill_tree(proc: subprocess.Popen[str]) -> None:
+    """Kill the shell and every process it started, not only the shell."""
+    if os.name == "nt":
+        subprocess.run(
+            ["taskkill", "/PID", str(proc.pid), "/T", "/F"], capture_output=True, check=False
         )
+    else:
+        try:
+            os.killpg(proc.pid, signal.SIGKILL)
+        except ProcessLookupError:
+            pass
+
+
+def _run(cmd: str, timeout: float | None = None) -> tuple[int, str]:
+    # Each command runs in its own process group (session), so a timeout can kill the
+    # processes it started: a timed-out break must not keep changing the file afterwards.
+    if os.name == "nt":
+        group = {"creationflags": subprocess.CREATE_NEW_PROCESS_GROUP}  # type: ignore[attr-defined]
+    else:
+        group = {"start_new_session": True}
+    proc = subprocess.Popen(
+        cmd,
+        shell=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT,
+        text=True,
+        **group,
+    )
+    try:
+        output, _ = proc.communicate(timeout=timeout)
     except subprocess.TimeoutExpired:
+        _kill_tree(proc)
+        proc.communicate()
         return TIMEOUT_EXIT, f"(timed out after {timeout:g}s)"
-    output = (proc.stdout or "") + (proc.stderr or "")
-    return proc.returncode, output
+    return proc.returncode, output or ""
 
 
 def _is_identical(file_path: str, backup_path: Path) -> bool:

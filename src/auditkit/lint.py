@@ -31,10 +31,12 @@ _DEFERRAL = (
 )
 NEGATED_CONTROL_RE = re.compile(
     r"\b(?:no|without|skip(?:ped)?|omit(?:ted)?)\s+(?:the\s+)?negative\s+control"
-    rf"|negative\s+control\W{{0,3}}(?:{_DEFERRAL})\b"
+    rf"|negative\s+control[^A-Za-z0-9\n]{{0,10}}(?:{_DEFERRAL})\b"
     rf"|negative\s+control\b[^.\n]{{0,40}}\b(?:was|is|were|are)\s+(?:{_DEFERRAL})\b",
     re.IGNORECASE,
 )
+# Verify output that only defers ("n/a", "TBD", "pending") is not pasted output.
+DEFERRAL_ONLY_RE = re.compile(rf"^[^A-Za-z0-9\n]*(?:{_DEFERRAL})[^A-Za-z0-9\n]*$", re.IGNORECASE)
 # A task or gate ID contains a digit (P0-T1, T3, G2); headings like "### Notes — x" are not tasks.
 TASK_ID_RE = re.compile(r"\d")
 FENCE_LINE_RE = re.compile(r"^\s*(```|~~~)[\w-]*\s*$", re.MULTILINE)
@@ -67,11 +69,11 @@ def _is_gate(task_id: str, title: str) -> bool:
 
 
 def _done_without_evidence(log_text: str) -> list[str]:
-    """IDs reported DONE whose **Verify output:** field is missing or empty.
+    """IDs reported DONE whose **Verify output:** field is missing, empty, or only defers.
 
     The protocol records such a report as FAILED: evidence is pasted command output,
-    not a claim that the command passed. Template placeholders and bare code fences
-    do not count as output.
+    not a claim that the command passed. Template placeholders, bare code fences, and a
+    lone deferral such as "n/a" or "TBD" do not count as output.
     """
     missing = []
     for m in LOG_HEADER_RE.finditer(log_text):
@@ -87,8 +89,8 @@ def _done_without_evidence(log_text: str) -> list[str]:
         after = body[field.end() :]
         nxt = NEXT_FIELD_RE.search(after)
         evidence = after[: nxt.start()] if nxt else after
-        evidence = FENCE_LINE_RE.sub("", PLACEHOLDER_RE.sub("", evidence))
-        if not evidence.strip():
+        evidence = FENCE_LINE_RE.sub("", PLACEHOLDER_RE.sub("", evidence)).strip()
+        if not evidence or DEFERRAL_ONLY_RE.match(evidence):
             missing.append(m.group(1))
     return missing
 

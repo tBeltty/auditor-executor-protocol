@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.2] - 2026-09-25
+
+Fixes from a second independent review.
+
+### Fixed
+- `auditkit lint` accepted a deferred negative control written as a bold field
+  (`**Negative control:** n/a`, `**Negative control**: none`); only up to three punctuation
+  characters were allowed between the label and the deferral.
+- `auditkit lint` counted a `DONE` report whose verify output was only a deferral ("n/a", "TBD",
+  "pending") as pasted output.
+- `auditkit negcontrol --timeout` killed only the shell; processes the command started kept
+  running and could change the file after the restore check. Each command now runs in its own
+  process group, which is killed as a whole on timeout.
+
 ## [0.3.1] - 2026-09-25
 
 Fixes from an independent review of 0.3.0.

@@ -264,3 +264,57 @@ def test_deferred_negative_control_does_not_count(tmp_path):
 """
         _write(tmp_path, guide, "### P0-G1 — PENDING\n")
         assert lint.run(str(tmp_path)) == 1, proof
+
+
+def test_bold_negative_control_deferral_does_not_count(tmp_path):
+    for proof in (
+        "**Negative control:** n/a",
+        "**Negative control**: none",
+        "- **Negative control:** TBD",
+        "__Negative control:__ — pending",
+    ):
+        guide = f"""
+### P0-G1 — Gate: everything works
+
+**Proven by:** the suite passing.
+{proof}
+
+**Report:** `P0-G1`
+"""
+        _write(tmp_path, guide, "### P0-G1 — PENDING\n")
+        assert lint.run(str(tmp_path)) == 1, proof
+
+
+def test_done_with_only_a_deferral_as_output_is_flagged(tmp_path, capsys):
+    guide = """
+### P1-T1 — Do a thing
+**Report:** `P1-T1`
+
+### P1-G1 — Gate: it works
+Negative control: revert the fix and watch test_x fail.
+**Report:** `P1-G1`
+
+### P1-T2 — Real output
+**Report:** `P1-T2`
+"""
+    log = """
+### P1-T1 — DONE
+**Verify output:**
+n/a
+
+### P1-G1 — DONE
+**Verify output:** TBD
+
+### P1-T2 — DONE
+**Verify output:**
+```text
+$ pytest -q
+1 passed, n/a skipped
+```
+"""
+    _write(tmp_path, guide, log)
+    assert lint.run(str(tmp_path)) == 1
+    out = capsys.readouterr().out
+    assert "[done without evidence] 2 report(s)" in out
+    assert "  - P1-T1" in out and "  - P1-G1" in out
+    assert "  - P1-T2" not in out
