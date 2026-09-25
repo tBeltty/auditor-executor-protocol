@@ -1,7 +1,8 @@
 """Cross-check the document set for the failure modes this protocol names by hand:
 task IDs that exist in one document but not the other, gates with no stated negative
-control, near-duplicate paragraphs from append-only logging, and an annex count that
-signals an under-verified plan rather than a healthy one.
+control, DONE reports with no pasted verify output, near-duplicate paragraphs from
+append-only logging, and an annex count that signals an under-verified plan rather than
+a healthy one.
 """
 
 from __future__ import annotations
@@ -17,6 +18,11 @@ LOG_HEADER_RE = re.compile(
     r"^###\s+([A-Za-z0-9_.\-]+)\s+[\u2014\u2013\-]\s+([A-Za-z_]+)\s*$", re.MULTILINE
 )
 GATE_ID_RE = re.compile(r"-G\d+$|^G\d+$", re.IGNORECASE)
+VERIFY_FIELD_RE = re.compile(r"^\*\*Verify output:\*\*", re.MULTILINE)
+NEXT_FIELD_RE = re.compile(r"^\*\*[^*\n]+:\*\*", re.MULTILINE)
+SECTION_END_RE = re.compile(r"^#{1,6}\s|^---\s*$", re.MULTILINE)
+PLACEHOLDER_RE = re.compile(r"<[^>\n]*>")
+FENCE_LINE_RE = re.compile(r"^\s*(```|~~~)[\w-]*\s*$", re.MULTILINE)
 
 MIN_DUP_LEN = 120
 DEFAULT_ANNEX_THRESHOLD = 6
@@ -39,6 +45,33 @@ def _guide_sections(text: str) -> list[tuple[str, str, str]]:
 
 def _is_gate(task_id: str, title: str) -> bool:
     return bool(GATE_ID_RE.search(task_id)) or "gate" in title.lower()
+
+
+def _done_without_evidence(log_text: str) -> list[str]:
+    """IDs reported DONE whose **Verify output:** field is missing or empty.
+
+    The protocol records such a report as FAILED: evidence is pasted command output,
+    not a claim that the command passed. Template placeholders and bare code fences
+    do not count as output.
+    """
+    missing = []
+    for m in LOG_HEADER_RE.finditer(log_text):
+        if m.group(2).upper() != "DONE":
+            continue
+        rest = log_text[m.end() :]
+        end = SECTION_END_RE.search(rest)
+        body = rest[: end.start()] if end else rest
+        field = VERIFY_FIELD_RE.search(body)
+        if not field:
+            missing.append(m.group(1))
+            continue
+        after = body[field.end() :]
+        nxt = NEXT_FIELD_RE.search(after)
+        evidence = after[: nxt.start()] if nxt else after
+        evidence = FENCE_LINE_RE.sub("", PLACEHOLDER_RE.sub("", evidence))
+        if not evidence.strip():
+            missing.append(m.group(1))
+    return missing
 
 
 HEADER_LINE_RE = re.compile(r"^###\s+.*$", re.MULTILINE)
@@ -86,7 +119,18 @@ def run(target_dir: str, annex_threshold: int = DEFAULT_ANNEX_THRESHOLD) -> int:
         for i in gate_gaps:
             print(f"  - {i}")
 
-    # 3. Near-duplicate paragraphs in the log (append-only rot).
+    # 3. DONE reports with no pasted verify output.
+    unevidenced = _done_without_evidence(log_text)
+    if unevidenced:
+        problems += len(unevidenced)
+        print(
+            f"[done without evidence] {len(unevidenced)} report(s) marked DONE in "
+            "compliance-log.md have no pasted Verify output (the protocol records these as FAILED):"
+        )
+        for i in unevidenced:
+            print(f"  - {i}")
+
+    # 4. Near-duplicate paragraphs in the log (append-only rot).
     dups = _duplicate_paragraphs(log_text)
     if dups:
         problems += len(dups)
@@ -97,7 +141,7 @@ def run(target_dir: str, annex_threshold: int = DEFAULT_ANNEX_THRESHOLD) -> int:
             preview = p[:100] + ("…" if len(p) > 100 else "")
             print(f"  - x{n}: {preview}")
 
-    # 4. Annex count as a plan-health signal.
+    # 5. Annex count as a plan-health signal.
     annex_dir = target / "annexes"
     if annex_dir.exists():
         annex_files = [f for f in annex_dir.iterdir() if f.is_file() and f.name != ".gitkeep"]
