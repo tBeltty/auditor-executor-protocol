@@ -15,6 +15,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `auditkit install-skill` copies `references/` beside `SKILL.md`. Destinations that hold a
   single file (Cursor `.mdc`, or a `--dest` not named `SKILL.md`) get one bundled file.
 - The packaged skill moved from `src/auditkit/templates/SKILL.md` to `src/auditkit/skill/`.
+- `GEMINI.md` imports `AGENTS.md` instead of duplicating it, so the agent rules have one
+  source of truth.
 
 ### Fixed
 - `auditkit install-skill` shipped a stale 500-line copy of the protocol that predated the
