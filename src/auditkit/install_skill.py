@@ -76,6 +76,9 @@ def resolve_dest_path(
     dest_path: str | None = None,
 ) -> Path:
     if dest_path:
+        # A directory (existing, or written with a trailing separator) receives SKILL.md.
+        if Path(dest_path).is_dir() or dest_path.endswith(("/", os.sep)):
+            return Path(dest_path) / "SKILL.md"
         return Path(dest_path)
 
     home = Path.home()

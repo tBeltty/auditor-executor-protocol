@@ -7,7 +7,8 @@ Two sources are combined per task/gate ID:
 - the Executor's latest report header (DONE, BLOCKED, FAILED, PENDING).
 
 Only APPROVED closes an item. A DONE report without a verdict is self-reported, not
-audited, so it is listed as awaiting audit.
+audited, so it is listed as awaiting audit. When the board and a report header carry
+different verdicts, the item is listed as a conflict and stays open.
 """
 
 from __future__ import annotations
@@ -24,6 +25,7 @@ LOG_HEADER_RE = re.compile(
 VERDICTS = {"APPROVED", "CONDITIONAL", "REJECTED"}
 CLOSED = "APPROVED"
 AWAITING_AUDIT = "AWAITING AUDIT"
+CONFLICT = "CONFLICT"
 
 
 def _cells(line: str) -> list[str]:
@@ -83,12 +85,19 @@ def run(target_dir: str) -> int:
         return 0
 
     states: dict[str, str] = {}
+    conflicts: dict[str, str] = {}
     for task_id in order:
-        verdict = board.get(task_id, "")
-        if verdict not in VERDICTS:
-            verdict = header_verdicts.get(task_id, "")
+        board_verdict = board.get(task_id, "")
+        board_verdict = board_verdict if board_verdict in VERDICTS else ""
+        header_verdict = header_verdicts.get(task_id, "")
+        verdict = board_verdict or header_verdict
         report = reports.get(task_id, "PENDING")
-        if verdict:
+        if board_verdict and header_verdict and board_verdict != header_verdict:
+            states[task_id] = CONFLICT
+            conflicts[task_id] = (
+                f" (status board: {board_verdict}, report header: {header_verdict})"
+            )
+        elif verdict:
             states[task_id] = verdict
         elif report == "DONE":
             states[task_id] = AWAITING_AUDIT
@@ -105,6 +114,7 @@ def run(target_dir: str) -> int:
     for tid, st in open_items:
         report_of_item = reports.get(tid)
         detail = f" (report: {report_of_item})" if report_of_item and st in VERDICTS else ""
+        detail = conflicts.get(tid, detail)
         print(f"  - {tid}: {st}{detail}")
 
     last_id = last_header_id or next(reversed(order))

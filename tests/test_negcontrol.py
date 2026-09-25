@@ -153,3 +153,18 @@ def test_negcontrol_timeout_is_reported(tmp_path, capsys):
     assert "timed out after 0.5s" in out
     assert guarded_file.read_text() == "protected\n"
     assert code == 1  # the break never happened, so the test did not fail
+
+
+def test_negcontrol_restores_a_file_the_break_deleted_or_moved(tmp_path, capsys):
+    for break_template in ('rm "{f}"', 'mv "{f}" "{f}.moved"'):
+        guarded_file = tmp_path / "flag.txt"
+        guarded_file.write_text("protected\n")
+        code = negcontrol.run(
+            test_cmd=f'grep -q protected "{guarded_file}"',
+            break_cmd=break_template.format(f=guarded_file),
+            file_path=str(guarded_file),
+        )
+        out = capsys.readouterr().out
+        assert guarded_file.read_text() == "protected\n", break_template
+        assert "restored" in out and "byte-identical" in out
+        assert code == 0, break_template
