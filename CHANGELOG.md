@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+- `.gitattributes` normalizes line endings to LF, so checkouts on Windows match other platforms
+  byte for byte (the framework vendors `SKILL.md`, `references/`, and the templates).
+
 ## [0.3.0] - 2026-09-25
 
 ### Added
