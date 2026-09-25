@@ -4,6 +4,10 @@ financial-integrity boundary, and print a paste-ready transcript.
 
 This replaces doing the same four shell commands by hand, which is where the sequence
 tends to get shortened under time pressure.
+
+With --file, the backup is the source of truth: whatever --restore-cmd does, the file
+must end byte-identical to the backup, or it is restored from the backup. The backup is
+deleted only once the file is verified identical; otherwise its path is printed.
 """
 
 from __future__ import annotations
@@ -15,11 +19,28 @@ import sys
 import tempfile
 from pathlib import Path
 
+TIMEOUT_EXIT = 124
 
-def _run(cmd: str) -> tuple[int, str]:
-    proc = subprocess.run(cmd, shell=True, capture_output=True, text=True, check=False)
+
+def _run(cmd: str, timeout: float | None = None) -> tuple[int, str]:
+    try:
+        proc = subprocess.run(
+            cmd, shell=True, capture_output=True, text=True, check=False, timeout=timeout
+        )
+    except subprocess.TimeoutExpired:
+        return TIMEOUT_EXIT, f"(timed out after {timeout:g}s)"
     output = (proc.stdout or "") + (proc.stderr or "")
     return proc.returncode, output
+
+
+def _restore_from_backup(file_path: str, backup_path: Path, transcript: list[str]) -> bool:
+    shutil.copy2(backup_path, file_path)
+    identical = filecmp.cmp(file_path, str(backup_path), shallow=False)
+    transcript.append(
+        f"$ restored {file_path} from backup "
+        + ("(byte-identical)" if identical else "- WARNING: still differs from backup")
+    )
+    return identical
 
 
 def run(
@@ -27,20 +48,19 @@ def run(
     break_cmd: str | None = None,
     file_path: str | None = None,
     restore_cmd: str | None = None,
+    timeout: float | None = None,
 ) -> int:
     if not break_cmd and not restore_cmd:
         print("error: pass --break-cmd, or --restore-cmd for a break you apply yourself.")
         return 2
-    if file_path and not restore_cmd:
-        # default restore = copy the backup back over the file
-        pass
-    elif not file_path and not restore_cmd:
+    if not file_path and not restore_cmd:
         print("error: without --file, --restore-cmd is required (nothing to copy back).")
         return 2
 
     tmp_dir: Path | None = None
     backup_path: Path | None = None
     transcript: list[str] = []
+    restored_ok = True
 
     try:
         if file_path:
@@ -57,7 +77,7 @@ def run(
         try:
             if break_cmd:
                 transcript.append(f"$ {break_cmd}")
-                code, out = _run(break_cmd)
+                code, out = _run(break_cmd, timeout)
                 transcript.append(out.rstrip("\n"))
                 if code != 0:
                     print(
@@ -65,29 +85,30 @@ def run(
                     )
 
             transcript.append(f"$ {test_cmd}   # expect FAILURE")
-            code1, out1 = _run(test_cmd)
+            code1, out1 = _run(test_cmd, timeout)
             transcript.append(out1.rstrip("\n"))
             broke_as_expected = code1 != 0
             transcript.append(f"(exit {code1})")
         finally:
-            if file_path and not restore_cmd and backup_path and backup_path.exists():
-                shutil.copy2(backup_path, file_path)
-                transcript.append(
-                    f"$ restored {file_path} from backup (diff -q should show no output)"
-                )
-                is_identical = filecmp.cmp(file_path, str(backup_path), shallow=False)
-                transcript.append(
-                    "(no output — byte-identical)"
-                    if is_identical
-                    else "WARNING: restored file differs from backup!"
-                )
-            elif restore_cmd:
+            if restore_cmd:
                 transcript.append(f"$ {restore_cmd}")
-                _, out = _run(restore_cmd)
+                restore_code, out = _run(restore_cmd, timeout)
                 transcript.append(out.rstrip("\n"))
+                transcript.append(f"(restore exit {restore_code})")
+                restored_ok = restore_code == 0
+            if file_path and backup_path is not None:
+                if filecmp.cmp(file_path, str(backup_path), shallow=False):
+                    transcript.append(f"$ {file_path} is byte-identical to the backup")
+                    restored_ok = True
+                else:
+                    if restore_cmd:
+                        transcript.append(
+                            "WARNING: --restore-cmd did not restore the file; using the backup."
+                        )
+                    restored_ok = _restore_from_backup(file_path, backup_path, transcript)
 
         transcript.append(f"$ {test_cmd}   # expect SUCCESS")
-        code2, out2 = _run(test_cmd)
+        code2, out2 = _run(test_cmd, timeout)
         transcript.append(out2.rstrip("\n"))
         restored_to_green = code2 == 0
         transcript.append(f"(exit {code2})")
@@ -95,6 +116,9 @@ def run(
         print("\n".join(transcript))
         print()
 
+        if not restored_ok:
+            print("FAIL: the protection was not restored. Check the tree before continuing.")
+            return 1
         if not broke_as_expected:
             print(
                 "FAIL: the test did not fail when the protection was removed. "
@@ -111,7 +135,10 @@ def run(
         return 0
     finally:
         if tmp_dir and tmp_dir.exists():
-            shutil.rmtree(tmp_dir, ignore_errors=True)
+            if restored_ok:
+                shutil.rmtree(tmp_dir, ignore_errors=True)
+            else:
+                print(f"Backup kept at {backup_path}")
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -137,10 +164,16 @@ def main(argv: list[str] | None = None) -> int:
         "--restore-cmd",
         dest="restore_cmd",
         default=None,
-        help="shell command to restore, instead of copying --file back",
+        help="shell command to restore; with --file, the backup still wins if the file differs",
+    )
+    parser.add_argument(
+        "--timeout",
+        type=float,
+        default=None,
+        help="seconds allowed per command (default: no limit)",
     )
     args = parser.parse_args(argv)
-    return run(args.test_cmd, args.break_cmd, args.file_path, args.restore_cmd)
+    return run(args.test_cmd, args.break_cmd, args.file_path, args.restore_cmd, args.timeout)
 
 
 if __name__ == "__main__":
