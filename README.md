@@ -63,6 +63,12 @@ One person can run this workflow alone by switching hats between two isolated ag
 Requires Python 3.9+ with zero third-party dependencies:
 
 ```bash
+pipx install git+https://github.com/tBeltty/auditor-executor-protocol
+```
+
+Or from a clone, for development:
+
+```bash
 git clone https://github.com/tBeltty/auditor-executor-protocol.git
 cd auditor-executor-protocol
 pip install -e .
@@ -102,7 +108,7 @@ Cross-check document consistency:
 auditkit lint docs/<task-name>
 ```
 
-`auditkit lint` catches missing report entries, gates without negative controls, duplicated log paragraphs, and phase annex buildup.
+`auditkit lint` catches missing report entries, `DONE` reports with no pasted verify output, gates without negative controls, duplicated log paragraphs, and phase annex buildup.
 
 ### 5. Run a Negative Control
 
@@ -125,7 +131,7 @@ auditkit negcontrol \
 |---|---|
 | `auditkit init <dir>` | Scaffold the 4-document protocol set from templates |
 | `auditkit install-skill` | Provision `SKILL.md` into Antigravity, Claude Code, or Cursor |
-| `auditkit lint <dir>` | Cross-check IDs, detect missing negative controls, and flag log rot |
+| `auditkit lint <dir>` | Cross-check IDs, flag `DONE` without evidence, detect missing negative controls, and flag log rot |
 | `auditkit negcontrol` | Run automated backup, break, fail, restore, and pass cycle |
 | `auditkit status <dir>` | Tally compliance log verdicts and list open items |
 
