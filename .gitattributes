@@ -1,0 +1,2 @@
+# Normalize line endings so templates and the vendored skill are byte-identical on every platform.
+* text=auto eol=lf
