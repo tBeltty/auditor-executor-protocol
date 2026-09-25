@@ -1,3 +1,5 @@
+import sys
+
 from auditkit import negcontrol
 
 
@@ -106,3 +108,48 @@ def test_negcontrol_main_cli(tmp_path):
         ]
     )
     assert code == 0
+
+
+def test_negcontrol_failing_restore_cmd_falls_back_to_backup(tmp_path, capsys):
+    guarded_file = tmp_path / "flag.txt"
+    guarded_file.write_text("protected\n")
+
+    code = negcontrol.run(
+        test_cmd=f'grep -q protected "{guarded_file}"',
+        break_cmd=f'echo broken > "{guarded_file}"',
+        file_path=str(guarded_file),
+        restore_cmd="false",
+    )
+    out = capsys.readouterr().out
+    assert guarded_file.read_text() == "protected\n"
+    assert "(restore exit 1)" in out
+    assert "did not restore the file; using the backup" in out
+    assert code == 0
+
+
+def test_negcontrol_failed_restore_without_file_is_a_failure(tmp_path, capsys):
+    target = tmp_path / "data.txt"
+    target.write_text("initial\n")
+    code = negcontrol.run(
+        test_cmd=f'grep -q initial "{target}"',
+        break_cmd=f'echo broken > "{target}"',
+        restore_cmd="false",
+    )
+    out = capsys.readouterr().out
+    assert code == 1
+    assert "protection was not restored" in out
+
+
+def test_negcontrol_timeout_is_reported(tmp_path, capsys):
+    guarded_file = tmp_path / "flag.txt"
+    guarded_file.write_text("protected\n")
+    code = negcontrol.run(
+        test_cmd=f'grep -q protected "{guarded_file}"',
+        break_cmd=f'"{sys.executable}" -c "import time; time.sleep(5)"',
+        file_path=str(guarded_file),
+        timeout=0.5,
+    )
+    out = capsys.readouterr().out
+    assert "timed out after 0.5s" in out
+    assert guarded_file.read_text() == "protected\n"
+    assert code == 1  # the break never happened, so the test did not fail

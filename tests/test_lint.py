@@ -84,7 +84,8 @@ def test_duplicate_paragraph_is_flagged(tmp_path):
 ### P0-T2 — DONE
 {paragraph}
 """
-    _write(tmp_path, guide="", log=log)
+    guide = "**Report:** `P0-T1`\n**Report:** `P0-T2`\n"
+    _write(tmp_path, guide=guide, log=log)
     assert lint.run(str(tmp_path)) == 1
 
 
@@ -179,3 +180,41 @@ def test_pending_and_blocked_reports_need_no_evidence(tmp_path):
 """
     _write(tmp_path, guide, log)
     assert lint.run(str(tmp_path)) == 0
+
+
+def test_missing_directory_or_documents_is_an_error(tmp_path, capsys):
+    assert lint.run(str(tmp_path / "does-not-exist")) == 2
+    (tmp_path / "execution-guide.md").write_text("", encoding="utf-8")
+    assert lint.run(str(tmp_path)) == 2
+    assert "missing compliance-log.md" in capsys.readouterr().out
+
+
+def test_orphan_log_entry_is_flagged(tmp_path, capsys):
+    guide = """
+### P0-T1 — Do a thing
+**Report:** `P0-T1`
+"""
+    log = """
+### P0-T1 — PENDING
+### P9-T9 — PENDING
+"""
+    _write(tmp_path, guide, log)
+    assert lint.run(str(tmp_path)) == 1
+    assert "[orphan report] 1 entry(ies)" in capsys.readouterr().out
+
+
+def test_negated_negative_control_does_not_count(tmp_path):
+    for proof in (
+        "Negative control: n/a",
+        "No negative control needed.",
+        "negative control - none",
+    ):
+        guide = f"""
+### P0-G1 — Gate: everything works
+
+**Proven by:** the suite passing. {proof}
+
+**Report:** `P0-G1`
+"""
+        _write(tmp_path, guide, "### P0-G1 — PENDING\n")
+        assert lint.run(str(tmp_path)) == 1, proof

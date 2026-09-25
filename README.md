@@ -47,7 +47,7 @@ One person can run this workflow alone by switching hats between two isolated ag
 
 ## The Four-Document Paper Trail
 
-`auditkit init` generates four documents. Keeping them separate prevents instructions from turning back into a discussion:
+`auditkit init` generates the first three documents and an empty `annexes/` directory for the fourth. Keeping them separate prevents instructions from turning back into a discussion:
 
 1. **Plan of Record (`plan-of-record.md`):** Explains the *what* and the *why*. Architecture decisions, rejected alternatives, and phase roadmaps. Nobody implements directly from this file.
 2. **Execution Guide (`execution-guide.md`):** Explains the *how*. Numbered tasks (`P0-T1`) with target files, steps, literal verify commands, and phase gates (`P0-G1`).
@@ -108,7 +108,7 @@ Cross-check document consistency:
 auditkit lint docs/<task-name>
 ```
 
-`auditkit lint` catches missing report entries, `DONE` reports with no pasted verify output, gates without negative controls, duplicated log paragraphs, and phase annex buildup.
+`auditkit lint` catches missing report entries, log entries with no matching task, `DONE` reports with no pasted verify output, gates without negative controls, duplicated log paragraphs, and phase annex buildup.
 
 ### 5. Run a Negative Control
 
@@ -131,9 +131,9 @@ auditkit negcontrol \
 |---|---|
 | `auditkit init <dir>` | Scaffold the 4-document protocol set from templates |
 | `auditkit install-skill` | Provision `SKILL.md` into Antigravity, Claude Code, or Cursor |
-| `auditkit lint <dir>` | Cross-check IDs, flag `DONE` without evidence, detect missing negative controls, and flag log rot |
+| `auditkit lint <dir>` | Cross-check IDs both ways, flag `DONE` without evidence, detect missing negative controls, and flag log rot |
 | `auditkit negcontrol` | Run automated backup, break, fail, restore, and pass cycle |
-| `auditkit status <dir>` | Tally compliance log verdicts and list open items |
+| `auditkit status <dir>` | Combine status board verdicts with reports; list everything not `APPROVED` |
 
 Every command operates on local Markdown files. No external databases, daemons, or network calls.
 

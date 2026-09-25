@@ -22,6 +22,13 @@ VERIFY_FIELD_RE = re.compile(r"^\*\*Verify output:\*\*", re.MULTILINE)
 NEXT_FIELD_RE = re.compile(r"^\*\*[^*\n]+:\*\*", re.MULTILINE)
 SECTION_END_RE = re.compile(r"^#{1,6}\s|^---\s*$", re.MULTILINE)
 PLACEHOLDER_RE = re.compile(r"<[^>\n]*>")
+# A mention that negates the control ("negative control: n/a", "no negative control
+# needed") does not count as stating one.
+NEGATED_CONTROL_RE = re.compile(
+    r"\b(?:no|without|skip(?:ped)?)\s+negative\s+control"
+    r"|negative\s+control\W{0,3}(?:n/?a|none|not\s+(?:needed|required|applicable))\b",
+    re.IGNORECASE,
+)
 FENCE_LINE_RE = re.compile(r"^\s*(```|~~~)[\w-]*\s*$", re.MULTILINE)
 
 MIN_DUP_LEN = 120
@@ -41,6 +48,10 @@ def _guide_sections(text: str) -> list[tuple[str, str, str]]:
         end = matches[i + 1].start() if i + 1 < len(matches) else len(text)
         sections.append((m.group(1), m.group(2).strip(), text[start:end]))
     return sections
+
+
+def _states_negative_control(body: str) -> bool:
+    return "negative control" in body.lower() and not NEGATED_CONTROL_RE.search(body)
 
 
 def _is_gate(task_id: str, title: str) -> bool:
@@ -88,6 +99,17 @@ def _duplicate_paragraphs(text: str) -> list[tuple[str, int]]:
 
 def run(target_dir: str, annex_threshold: int = DEFAULT_ANNEX_THRESHOLD) -> int:
     target = Path(target_dir)
+    # A missing document is an error, not a clean result: linting nothing proves nothing.
+    missing_docs = [
+        name
+        for name in ("execution-guide.md", "compliance-log.md")
+        if not (target / name).is_file()
+    ]
+    if missing_docs:
+        print(
+            f"error: {target} is missing {', '.join(missing_docs)} (run `auditkit init {target}`)."
+        )
+        return 2
     guide_text = _read(target / "execution-guide.md")
     log_text = _read(target / "compliance-log.md")
 
@@ -106,10 +128,21 @@ def run(target_dir: str, annex_threshold: int = DEFAULT_ANNEX_THRESHOLD) -> int:
         for i in missing:
             print(f"  - {i}")
 
+    # 1b. Every log entry should belong to a task or gate in the guide.
+    known_ids = set(guide_ids) | {task_id for task_id, _, _ in _guide_sections(guide_text)}
+    orphans = sorted(i for i in log_ids if i not in known_ids)
+    if orphans:
+        problems += len(orphans)
+        print(
+            f"[orphan report] {len(orphans)} entry(ies) in compliance-log.md have no task or gate in execution-guide.md:"
+        )
+        for i in orphans:
+            print(f"  - {i}")
+
     # 2. Gates with no stated negative control.
     gate_gaps = []
     for task_id, title, body in _guide_sections(guide_text):
-        if _is_gate(task_id, title) and "negative control" not in body.lower():
+        if _is_gate(task_id, title) and not _states_negative_control(body):
             gate_gaps.append(task_id)
     if gate_gaps:
         problems += len(gate_gaps)
