@@ -9,6 +9,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 - Conventional Commits specification documented in `CONTRIBUTING.md` and enforced in `AGENTS.md`.
+- `SKILL.md`: optional Guided/Autonomous operating mode, with the autonomy charter, per-task
+  model-tier assignment, the per-task cycle, and an Auditor-brief template for starting an
+  autonomous run.
+- `SKILL.md`: a deferred items ledger in the plan of record and a reserved-to-Auditor steps
+  list in the execution guide, so cross-phase promises and recurring sandbox blocks are
+  tracked as structured document state instead of prose an Auditor has to remember.
+- `SKILL.md`: a `Blast radius` field on the task template covering both meaning-changing
+  edits to a shared field and steps that empty/delete/replace shared code a later task
+  still depends on.
+- `SKILL.md`: gate-writing rules for compound gates (re-run every check, never cite a
+  partial prior pass), realistic test fixtures (a minimal fixture shape hides bugs a
+  realistic one would catch), and channel-crossing checks (a restriction proven on one
+  transport/channel is not proven on all of them).
+- `SKILL.md`: a "Worked example" section showing a filled-in, fictional Autonomous-mode
+  run end to end.
 
 ### Changed
 - Bumped `actions/checkout` and `actions/setup-python` to v7 in GitHub Actions CI workflow.
