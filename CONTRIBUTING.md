@@ -79,4 +79,5 @@ Before submitting a PR:
 - [ ] Commit messages follow Conventional Commits.
 - [ ] [`CHANGELOG.md`](CHANGELOG.md) is updated under `## [Unreleased]`.
 - [ ] Documentation is updated if relevant.
+- [ ] Edits to `SKILL.md` or `references/` are copied to `src/auditkit/skill/` (`tests/test_skill_sync.py` enforces it).
 

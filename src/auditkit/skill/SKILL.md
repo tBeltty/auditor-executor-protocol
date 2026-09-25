@@ -1,6 +1,6 @@
 ---
 name: auditor-executor-protocol
-description: "Runs multi-phase work as a two-role protocol: an Auditor who writes numbered, verifiable tasks and signs off phases, and an Executor who implements one task at a time and reports evidence. Use whenever a piece of work is large enough to span several phases or sessions, whenever handing a plan to another agent (subagent, spawned session, or a different tool) to implement, or when asked to audit/verify work another agent reports as complete. Also use when a plan needs to become executable instructions rather than a discussion document. Covers: the document set, rules of engagement, task and gate format, how to audit by re-running rather than reading, negative controls, verdict vocabulary, and the annex pattern for correcting an order that is already in flight. Triggers: 'audit', 'auditor', 'executor', 'phased plan', 'exit criteria', 'gate', 'compliance log', 'remediation', 'handoff', 'have another agent implement this', 'verify what was reported', 'sign off'. NOT for reviewing a diff or a pull request for bugs — that's a code review; this protocol audits an execution report against pre-declared gates, and governs how multi-phase work is handed off and signed off."
+description: "Runs multi-phase work as a two-role protocol: an Auditor who writes numbered, verifiable tasks and signs off phases, and an Executor who implements one task at a time and reports evidence. Use whenever a piece of work is large enough to span several phases or sessions, whenever handing a plan to another agent (subagent, spawned session, or a different tool) to implement, or when asked to audit/verify work another agent reports as complete. Also use when a plan needs to become executable instructions rather than a discussion document. Covers: the document set, rules of engagement, task and gate format, how to audit by re-running rather than reading, negative controls, verdict vocabulary, the annex pattern for correcting an order that is already in flight, and an optional operating mode chosen per run — Guided (the owner relays each handoff) or Autonomous (the Auditor launches Executors as subagents with an explicit per-task model tier, answers their BLOCKED questions itself, and interrupts the owner only for a numbered critical-risk list). Triggers: 'audit', 'auditor', 'executor', 'phased plan', 'exit criteria', 'gate', 'compliance log', 'remediation', 'handoff', 'have another agent implement this', 'verify what was reported', 'sign off', 'autonomous mode', 'guided mode'. NOT for reviewing a diff or a pull request for bugs — that's a code review; this protocol audits an execution report against pre-declared gates, and governs how multi-phase work is handed off and signed off."
 ---
 
 # Auditor / Executor Protocol
@@ -40,26 +40,106 @@ implementer is not the person who wrote the plan.
 Whoever writes the plan is the Auditor. Say which role you are holding at the start of a
 session so it does not drift.
 
+## Reference files (load on demand)
+
+The core rules are in this file. Load a reference file only when you reach the step it
+covers; each one is self-contained and refers back to sections of this file by name.
+
+| File | Load when |
+|---|---|
+| [`references/tasks-and-gates.md`](references/tasks-and-gates.md) | Writing a task or a gate (Auditor) |
+| [`references/handoffs.md`](references/handoffs.md) | Handing a task to an Executor, or writing a remediation after a verdict that is not a clean `APPROVED` (Auditor) |
+| [`references/autonomous-mode.md`](references/autonomous-mode.md) | The run is in Autonomous mode, or you are writing the Auditor brief that starts one |
+| [`references/failure-modes-and-example.md`](references/failure-modes-and-example.md) | Auditing a delivery, or you want to see a filled-in run end to end |
+
+## Operating mode: Guided or Autonomous (chosen at the start of the run)
+
+The mode is optional and the owner's choice. Two ways to run the protocol:
+
+| | Guided mode | Autonomous mode |
+|---|---|---|
+| Who launches Executors | The owner pastes each handoff into a fresh session | The Auditor, as subagents |
+| Who answers `BLOCKED` | The owner, or the Auditor through the owner | The Auditor, with a decision entry in the log |
+| Owner's role | Relays every message, sees every verdict | Receives one short report per closed phase; interrupted only for the critical-risk list |
+| Fits when | The owner wants to watch and approve each step, the work is new territory, or the Auditor has no subagent tool | The plan is settled and the owner wants it run end to end |
+
+How the mode is chosen:
+
+- **If the owner already named it** ("autonomous", "guided", or an unambiguous
+  equivalent like "don't interrupt me for every step"), use it. Do not ask again.
+- **If not, ask once, before task 1**, as a single two-option question with a one-line
+  recommendation (Guided for a first run in unfamiliar code or anything touching money
+  or production data with no rehearsal; Autonomous for a settled plan with strong gates).
+  This is one of the few questions that is genuinely the owner's: it decides how often
+  they get interrupted for the rest of the run.
+- **If the environment has no subagent tool**, Autonomous is not available; say so and
+  run Guided.
+- Record the choice as a governance decision in the plan of record, next to the rules of
+  engagement. Switching modes mid-run is allowed only when the owner asks, and is
+  recorded by annex. The Auditor never switches itself from Guided to Autonomous; it may
+  drop from Autonomous to Guided only through an item on the critical-risk list.
+
+Everything else in this document applies to both modes. Autonomous mode adds the rules in
+`references/autonomous-mode.md`; it removes none. Re-running, negative controls and separate
+process/code findings matter more when nobody is watching, not less.
+
 ## The document set
 
 Four documents. Keep them separate; merging them is how the instructions turn back into
 a discussion.
 
 1. **Plan of record** — the *what* and the *why*. Phases, decisions, trade-offs. Nobody
-   implements from this.
+   implements from this. Carries the **deferred items ledger** (below).
 2. **Execution guide** — the *how*. Numbered tasks (`P<phase>-T<n>`, or any scheme with a
    stable, greppable ID), each with files, steps, a verification command, and its
-   expected output. Gates (`P<phase>-G<n>`) close each phase.
+   expected output. Gates (`P<phase>-G<n>`) close each phase. Carries the
+   **reserved-to-Auditor steps** list (below).
 3. **Compliance log** — where the Executor reports. Pre-generate one empty row per task
    and gate ID so nothing can be quietly skipped.
 4. **Remediation order (annex)** — written by the Auditor after an audit that isn't a
    clean `APPROVED`. Self-contained: the Executor must not need the audit conversation
-   or the full log to act on it. Template and reasoning: "Remediation handoff" below.
+   or the full log to act on it. Template and reasoning: "Remediation handoff" in `references/handoffs.md`.
 
 **Annexes** supersede a document that is already open in the Executor's session. Never
 edit an order in flight — issue a new annex, and say at the top which item it replaces.
 
 `auditkit init <dir>` scaffolds all four as empty templates.
+
+### The deferred items ledger (in the plan of record)
+
+A single running table, not prose scattered across the log:
+
+```
+| ID | What | Deferred to | Closed by |
+|---|---|---|---|
+| D14 | Move the export job into the reporting module | P5 | — |
+```
+
+Every decision (or annex) that pushes work to a future phase gets a row here the moment
+it's made, in the same edit. **Before drafting any phase's tasks, read this table for
+rows whose "Deferred to" matches the phase being drafted** — not a grep of the whole log
+from memory. A row stays open until a task ID appears in "Closed by." An open row for a
+phase that's about to be marked done is a stop, not a note for later: a promise made in
+an early phase and never carried into the later phase's own task expansion is easy to
+lose track of across a long run, and expensive to recover once several phases have
+already closed on top of it. The ledger exists so that promise is a row someone has to
+close, not a sentence someone has to remember.
+
+### The reserved-to-Auditor steps list (in the execution guide)
+
+A running list, next to the rules of engagement, not a per-task Observations note:
+
+```
+Steps reserved to the Auditor (never the Executor's model tier, whatever it is):
+- The credential-adjacent check after a ship task (blocked for every model tier so far).
+- Any commit touching a shared or generated resource (harness blocks it for every tier).
+```
+
+The first time a harness or permission block turns out predictable — same step, blocked
+for every Executor tried — add it here once. Every subsequent handoff whose task includes
+that step cites this list instead of the step being rediscovered as a fresh `BLOCKED`
+each time. A note written into one task's Observations after the first occurrence is read
+once and never again; this list is read on every handoff.
 
 ## Rules of engagement (the Executor follows these)
 
@@ -129,115 +209,12 @@ done before task 1 is drafted:**
    already enforces elsewhere. Cite the source file instead of restating it — one
    source of truth. **Settled above, before task 1 — not filled in retroactively.**
 
-## Writing a task (Auditor)
+## Before expanding a phase into tasks
 
-```
-### <TASK-ID> — <imperative, one line>
-
-**Goal:** one sentence. What is true after this that was not before.
-**Files:** every path the Executor should read or change.
-**Steps:** numbered. Exact enough that two Executors produce the same thing.
-**Verify:** the literal command, and the output that counts as success.
-**Report:** the task ID.
-```
-
-Rules for the steps:
-
-- Encode decisions, do not re-open them. "Polling, not a push channel — this is
-  decided, believing otherwise is a stop, not a choice to make while implementing."
-- **Name the failure you expect.** If a field might get overwritten, if a type behaves
-  differently across two environments, if a cap is a layout decision and not a data
-  one — say so in the task. Most bad output comes from an ambiguity the task's author
-  already saw and didn't write down.
-- State what must *not* change alongside what must.
-- **When a task changes what an existing field or column means** (not just adds one),
-  the task text must include the command to find every other reader of that field —
-  and the Executor must run it and account for every hit, not only the call sites the
-  task's own file list happened to name. A task's file list is a lower bound on its
-  blast radius, discovered by the person who wrote the task before the work started —
-  not the whole of it, discovered later by whoever happens to hit the stale reader
-  next.
-- **When a task changes what triggers an automatic action** (a scheduler, a background
-  job, a materializer, anything that can fire without a human pressing a button), the
-  task must require checking — before shipping — what state the change leaves the
-  system in and whether anything is now primed to fire destructively on its next
-  ordinary trigger. Passing tests prove the new code path is correct; they do not
-  prove nothing is about to run against real data the moment it gets the chance.
-
-## Writing a gate (Auditor)
-
-A gate is a claim that can be proven false. "Tests pass" is not a gate. "The
-visibility check was observed failing with the filter removed" is.
-
-Every gate names how it is proven. Include, whenever the phase produces a security,
-privacy, or financial-integrity boundary, a **negative control**: the Executor must
-remove the protection, observe the check fail, restore it, and observe it pass. A
-check never seen failing has not been verified. `auditkit negcontrol` runs this
-sequence and produces a paste-ready transcript.
-
-## Handing off a task (Auditor)
-
-Writing the execution guide is not the handoff. The Executor's session starts cold — it
-has none of the investigation behind the guide, and "read the execution guide, task
-`<ID>`" is a pointer to an instruction, not the instruction itself. Producing the actual,
-paste-ready message for a fresh Executor session is Auditor work, not something left for
-whoever is relaying the plan to assemble by hand.
-
-**The rules-of-engagement block in the template below is item 8, settled when the run
-started** ("Rules of engagement" above) — not re-derived here, and not re-asked per
-task. If you're about to write a handoff and item 8 is still blank, that's the actual
-problem: go settle it before drafting the message, don't paste a rule set from a
-different project or a different run to fill the gap. A rule copied in from elsewhere
-either asserts something false about this codebase or hands the Executor a stop it has
-no way to satisfy.
-
-### Handoff template
-
-One task per message, addressed to a fresh Executor session with no shared context. Fill
-every section — do not leave "see the execution guide" where a fact belongs.
-
-```
-ROLE: Executor. Work from <EXECUTION_GUIDE> (Phase <n>, `<TASK-ID>`) only; report in
-<COMPLIANCE_LOG>, section `<TASK-ID>` (already exists, empty).
-
-REPORTED STATE: <what is already DONE in the log, and whether it was audited or only
-self-reported — do not conflate the two>. Do not reopen <prior tasks>.
-
-TASK: <TASK-ID> — <imperative title>
-Source: <EXECUTION_GUIDE>, section "<TASK-ID>" in full.
-
-Goal: <one sentence — what is true after this that was not before>.
-
-Key finding (already verified, do not re-check it): <the concrete fact driving this
-task, with the file/line/command that established it>.
-
-Decided points, not reopenable without evidence that contradicts them:
-1. <decision>
-2. <decision>
-...
-
-Failure to avoid explicitly: <the specific mistake a context-free Executor would make by
-reflex — copying a neighboring task's filter that doesn't apply here, re-deriving a
-fact that was already established and getting it wrong, etc.>.
-
-Verify (literal):
-<exact command>
-
-Success, minimum: <what the check(s) must prove, in terms of cases — not "it passes">.
-
-Report: <TASK-ID>, in <COMPLIANCE_LOG>, section already created.
-
-RULES OF ENGAGEMENT (this run's — confirmed at the start, not a default):
-<the block settled above>
-```
-
-`Key finding` and `Failure to avoid` exist because a fresh Executor has no memory of the
-investigation behind the task — it will make exactly the mistake full context would have
-prevented. Naming the specific reflex to avoid is cheaper than an Executor discovering it
-mid-task.
-
-Do not paste a rules-of-engagement block from one project's run into another's handoff
-without re-confirming it applies. It is a per-run artifact, not part of this skill.
+Read the deferred items ledger (above) for rows whose "Deferred to" matches the phase
+about to be drafted. Every open row becomes a task, or gets re-deferred by editing the
+row — never dropped silently. This replaces re-deriving the phase's obligations from
+memory or a fresh grep of the whole log; the ledger is what makes that unnecessary.
 
 ## Reporting back (Executor)
 
@@ -296,9 +273,10 @@ report's job is to point at the evidence, not to argue for a verdict.
    same discipline: it does not end the message on its own. If anything is left to do —
    a remediation handoff, the next task's handoff, or a re-statement of a handoff already
    sent but not yet acted on — it ships in the same message as the verdict, as the
-   literal pasteable block from "Remediation handoff" or "Handing off a task," not a
-   sentence describing that it's still pending. A verdict is not the deliverable; see
-   "Remediation handoff" below.
+   literal pasteable block from `references/handoffs.md`, not a sentence describing that
+   it's still pending. A verdict is not the deliverable; see "Remediation handoff" in
+   `references/handoffs.md`. In Autonomous mode, "ships in the same message" means the
+   Auditor launches that subagent in the same turn.
 
 ### Verdicts
 
@@ -315,66 +293,10 @@ Separate **process findings** from **code findings**. Work can be accepted on it
 merits while the control that should have caught a defect is recorded as failed. Good
 outcomes do not validate a broken process backward. A condition holds as written or it
 stays open — do not fold an unmet condition into "recorded, not blocking" just to avoid
-holding up a phase; that turns a defect into paperwork.
-
-### Remediation handoff
-
-A verdict is not the deliverable — a well-evidenced `CONDITIONAL` or `REJECTED` that
-ends in prose still leaves the Executor with nothing to act on. This is the
-`Remediation order (annex)` from "The document set": write it, and hand it off the same
-way the first task was handed off, not as a narrative the reader has to translate into
-next steps themselves.
-
-```
-ROLE: Executor. Work from this remediation only; the rest of <EXECUTION_GUIDE> is
-unaffected unless named below. Report in <COMPLIANCE_LOG>, appended under <GATE-ID> —
-do not overwrite the original entry.
-
-AUDIT RESULT: <Phase/Task> — <CONDITIONAL | REJECTED>. <one line: what was
-independently re-verified and passed, so the Executor knows what not to touch>.
-
-BLOCKED: <GATE-ID> — <what's actually wrong, in the Auditor's own re-run terms, not a
-restatement of what the original delivery claimed>.
-
-Root cause (verified — carries the command that established it, not reasoned from the
-code): <the mechanism, with file/line and the falsifying probe or command that proved
-it wrong>.
-
-Candidate fix — a recommendation, not a decided point; the Auditor has not run it:
-<the shape of a fix. Mark explicitly as unverified — the Executor confirms it, and may
-find a better one, per "a factual claim always is reopenable">.
-
-Do not touch: <what already passed and must not be disturbed by this fix — the other
-approved gates or tasks in this delivery>.
-
-Verify (literal): <the exact re-run command(s), including re-running the falsifying
-probe that caught this — it must now pass>.
-
-Success, minimum: <what must be true afterward — the probe that failed now passes, the
-original suite stays green, nothing named under "Do not touch" moved>.
-
-Report: <GATE-ID>, in <COMPLIANCE_LOG>, as a remediation entry.
-
-RULES OF ENGAGEMENT: <this run's block>
-```
-
-The "candidate fix, not a decided point" framing matters — the Auditor found the defect
-by running a probe, not by running the fix. Presenting it as settled would violate the
-Auditor's own rule 4 below.
-
-**No verdict ends the loop by itself if anything is left to run — and "anything left to
-run" is not only "a phase remains" or "a remediation order is needed."** It also covers
-the most common case of all: a plain `PASS` on one task, mid-phase, with something else
-already outstanding — an earlier remediation, the next task in line. That case has no
-name of its own in the Verdicts table above, which is exactly why it's the easiest one
-to ship without a handoff: closing with a status sentence that *describes* what's still
-pending, instead of resending the pasteable block for it. Only a genuine "nothing left"
-closes without a handoff. Otherwise: send the outstanding remediation, or the next
-phase's first task, or the handoff already sent and not yet acted on — with the literal
-template from "Remediation handoff" or "Handing off a task" above, in the same message
-as the verdict, never as a sentence describing it. The Executor's next session starts
-cold no matter which verdict just landed; a one-line summary of what's still owed is
-exactly the kind of pointer-not-an-instruction this whole document exists to close.
+holding up a phase; that turns a defect into paperwork. Process findings include: the
+wrong model tier (or an inherited one), a small-model task that improvised instead of
+escalating, a negative control restored with a command that discarded other uncommitted
+work, and a question sent to the owner that belonged to the Auditor.
 
 ### Closing the run
 
@@ -397,7 +319,7 @@ Nothing outstanding.
 ```
 
 Anything short of that — one phase closing, a conditional approval, work still queued —
-uses the verdict-plus-handoff shapes above instead. `RUN COMPLETE` is reserved for the
+uses the verdict-plus-handoff shapes in `references/handoffs.md` instead. `RUN COMPLETE` is reserved for the
 one message that actually ends the need for another Auditor turn on this plan of record.
 
 ## The Auditor is bound by rule 4 too
@@ -452,29 +374,6 @@ started, more often than it is a phase that hit genuine surprises. If one phase 
 generating annexes faster than the others, that is worth naming as a finding about the
 planning step, not only fixing task by task. `auditkit lint` warns past a configurable
 threshold.
-
-## Failure modes seen in practice
-
-- **Self-expansion.** The Executor implements phases marked "do not start." Work
-  arrives with no checkpoints between phases; a defect in an early one gets built on
-  before anyone looks.
-- **Zero stops.** An empty "Blocked" section across dozens of tasks means ambiguities
-  were resolved silently, not that none existed.
-- **Letter over intent.** The task says "add a check for case X"; a check appears, it
-  passes, and the condition X exists to detect is routed around by fixture ordering or
-  test isolation. Anticipate this by naming the expected failure in the task itself.
-- **Evidence-free `DONE`.** Treat as `FAILED`. Say so in the reporting rules up front.
-- **A defect ships and nobody owns re-checking its blast radius.** A task changes what
-  an existing field means; every other reader of that field is now a latent bug, and
-  the person who finds it is usually a different, unrelated task that happens to hit
-  it — not a re-audit of the original task. Grep for every reader before signing off,
-  not after something breaks.
-- **A change primes something to fire on its own before anyone can see or stop it.** A
-  migration or config change that alters what triggers an automated write can leave
-  the system armed to act — at scale, on real data — the moment its ordinary trigger
-  next runs, with no one having pressed a button and no UI yet built to see or cancel
-  it. Check the state the change leaves behind, not only the correctness of the new
-  code path.
 
 ## Repo conventions this rides on
 

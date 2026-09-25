@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+- `SKILL.md` split into a core file (24 KB, down from 47 KB) and four on-demand files in
+  `references/`: `tasks-and-gates.md`, `handoffs.md`, `autonomous-mode.md`, and
+  `failure-modes-and-example.md`. The core indexes each file with the step that needs it,
+  so an agent that triggers the skill loads about half the tokens it did before.
+- `auditkit install-skill` copies `references/` beside `SKILL.md`. Destinations that hold a
+  single file (Cursor `.mdc`, or a `--dest` not named `SKILL.md`) get one bundled file.
+- The packaged skill moved from `src/auditkit/templates/SKILL.md` to `src/auditkit/skill/`.
+
+### Fixed
+- `auditkit install-skill` shipped a stale 500-line copy of the protocol that predated the
+  Autonomous mode, deferred items ledger, and gate-writing rules. `tests/test_skill_sync.py`
+  now fails whenever the packaged copy differs from the repository root.
+
 ### Added
 - Conventional Commits specification documented in `CONTRIBUTING.md` and enforced in `AGENTS.md`.
 - `SKILL.md`: optional Guided/Autonomous operating mode, with the autonomy charter, per-task

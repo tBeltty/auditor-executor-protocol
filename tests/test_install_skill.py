@@ -42,6 +42,47 @@ def test_install_skill_cursor_target(tmp_path):
     assert code == 0
     expected = tmp_path / ".cursor" / "rules" / "auditor-executor-protocol.mdc"
     assert expected.exists()
+    bundled = expected.read_text(encoding="utf-8")
+    assert "Auditor / Executor Protocol" in bundled
+    assert "<!-- references/autonomous-mode.md -->" in bundled
+    assert "The autonomy charter" in bundled
+
+
+def test_install_skill_copies_references_beside_skill(tmp_path):
+    code = install_skill.run(target_dir=str(tmp_path), agent="claude")
+    assert code == 0
+    skill_dir = tmp_path / ".claude" / "skills" / "auditor-executor-protocol"
+    refs = sorted(p.name for p in (skill_dir / "references").glob("*.md"))
+    assert refs == [
+        "autonomous-mode.md",
+        "failure-modes-and-example.md",
+        "handoffs.md",
+        "tasks-and-gates.md",
+    ]
+    assert "## Autonomous mode (Auditor)" in (
+        skill_dir / "references" / "autonomous-mode.md"
+    ).read_text(encoding="utf-8")
+
+
+def test_install_skill_bundles_for_non_skill_filenames(tmp_path):
+    dest = tmp_path / "rules.md"
+    assert install_skill.run(dest_path=str(dest)) == 0
+    assert "## Writing a task (Auditor)" in dest.read_text(encoding="utf-8")
+    assert not (tmp_path / "references").exists()
+
+
+def test_install_skill_missing_source_returns_error(tmp_path, capsys):
+    original = install_skill._skill_source_dir
+
+    def missing() -> None:
+        raise FileNotFoundError("SKILL.md could not be found.")
+
+    install_skill._skill_source_dir = missing  # type: ignore[assignment]
+    try:
+        assert install_skill.run(dest_path=str(tmp_path / "SKILL.md")) == 2
+    finally:
+        install_skill._skill_source_dir = original  # type: ignore[assignment]
+    assert "could not be found" in capsys.readouterr().out
 
 
 def test_install_skill_auto_detects_claude(tmp_path):

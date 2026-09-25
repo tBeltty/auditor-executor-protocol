@@ -1,19 +1,51 @@
-"""Provision SKILL.md into an agent or workspace directory."""
+"""Provision the protocol skill (SKILL.md and references/) into an agent or workspace."""
 
 from __future__ import annotations
 
 import os
+import shutil
 from pathlib import Path
 
+REFERENCES_DIR = "references"
 
-def _get_skill_content() -> str:
-    template_skill = Path(__file__).parent / "templates" / "SKILL.md"
-    if template_skill.exists():
-        return template_skill.read_text(encoding="utf-8")
-    repo_skill = Path(__file__).resolve().parent.parent.parent / "SKILL.md"
-    if repo_skill.exists():
-        return repo_skill.read_text(encoding="utf-8")
+
+def _skill_source_dir() -> Path:
+    """Directory holding SKILL.md and references/: the packaged copy, else the repo root."""
+    packaged = Path(__file__).parent / "skill"
+    if (packaged / "SKILL.md").exists():
+        return packaged
+    repo_root = Path(__file__).resolve().parent.parent.parent
+    if (repo_root / "SKILL.md").exists():
+        return repo_root
     raise FileNotFoundError("SKILL.md could not be found.")
+
+
+def _reference_files(source: Path) -> list[Path]:
+    ref_dir = source / REFERENCES_DIR
+    return sorted(ref_dir.glob("*.md")) if ref_dir.is_dir() else []
+
+
+def _bundle(source: Path) -> str:
+    """Single-file form for destinations that hold one file (Cursor rules, custom paths)."""
+    parts = [(source / "SKILL.md").read_text(encoding="utf-8").rstrip("\n")]
+    for ref in _reference_files(source):
+        body = ref.read_text(encoding="utf-8").rstrip("\n")
+        parts.append(f"<!-- {REFERENCES_DIR}/{ref.name} -->\n\n{body}")
+    return "\n\n---\n\n".join(parts) + "\n"
+
+
+def _install(source: Path, dest: Path) -> None:
+    dest.parent.mkdir(parents=True, exist_ok=True)
+    if dest.name != "SKILL.md":
+        dest.write_text(_bundle(source), encoding="utf-8")
+        return
+    shutil.copyfile(source / "SKILL.md", dest)
+    refs = _reference_files(source)
+    if refs:
+        ref_dest = dest.parent / REFERENCES_DIR
+        ref_dest.mkdir(exist_ok=True)
+        for ref in refs:
+            shutil.copyfile(ref, ref_dest / ref.name)
 
 
 def _detect_agent(target: Path) -> str:
@@ -72,7 +104,7 @@ def run(
     force: bool = False,
 ) -> int:
     try:
-        content = _get_skill_content()
+        source = _skill_source_dir()
     except FileNotFoundError as e:
         print(f"error: {e}")
         return 2
@@ -85,8 +117,7 @@ def run(
         print(f"skip: {dest} already exists (use --force to overwrite)")
         return 0
 
-    dest.parent.mkdir(parents=True, exist_ok=True)
-    dest.write_text(content, encoding="utf-8")
+    _install(source, dest)
     print(f"installed {dest}")
     return 0
 
@@ -117,7 +148,7 @@ def main(argv: list[str] | None = None) -> int:
         "--dest",
         dest="dest_path",
         default=None,
-        help="explicit destination file path",
+        help="explicit destination file path (SKILL.md installs references/ beside it; any other name gets a single bundled file)",
     )
     parser.add_argument(
         "--force",
