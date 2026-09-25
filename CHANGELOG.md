@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.3] - 2026-09-25
+
+### Fixed
+- `auditkit lint` counted any mention of "negative control" as a stated one, so an empty label
+  (`**Negative control:**`), a dash, a template placeholder, "to be written", or "N.A." passed.
+  A mention now needs text after it (on the same line or the next ones) that is not a
+  placeholder, punctuation, or a deferral.
+- `auditkit lint` accepted `DONE` reports whose verify output was only punctuation ("-", "…") or
+  "None yet".
+
 ## [0.3.2] - 2026-09-25
 
 Fixes from a second independent review.
