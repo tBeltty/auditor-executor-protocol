@@ -168,3 +168,29 @@ def test_negcontrol_restores_a_file_the_break_deleted_or_moved(tmp_path, capsys)
         assert guarded_file.read_text() == "protected\n", break_template
         assert "restored" in out and "byte-identical" in out
         assert code == 0, break_template
+
+
+def test_negcontrol_timeout_kills_processes_the_command_started(tmp_path, capsys):
+    import time
+
+    guarded_file = tmp_path / "flag.txt"
+    guarded_file.write_text("protected\n")
+    late = tmp_path / "late.py"
+    late.write_text(
+        f"import time\ntime.sleep(1.5)\nopen({str(guarded_file)!r}, 'w').write('broken late\\n')\n"
+    )
+    starter = tmp_path / "start.py"
+    starter.write_text(
+        "import subprocess, sys, time\n"
+        f"subprocess.Popen([sys.executable, {str(late)!r}])\n"
+        "time.sleep(10)\n"
+    )
+    negcontrol.run(
+        test_cmd=f'grep -q protected "{guarded_file}"',
+        break_cmd=f'"{sys.executable}" "{starter}"',
+        file_path=str(guarded_file),
+        timeout=0.5,
+    )
+    assert "timed out after 0.5s" in capsys.readouterr().out
+    time.sleep(2.5)
+    assert guarded_file.read_text() == "protected\n", "a process started by the break kept running"
