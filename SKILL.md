@@ -390,7 +390,8 @@ If `auditkit` is installed, prefer it over doing these by hand:
 - `auditkit init <dir>` — scaffold the plan of record, execution guide, and compliance
   log from templates, plus an empty `annexes/` directory.
 - `auditkit lint <dir>` — cross-check task IDs between the execution guide and the
-  compliance log in both directions, flag `DONE` reports with no pasted verify output,
+  compliance log in both directions, flag `DONE` reports with no pasted verify output
+  (a lone "n/a" or "TBD" is not output),
   flag near-duplicate paragraphs, warn on annex count per phase, flag gates with no
   stated negative control (a negated or deferred mention such as "n/a" or "TBD" does
   not count). Missing documents, an execution guide with no tasks, and tasks without a
