@@ -49,7 +49,7 @@ dev = [
 auditkit = "auditkit.cli:main"
 
 [tool.setuptools.package-data]
-auditkit = ["templates/*.md", "py.typed"]
+auditkit = ["templates/*.md", "skill/*.md", "skill/references/*.md", "py.typed"]
 
 [tool.setuptools.packages.find]
 where = ["src"]

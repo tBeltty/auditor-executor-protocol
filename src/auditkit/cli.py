@@ -39,7 +39,7 @@ def main(argv: list[str] | None = None) -> int:
     p_status.add_argument("target_dir")
 
     p_install = sub.add_parser(
-        "install-skill", help="provision SKILL.md into an agent skills directory"
+        "install-skill", help="provision SKILL.md and references/ into an agent skills directory"
     )
     p_install.add_argument(
         "target_dir",

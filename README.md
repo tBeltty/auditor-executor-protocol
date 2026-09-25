@@ -11,7 +11,7 @@ A two-role protocol for running multi-phase work through AI agents without the p
 
 The **Auditor** defines what "done" means and proves it independently. The **Executor** implements one numbered task at a time and logs command output. Neither role crosses into the other.
 
-[`SKILL.md`](SKILL.md) specifies the protocol. `auditkit` is a zero-dependency Python CLI that automates scaffolding, drift linting, and negative controls.
+[`SKILL.md`](SKILL.md) specifies the protocol core; [`references/`](references/) holds the parts an agent loads only when it reaches that step (task and gate writing, handoff templates, Autonomous mode, failure modes and a worked example). `auditkit` is a zero-dependency Python CLI that automates scaffolding, drift linting, and negative controls.
 
 ---
 
@@ -70,7 +70,7 @@ pip install -e .
 
 ### 2. Install the Protocol into Your Agent
 
-Provision `SKILL.md` directly into your workspace or global environment:
+Provision `SKILL.md` and its `references/` directory into your workspace or global environment. Cursor rules hold a single file, so Cursor receives one bundled `.mdc` with the references appended:
 
 ```bash
 auditkit install-skill                     # auto-detects Antigravity, Claude Code, or Cursor
