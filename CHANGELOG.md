@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- `auditkit lint` flags `DONE` reports in `compliance-log.md` whose `**Verify output:**`
+  field is missing, empty, or only a template placeholder. The protocol already records
+  these as `FAILED`; the check makes that mechanical.
+- README: install `auditkit` without cloning via `pipx install git+https://github.com/tBeltty/auditor-executor-protocol`.
+
 ### Changed
 - `SKILL.md` split into a core file (24 KB, down from 47 KB) and four on-demand files in
   `references/`: `tasks-and-gates.md`, `handoffs.md`, `autonomous-mode.md`, and

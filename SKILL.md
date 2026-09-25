@@ -388,8 +388,8 @@ If `auditkit` is installed, prefer it over doing these by hand:
 
 - `auditkit init <dir>` — scaffold the four documents from templates.
 - `auditkit lint <dir>` — cross-check task IDs between the execution guide and the
-  compliance log, flag near-duplicate paragraphs, warn on annex count per phase, flag
-  gates with no stated negative control.
+  compliance log, flag `DONE` reports with no pasted verify output, flag near-duplicate
+  paragraphs, warn on annex count per phase, flag gates with no stated negative control.
 - `auditkit negcontrol --file <path> --break-cmd "<cmd>" --test-cmd "<cmd>"` — backs the
   file up, runs the break command, runs the test (expects failure), restores from the
   backup, runs the test again (expects success), and prints a paste-ready transcript.

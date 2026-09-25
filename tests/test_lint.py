@@ -21,6 +21,11 @@ def test_clean_set_passes(tmp_path):
     log = """
 ### P0-T1 — DONE
 **Changed:** foo.py
+**Verify output:**
+```
+3 passed in 0.12s
+```
+**Observations:** none
 """
     _write(tmp_path, guide, log)
     assert lint.run(str(tmp_path)) == 0
@@ -99,8 +104,8 @@ def test_headers_with_hyphens_and_endash_pass(tmp_path):
 **Report:** `P0-T2`
 """
     log = """
-### P0-T1 - DONE
-### P0-T2 – DONE
+### P0-T1 - PENDING
+### P0-T2 – PENDING
 """
     _write(tmp_path, guide, log)
     assert lint.run(str(tmp_path)) == 0
@@ -119,3 +124,58 @@ def test_lint_main_cli(tmp_path):
     _write(tmp_path, guide="", log="")
     code = lint.main([str(tmp_path), "--annex-threshold", "10"])
     assert code == 0
+
+
+def test_done_without_verify_output_is_flagged(tmp_path, capsys):
+    guide = """
+### P0-T1 — Do a thing
+**Report:** `P0-T1`
+
+### P0-T2 — Do another thing
+**Report:** `P0-T2`
+
+### P0-T3 — And a third
+**Report:** `P0-T3`
+"""
+    log = """
+### P0-T1 — DONE
+**Changed:** a.py
+**Verify output:**
+**Observations:** none
+
+### P0-T2 — DONE
+**Changed:** b.py
+**Verify output:**
+<pasted, literal, unedited command output>
+```text
+```
+**Observations:** none
+
+### P0-T3 — DONE
+**Changed:** c.py
+"""
+    _write(tmp_path, guide, log)
+    assert lint.run(str(tmp_path)) == 1
+    out = capsys.readouterr().out
+    assert "[done without evidence] 3 report(s)" in out
+    for task_id in ("P0-T1", "P0-T2", "P0-T3"):
+        assert f"  - {task_id}" in out
+
+
+def test_pending_and_blocked_reports_need_no_evidence(tmp_path):
+    guide = """
+### P0-T1 — Do a thing
+**Report:** `P0-T1`
+
+### P0-T2 — Do another thing
+**Report:** `P0-T2`
+"""
+    log = """
+### P0-T1 — PENDING
+**Verify output:**
+
+### P0-T2 — BLOCKED
+**Verify output:**
+"""
+    _write(tmp_path, guide, log)
+    assert lint.run(str(tmp_path)) == 0
