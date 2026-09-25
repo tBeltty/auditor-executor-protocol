@@ -33,9 +33,31 @@ def _run(cmd: str, timeout: float | None = None) -> tuple[int, str]:
     return proc.returncode, output
 
 
-def _restore_from_backup(file_path: str, backup_path: Path, transcript: list[str]) -> bool:
-    shutil.copy2(backup_path, file_path)
-    identical = filecmp.cmp(file_path, str(backup_path), shallow=False)
+def _is_identical(file_path: str, backup_path: Path) -> bool:
+    try:
+        return Path(file_path).is_file() and filecmp.cmp(file_path, str(backup_path), shallow=False)
+    except OSError:
+        return False
+
+
+def _ensure_restored(
+    file_path: str, backup_path: Path, transcript: list[str], after_restore_cmd: bool
+) -> bool:
+    """Leave file_path byte-identical to the backup, whatever the break or restore did
+    (modified, deleted, moved). Returns False only if that could not be achieved."""
+    if _is_identical(file_path, backup_path):
+        transcript.append(f"$ {file_path} is byte-identical to the backup")
+        return True
+    if after_restore_cmd:
+        transcript.append("WARNING: --restore-cmd did not restore the file; using the backup.")
+    try:
+        target = Path(file_path)
+        target.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(backup_path, target)
+    except OSError as error:
+        transcript.append(f"ERROR: could not restore {file_path} from the backup: {error}")
+        return False
+    identical = _is_identical(file_path, backup_path)
     transcript.append(
         f"$ restored {file_path} from backup "
         + ("(byte-identical)" if identical else "- WARNING: still differs from backup")
@@ -60,7 +82,8 @@ def run(
     tmp_dir: Path | None = None
     backup_path: Path | None = None
     transcript: list[str] = []
-    restored_ok = True
+    # With --file, nothing counts as restored until the file is verified identical.
+    restored_ok = not file_path
 
     try:
         if file_path:
@@ -97,15 +120,9 @@ def run(
                 transcript.append(f"(restore exit {restore_code})")
                 restored_ok = restore_code == 0
             if file_path and backup_path is not None:
-                if filecmp.cmp(file_path, str(backup_path), shallow=False):
-                    transcript.append(f"$ {file_path} is byte-identical to the backup")
-                    restored_ok = True
-                else:
-                    if restore_cmd:
-                        transcript.append(
-                            "WARNING: --restore-cmd did not restore the file; using the backup."
-                        )
-                    restored_ok = _restore_from_backup(file_path, backup_path, transcript)
+                restored_ok = _ensure_restored(
+                    file_path, backup_path, transcript, after_restore_cmd=bool(restore_cmd)
+                )
 
         transcript.append(f"$ {test_cmd}   # expect SUCCESS")
         code2, out2 = _run(test_cmd, timeout)

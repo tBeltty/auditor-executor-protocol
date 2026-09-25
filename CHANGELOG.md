@@ -7,9 +7,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.1] - 2026-09-25
+
+Fixes from an independent review of 0.3.0.
+
+### Fixed
+- `auditkit lint` reported "clean" for an execution guide with no tasks, or with tasks that have no
+  `**Report:**` line, so empty documents passed. Both are now reported.
+- `auditkit lint` accepted deferred negative controls ("Negative control: TBD", "skipped",
+  "the negative control step was not done") as stated ones.
+- `auditkit negcontrol --file` crashed and deleted the backup when the break command deleted or
+  moved the file. The file is now recreated from the backup, and the backup is kept unless the
+  file is verified byte-identical.
+- `auditkit status` let a status board verdict silently override a later, different report-header
+  verdict. Such items are now listed as `CONFLICT` and stay open.
+- `auditkit install-skill --dest <directory>` skipped, crashed with `--force`, or wrote a file
+  named after the directory. A directory destination now receives `SKILL.md` and `references/`.
+- The sdist now includes `SKILL.md` and `references/`, so its own test suite passes.
+
 ### Changed
 - `.gitattributes` normalizes line endings to LF, so checkouts on Windows match other platforms
   byte for byte (the framework vendors `SKILL.md`, `references/`, and the templates).
+- Build requirement raised to `setuptools>=77`, which supports the SPDX `license` string.
+- `SKILL.md` states that lint checks that evidence is present, not that it is authentic.
 
 ## [0.3.0] - 2026-09-25
 

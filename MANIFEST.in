@@ -1,0 +1,3 @@
+# The sdist ships the canonical skill so tests/test_skill_sync.py can run from it.
+include SKILL.md
+recursive-include references *.md

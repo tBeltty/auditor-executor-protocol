@@ -108,7 +108,7 @@ Cross-check document consistency:
 auditkit lint docs/<task-name>
 ```
 
-`auditkit lint` catches missing report entries, log entries with no matching task, `DONE` reports with no pasted verify output, gates without negative controls, duplicated log paragraphs, and phase annex buildup.
+`auditkit lint` catches an empty guide, tasks without a report line, missing report entries, log entries with no matching task, `DONE` reports with no pasted verify output, gates without negative controls, duplicated log paragraphs, and phase annex buildup.
 
 ### 5. Run a Negative Control
 
