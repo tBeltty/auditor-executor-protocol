@@ -167,3 +167,15 @@ def test_install_skill_markers_and_env(tmp_path):
             os.environ["ANTIGRAVITY_AGENT"] = old_anti
         if old_gemini is not None:
             os.environ["GEMINI_CLI"] = old_gemini
+
+
+def test_install_skill_dest_directory_receives_skill_md(tmp_path):
+    existing = tmp_path / "skills"
+    existing.mkdir()
+    assert install_skill.run(dest_path=str(existing), force=True) == 0
+    assert (existing / "SKILL.md").is_file()
+    assert (existing / "references" / "handoffs.md").is_file()
+
+    new_dir = tmp_path / "newdir"
+    assert install_skill.run(dest_path=f"{new_dir}/") == 0
+    assert (new_dir / "SKILL.md").is_file()

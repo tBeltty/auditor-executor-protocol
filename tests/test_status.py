@@ -101,3 +101,19 @@ def test_status_on_a_fresh_scaffold_lists_every_item_open(tmp_path, capsys):
     assert status.run(str(tmp_path)) == 0
     out = capsys.readouterr().out
     assert "2 open" in out
+
+
+def test_conflicting_verdicts_stay_open(tmp_path, capsys):
+    log = """
+| ID | Delivery | Verdict | Notes |
+|---|---|---|---|
+| P0-T1 | abc | `APPROVED` | |
+
+### P0-T1 — DONE
+### P0-T1 — REJECTED
+"""
+    (tmp_path / "compliance-log.md").write_text(log, encoding="utf-8")
+    assert status.run(str(tmp_path)) == 0
+    out = capsys.readouterr().out
+    assert "1 open" in out
+    assert "P0-T1: CONFLICT (status board: APPROVED, report header: REJECTED)" in out

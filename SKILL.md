@@ -392,8 +392,10 @@ If `auditkit` is installed, prefer it over doing these by hand:
 - `auditkit lint <dir>` — cross-check task IDs between the execution guide and the
   compliance log in both directions, flag `DONE` reports with no pasted verify output,
   flag near-duplicate paragraphs, warn on annex count per phase, flag gates with no
-  stated negative control (a negated mention such as "n/a" does not count). Missing
-  documents are an error, not a clean result.
+  stated negative control (a negated or deferred mention such as "n/a" or "TBD" does
+  not count). Missing documents, an execution guide with no tasks, and tasks without a
+  `**Report:**` line are errors, not a clean result. Lint checks that evidence is
+  present, not that it is authentic: re-running it is still the Auditor's job.
 - `auditkit negcontrol --file <path> --break-cmd "<cmd>" --test-cmd "<cmd>"` — backs the
   file up, runs the break command, runs the test (expects failure), restores from the
   backup, runs the test again (expects success), and prints a paste-ready transcript.

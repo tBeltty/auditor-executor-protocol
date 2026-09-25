@@ -22,13 +22,21 @@ VERIFY_FIELD_RE = re.compile(r"^\*\*Verify output:\*\*", re.MULTILINE)
 NEXT_FIELD_RE = re.compile(r"^\*\*[^*\n]+:\*\*", re.MULTILINE)
 SECTION_END_RE = re.compile(r"^#{1,6}\s|^---\s*$", re.MULTILINE)
 PLACEHOLDER_RE = re.compile(r"<[^>\n]*>")
-# A mention that negates the control ("negative control: n/a", "no negative control
-# needed") does not count as stating one.
+# A mention that negates or defers the control ("negative control: n/a", "no negative
+# control needed", "negative control: TBD", "the negative control step was not done")
+# does not count as stating one. This is a wording heuristic, not proof the control ran.
+_DEFERRAL = (
+    r"n/?a|none|tbd|todo|later|pending|skip(?:ped)?|deferred|missing"
+    r"|not\s+(?:yet|needed|required|applicable|done|run|performed|written)"
+)
 NEGATED_CONTROL_RE = re.compile(
-    r"\b(?:no|without|skip(?:ped)?)\s+negative\s+control"
-    r"|negative\s+control\W{0,3}(?:n/?a|none|not\s+(?:needed|required|applicable))\b",
+    r"\b(?:no|without|skip(?:ped)?|omit(?:ted)?)\s+(?:the\s+)?negative\s+control"
+    rf"|negative\s+control\W{{0,3}}(?:{_DEFERRAL})\b"
+    rf"|negative\s+control\b[^.\n]{{0,40}}\b(?:was|is|were|are)\s+(?:{_DEFERRAL})\b",
     re.IGNORECASE,
 )
+# A task or gate ID contains a digit (P0-T1, T3, G2); headings like "### Notes — x" are not tasks.
+TASK_ID_RE = re.compile(r"\d")
 FENCE_LINE_RE = re.compile(r"^\s*(```|~~~)[\w-]*\s*$", re.MULTILINE)
 
 MIN_DUP_LEN = 120
@@ -126,6 +134,25 @@ def run(target_dir: str, annex_threshold: int = DEFAULT_ANNEX_THRESHOLD) -> int:
             f"[missing report] {len(missing)} task(s) in execution-guide.md have no entry in compliance-log.md:"
         )
         for i in missing:
+            print(f"  - {i}")
+
+    # 1a. The guide must define tasks, and every task or gate must name its Report ID;
+    #     otherwise the missing-report check above has nothing to compare.
+    task_sections = [
+        (task_id, body)
+        for task_id, _, body in _guide_sections(guide_text)
+        if TASK_ID_RE.search(task_id)
+    ]
+    if not task_sections:
+        problems += 1
+        print("[empty guide] execution-guide.md defines no tasks or gates (### <ID> — <title>).")
+    no_report_line = [task_id for task_id, body in task_sections if not REPORT_ID_RE.search(body)]
+    if no_report_line:
+        problems += len(no_report_line)
+        print(
+            f"[missing report line] {len(no_report_line)} task(s) in execution-guide.md have no **Report:** line:"
+        )
+        for i in no_report_line:
             print(f"  - {i}")
 
     # 1b. Every log entry should belong to a task or gate in the guide.

@@ -91,7 +91,8 @@ def test_duplicate_paragraph_is_flagged(tmp_path):
 
 def test_annex_threshold_warns(tmp_path):
     annexes = [f"ANNEX_{c}.md" for c in "ABCDEFG"]
-    _write(tmp_path, annexes=annexes)
+    guide = "### P0-T1 — Do a thing\n**Report:** `P0-T1`\n"
+    _write(tmp_path, guide=guide, log="### P0-T1 — PENDING\n", annexes=annexes)
     assert lint.run(str(tmp_path), annex_threshold=6) == 1
     assert lint.run(str(tmp_path), annex_threshold=10) == 0
 
@@ -122,7 +123,8 @@ def test_annex_phase_breakdown_warns(tmp_path, capsys):
 
 
 def test_lint_main_cli(tmp_path):
-    _write(tmp_path, guide="", log="")
+    guide = "### P0-T1 — Do a thing\n**Report:** `P0-T1`\n"
+    _write(tmp_path, guide=guide, log="### P0-T1 — PENDING\n")
     code = lint.main([str(tmp_path), "--annex-threshold", "10"])
     assert code == 0
 
@@ -208,6 +210,50 @@ def test_negated_negative_control_does_not_count(tmp_path):
         "Negative control: n/a",
         "No negative control needed.",
         "negative control - none",
+    ):
+        guide = f"""
+### P0-G1 — Gate: everything works
+
+**Proven by:** the suite passing. {proof}
+
+**Report:** `P0-G1`
+"""
+        _write(tmp_path, guide, "### P0-G1 — PENDING\n")
+        assert lint.run(str(tmp_path)) == 1, proof
+
+
+def test_empty_documents_are_not_clean(tmp_path, capsys):
+    _write(tmp_path, guide="", log="")
+    assert lint.run(str(tmp_path)) == 1
+    assert "[empty guide]" in capsys.readouterr().out
+
+
+def test_task_without_report_line_is_flagged(tmp_path, capsys):
+    guide = """
+### P0-T1 — implement auth
+Steps only, no report line.
+
+### P0-T2 — add tests
+**Report:** `P0-T2`
+
+### Notes — context
+Not a task.
+"""
+    _write(tmp_path, guide, "### P0-T2 — PENDING\n")
+    assert lint.run(str(tmp_path)) == 1
+    out = capsys.readouterr().out
+    assert "[missing report line] 1 task(s)" in out
+    assert "  - P0-T1" in out
+    assert "Notes" not in out
+
+
+def test_deferred_negative_control_does_not_count(tmp_path):
+    for proof in (
+        "Negative control: TBD",
+        "Negative control: skipped for now",
+        "Negative control: TODO",
+        "The negative control step was not done.",
+        "Negative control is pending.",
     ):
         guide = f"""
 ### P0-G1 — Gate: everything works
