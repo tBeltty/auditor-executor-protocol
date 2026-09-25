@@ -26,8 +26,9 @@ PLACEHOLDER_RE = re.compile(r"<[^>\n]*>")
 # control needed", "negative control: TBD", "the negative control step was not done")
 # does not count as stating one. This is a wording heuristic, not proof the control ran.
 _DEFERRAL = (
-    r"n/?a|none|tbd|todo|later|pending|skip(?:ped)?|deferred|missing"
+    r"n/?a|n\.\s?a\.?|none(?:\s+yet)?|tbd|todo|later|pending|skip(?:ped)?|deferred|missing"
     r"|not\s+(?:yet|needed|required|applicable|done|run|performed|written)"
+    r"|to\s+be\s+(?:written|done|added|decided|determined|defined|confirmed|run)"
 )
 NEGATED_CONTROL_RE = re.compile(
     r"\b(?:no|without|skip(?:ped)?|omit(?:ted)?)\s+(?:the\s+)?negative\s+control"
@@ -35,8 +36,12 @@ NEGATED_CONTROL_RE = re.compile(
     rf"|negative\s+control\b[^.\n]{{0,40}}\b(?:was|is|were|are)\s+(?:{_DEFERRAL})\b",
     re.IGNORECASE,
 )
-# Verify output that only defers ("n/a", "TBD", "pending") is not pasted output.
-DEFERRAL_ONLY_RE = re.compile(rf"^[^A-Za-z0-9\n]*(?:{_DEFERRAL})[^A-Za-z0-9\n]*$", re.IGNORECASE)
+# Text that only defers ("n/a", "TBD", "none yet") or is only punctuation ("-", "...") is
+# not a stated control or pasted output.
+DEFERRAL_ONLY_RE = re.compile(rf"^[^A-Za-z0-9]*(?:(?:{_DEFERRAL})[^A-Za-z0-9]*)?$", re.IGNORECASE)
+CONTROL_MENTION_RE = re.compile(r"negative\s+control", re.IGNORECASE)
+# Where a stated control ends: the next bold field, heading, or blank line.
+CONTROL_END_RE = re.compile(r"\n\s*(?:[-*]\s+)?(?:\*\*|__)[^*_\n]+:|\n#|\n\s*\n")
 # A task or gate ID contains a digit (P0-T1, T3, G2); headings like "### Notes — x" are not tasks.
 TASK_ID_RE = re.compile(r"\d")
 FENCE_LINE_RE = re.compile(r"^\s*(```|~~~)[\w-]*\s*$", re.MULTILINE)
@@ -61,7 +66,17 @@ def _guide_sections(text: str) -> list[tuple[str, str, str]]:
 
 
 def _states_negative_control(body: str) -> bool:
-    return "negative control" in body.lower() and not NEGATED_CONTROL_RE.search(body)
+    """True when a mention of the negative control is followed by what it is: text that is
+    not empty, a template placeholder, punctuation, or a deferral, and nothing negates it."""
+    if NEGATED_CONTROL_RE.search(body):
+        return False
+    for mention in CONTROL_MENTION_RE.finditer(body):
+        rest = body[mention.end() :]
+        end = CONTROL_END_RE.search(rest)
+        text = PLACEHOLDER_RE.sub("", rest[: end.start()] if end else rest).strip()
+        if not DEFERRAL_ONLY_RE.match(text):
+            return True
+    return False
 
 
 def _is_gate(task_id: str, title: str) -> bool:

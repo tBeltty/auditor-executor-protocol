@@ -318,3 +318,47 @@ $ pytest -q
     assert "[done without evidence] 2 report(s)" in out
     assert "  - P1-T1" in out and "  - P1-G1" in out
     assert "  - P1-T2" not in out
+
+
+def test_negative_control_needs_content_not_a_label(tmp_path):
+    for proof in (
+        "**Negative control:**",
+        "**Negative control:** —",
+        "**Negative control:** <remove the guard and observe failure>",
+        "**Negative control:** to be written",
+        "**Negative control:** N.A.",
+        "**Negative control:** ...",
+    ):
+        guide = f"""
+### P0-G1 — Gate: login rejects bad tokens
+
+{proof}
+**Report:** `P0-G1`
+"""
+        _write(tmp_path, guide, "### P0-G1 — PENDING\n")
+        assert lint.run(str(tmp_path)) == 1, proof
+
+
+def test_stated_negative_control_on_the_next_line_counts(tmp_path):
+    guide = """
+### P0-G1 — Gate: login rejects bad tokens
+
+**Negative control:**
+remove the token check in auth.py, run test_login_rejects_bad_token, watch it fail.
+
+**Report:** `P0-G1`
+"""
+    _write(tmp_path, guide, "### P0-G1 — PENDING\n")
+    assert lint.run(str(tmp_path)) == 0
+
+
+def test_done_with_punctuation_or_none_yet_as_output_is_flagged(tmp_path, capsys):
+    ids = ("P0-T1", "P0-T2", "P0-T3")
+    guide = "".join(f"\n### {i} — Do a thing\n**Report:** `{i}`\n" for i in ids)
+    log = "".join(
+        f"\n### {i} — DONE\n**Verify output:**\n{value}\n**Observations:** none\n"
+        for i, value in zip(ids, ("-", "…", "None yet"))
+    )
+    _write(tmp_path, guide, log)
+    assert lint.run(str(tmp_path)) == 1
+    assert "[done without evidence] 3 report(s)" in capsys.readouterr().out
