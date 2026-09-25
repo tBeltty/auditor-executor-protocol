@@ -103,7 +103,8 @@ a discussion.
 **Annexes** supersede a document that is already open in the Executor's session. Never
 edit an order in flight — issue a new annex, and say at the top which item it replaces.
 
-`auditkit init <dir>` scaffolds all four as empty templates.
+`auditkit init <dir>` scaffolds the first three as empty templates plus an empty
+`annexes/` directory for the fourth.
 
 ### The deferred items ledger (in the plan of record)
 
@@ -386,14 +387,20 @@ out of sync from.
 
 If `auditkit` is installed, prefer it over doing these by hand:
 
-- `auditkit init <dir>` — scaffold the four documents from templates.
+- `auditkit init <dir>` — scaffold the plan of record, execution guide, and compliance
+  log from templates, plus an empty `annexes/` directory.
 - `auditkit lint <dir>` — cross-check task IDs between the execution guide and the
-  compliance log, flag `DONE` reports with no pasted verify output, flag near-duplicate
-  paragraphs, warn on annex count per phase, flag gates with no stated negative control.
+  compliance log in both directions, flag `DONE` reports with no pasted verify output,
+  flag near-duplicate paragraphs, warn on annex count per phase, flag gates with no
+  stated negative control (a negated mention such as "n/a" does not count). Missing
+  documents are an error, not a clean result.
 - `auditkit negcontrol --file <path> --break-cmd "<cmd>" --test-cmd "<cmd>"` — backs the
   file up, runs the break command, runs the test (expects failure), restores from the
   backup, runs the test again (expects success), and prints a paste-ready transcript.
-- `auditkit status <dir>` — tallies verdicts in the compliance log and prints what's
-  still open.
+  With `--restore-cmd`, the file must still end byte-identical to the backup or it is
+  restored from it; `--timeout` bounds each command.
+- `auditkit status <dir>` — combines the status board verdicts with the latest report
+  per ID and prints what's still open. Only `APPROVED` closes an item; a `DONE` with no
+  verdict is listed as awaiting audit.
 
 See the repo's `README.md` for install instructions.
