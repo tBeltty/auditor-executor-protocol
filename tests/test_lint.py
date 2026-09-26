@@ -449,3 +449,20 @@ def test_a_real_short_control_is_accepted(tmp_path):
 """
     _write(tmp_path, guide, "### P0-G1 — PENDING\n")
     assert lint.run(str(tmp_path)) == 0
+
+
+def test_refusals_written_as_the_control_do_not_count(tmp_path):
+    for proof in (
+        "**Negative control:** No control; the change is documentation only.",
+        "**Negative control:** deliberately omitted since coverage is high already",
+        "**Negative control:** we could not break it so there is nothing to show here",
+    ):
+        guide = f"""
+### P0-G1 — Gate: login rejects bad tokens
+
+{proof}
+
+**Report:** `P0-G1`
+"""
+        _write(tmp_path, guide, "### P0-G1 — PENDING\n")
+        assert lint.run(str(tmp_path)) == 1, proof
