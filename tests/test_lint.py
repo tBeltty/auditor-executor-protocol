@@ -505,3 +505,45 @@ def test_real_controls_in_different_words_are_accepted(tmp_path):
 """
         _write(tmp_path, guide, "### P0-G1 — PENDING\n")
         assert lint.run(str(tmp_path)) == 0, proof
+
+
+def test_hypothetical_and_waived_controls_do_not_count(tmp_path):
+    """Release 0.3.9: a control described as hypothetical, waived, or one whose action is
+    itself negated still names an action and a failure, but was never actually run."""
+    for proof in (
+        "**Negative control:** out of scope. Removing the check would make tests fail eventually.",
+        "**Negative control:** waived. Remove the check and the test fails.",
+        "**Negative control:** the owner waived it; use of the old API errors out anyway.",
+        "**Negative control:** unneeded, since removing the check fails anyway.",
+        "**Negative control:** postponed until Q3; the plan is to remove the lock and expect a failure.",
+        "**Negative control:** we did not remove the check, so we do not know if the test fails.",
+        "**Negative control:** hypothetically, removing the guard would fail the suite.",
+    ):
+        guide = f"""
+### P0-G1 — Gate: login rejects bad passwords
+
+{proof}
+
+**Report:** `P0-G1`
+"""
+        _write(tmp_path, guide, "### P0-G1 — PENDING\n")
+        assert lint.run(str(tmp_path)) == 1, proof
+
+
+def test_control_actions_missing_from_the_verb_list_are_accepted(tmp_path):
+    """Release 0.3.9: add, insert, introduce and stash are control actions too."""
+    for proof in (
+        "**Negative control:** add a hardcoded AWS key to src/config.js; the scanner flags it and exits 1.",
+        "**Negative control:** insert a fake AWS key into a tracked file; verify-no-secrets exits 1.",
+        "**Negative control:** introduce an off-by-one in paginate(); test_paginate fails.",
+        "**Negative control:** git stash the fix and rerun; three tests fail.",
+    ):
+        guide = f"""
+### P0-G1 — Gate: login rejects bad passwords
+
+{proof}
+
+**Report:** `P0-G1`
+"""
+        _write(tmp_path, guide, "### P0-G1 — PENDING\n")
+        assert lint.run(str(tmp_path)) == 0, proof
