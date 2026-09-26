@@ -46,7 +46,9 @@ MIN_CONTROL_WORDS = 4
 DEFERRAL_PHRASE_RE = re.compile(
     rf"\b(?:{_DEFERRAL}|tba|tbc|tbd|will\s+(?:be\s+)?(?:add|writ|do|defin|document|creat|implement|provid|decid)\w*"
     r"|see\s+(?:above|below)|to\s+follow|coming\s+soon|planned\s+(?:for|in)|in\s+a\s+later|once\s+\w+\s+(?:is|are|lands?)"
-    r"|next\s+(?:sprint|release|phase|iteration))\b",
+    r"|next\s+(?:sprint|release|phase|iteration)"
+    r"|no\s+(?:negative\s+)?controls?|omit\w*|could\s*n[o']?t\s+\w+|can\s*n[o']?t\s+be\s+(?:broken|shown|tested)"
+    r"|nothing\s+to\s+(?:show|break|test)|not\s+possible|impossible|unnecessary)\b",
     re.IGNORECASE,
 )
 WORD_RE = re.compile(r"[A-Za-z0-9_]+")

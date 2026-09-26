@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.7] - 2026-09-26
+
+### Fixed
+- `auditkit lint` accepted refusals written as the negative control ("No control; ...",
+  "deliberately omitted", "could not break it", "nothing to show").
+
 ## [0.3.6] - 2026-09-25
 
 ### Fixed
