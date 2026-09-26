@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.5] - 2026-09-25
+
+### Fixed
+- `auditkit lint` accepted a negative control that only deferred or pointed elsewhere
+  ("will add later", "TBA", "see above"). A stated control now needs at least a short sentence
+  (four words) with no deferral in it.
+
 ## [0.3.4] - 2026-09-25
 
 ### Fixed

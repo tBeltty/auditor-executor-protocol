@@ -399,3 +399,21 @@ def test_scaffolded_gate_needs_a_control_once_reported_done(tmp_path, capsys):
     assert lint.run(str(tmp_path)) == 1
     out = capsys.readouterr().out
     assert "[gate w/o negative control]" in out and "  - P0-G1" in out
+
+
+def test_wrapped_deferrals_and_cross_references_do_not_count(tmp_path):
+    for proof in (
+        "**Negative control:** will add later",
+        "**Negative control:** TBA",
+        "**Negative control:** see above",
+        "**Negative control:** we will write it later on",
+    ):
+        guide = f"""
+### P0-G1 — Gate: login rejects bad tokens
+
+{proof}
+
+**Report:** `P0-G1`
+"""
+        _write(tmp_path, guide, "### P0-G1 — PENDING\n")
+        assert lint.run(str(tmp_path)) == 1, proof
