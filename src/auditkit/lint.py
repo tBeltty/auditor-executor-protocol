@@ -48,7 +48,9 @@ DEFERRAL_PHRASE_RE = re.compile(
     r"|see\s+(?:above|below)|to\s+follow|coming\s+soon|planned\s+(?:for|in)|in\s+a\s+later|once\s+\w+\s+(?:is|are|lands?)"
     r"|next\s+(?:sprint|release|phase|iteration)"
     r"|no\s+(?:negative\s+)?controls?|omit\w*|could\s*n[o']?t\s+\w+|can\s*n[o']?t\s+be\s+(?:broken|shown|tested)"
-    r"|nothing\s+to\s+(?:show|break|test)|not\s+possible|impossible|unnecessary)\b",
+    r"|nothing\s+to\s+(?:show|break|test)|not\s+possible|impossible|unnecessary|unneeded"
+    r"|waiv\w*|out\s+of\s+scope|hypothetical\w*|postpon\w*|would|might|anyway|eventually"
+    r"|do\s+not\s+know|don'?t\s+know)\b",
     re.IGNORECASE,
 )
 WORD_RE = re.compile(r"[A-Za-z0-9_]+")
@@ -58,7 +60,8 @@ WORD_RE = re.compile(r"[A-Za-z0-9_]+")
 CONTROL_ACTION_RE = re.compile(
     r"\b(?:remov|revert|delet|disabl|comment\w*\s+out|drop|bypass|flip|mutat|replac|strip|undo"
     r"|roll\s*back|swap|corrupt|tamper|chang|patch|turn\s+off|unset|send|feed|submit|pass|call"
-    r"|request|post|inject|use|set|break|weaken|loosen|invert|negat|stub|mock)\w*",
+    r"|request|post|inject|use|set|break|weaken|loosen|invert|negat|stub|mock"
+    r"|add|insert|introduc|stash)\w*",
     re.IGNORECASE,
 )
 CONTROL_FAILURE_RE = re.compile(
@@ -69,6 +72,15 @@ CONTROL_FAILURE_RE = re.compile(
 # "nothing fails", "would not fail", "no error": the failure is negated.
 NEGATED_FAILURE_RE = re.compile(
     r"\b(?:not|never|no|nothing|without|n't)\s+(?:\w+\s+){0,2}(?:fail|error|reject|rais|throw|crash|block)\w*",
+    re.IGNORECASE,
+)
+# "did not remove", "never disabled": the action itself is negated, so it was not done.
+NEGATED_ACTION_RE = re.compile(
+    r"\b(?:not|never|no|without|n't|did\s+not|didn'?t)\s+(?:\w+\s+){0,3}"
+    r"(?:remov|revert|delet|disabl|drop|bypass|flip|mutat|replac|strip|undo"
+    r"|swap|corrupt|tamper|chang|patch|unset|send|feed|submit|pass|call"
+    r"|request|post|inject|break|weaken|loosen|invert|negat|stub|mock"
+    r"|add|insert|introduc|stash)\w*",
     re.IGNORECASE,
 )
 # Where a stated control ends: the next bold field, heading, or blank line.
@@ -113,6 +125,7 @@ def _states_negative_control(body: str) -> bool:
             and CONTROL_ACTION_RE.search(text)
             and CONTROL_FAILURE_RE.search(text)
             and not NEGATED_FAILURE_RE.search(text)
+            and not NEGATED_ACTION_RE.search(text)
         ):
             return True
     return False
