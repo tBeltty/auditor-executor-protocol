@@ -10,11 +10,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [0.3.9] - 2026-09-26
 
 ### Changed
-- `auditkit lint` no longer accepts a negative control described as hypothetical, waived,
-  postponed, or unneeded, or one whose own action is negated, even when it still mentions
-  an action and a failure.
-- `add`, `insert`, `introduce`, and `stash` are now recognized as valid control actions,
-  so a real control phrased with one of those verbs is no longer rejected.
+- Fixed `auditkit lint` accepting some invalid negative controls.
+- Fixed `auditkit lint` rejecting some valid negative controls.
 
 ## [0.3.8] - 2026-09-26
 
