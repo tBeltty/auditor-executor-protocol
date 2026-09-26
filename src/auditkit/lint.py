@@ -40,6 +40,14 @@ NEGATED_CONTROL_RE = re.compile(
 # not a stated control or pasted output.
 DEFERRAL_ONLY_RE = re.compile(rf"^[^A-Za-z0-9]*(?:(?:{_DEFERRAL})[^A-Za-z0-9]*)?$", re.IGNORECASE)
 CONTROL_MENTION_RE = re.compile(r"negative\s+controls?", re.IGNORECASE)
+# A stated control says what is broken and what fails: at least a short sentence, with no
+# deferral in it ("will add later", "TBA") and not a bare cross-reference ("see above").
+MIN_CONTROL_WORDS = 4
+DEFERRAL_PHRASE_RE = re.compile(
+    rf"\b(?:{_DEFERRAL}|tba|will\s+(?:add|write|do|define|document)\w*|see\s+(?:above|below))\b",
+    re.IGNORECASE,
+)
+WORD_RE = re.compile(r"[A-Za-z0-9_]+")
 # Where a stated control ends: the next bold field, heading, or blank line.
 CONTROL_END_RE = re.compile(r"\n\s*(?:[-*]\s+)?(?:\*\*|__)[^*_\n]+:|\n#|\n\s*\n")
 # A task or gate ID contains a digit (P0-T1, T3, G2); headings like "### Notes — x" are not tasks.
@@ -66,15 +74,16 @@ def _guide_sections(text: str) -> list[tuple[str, str, str]]:
 
 
 def _states_negative_control(body: str) -> bool:
-    """True when a mention of the negative control is followed by what it is: text that is
-    not empty, a template placeholder, punctuation, or a deferral, and nothing negates it."""
+    """True when a mention of the negative control is followed by what it is: at least a
+    short sentence (not a placeholder, punctuation, cross-reference, or deferral), and nothing
+    negates it. This is a wording heuristic; the Auditor still checks the control ran."""
     if NEGATED_CONTROL_RE.search(body):
         return False
     for mention in CONTROL_MENTION_RE.finditer(body):
         rest = body[mention.end() :]
         end = CONTROL_END_RE.search(rest)
         text = PLACEHOLDER_RE.sub("", rest[: end.start()] if end else rest).strip()
-        if not DEFERRAL_ONLY_RE.match(text):
+        if len(WORD_RE.findall(text)) >= MIN_CONTROL_WORDS and not DEFERRAL_PHRASE_RE.search(text):
             return True
     return False
 
