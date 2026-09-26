@@ -32,14 +32,14 @@ _DEFERRAL = (
 )
 NEGATED_CONTROL_RE = re.compile(
     r"\b(?:no|without|skip(?:ped)?|omit(?:ted)?)\s+(?:the\s+)?negative\s+control"
-    rf"|negative\s+control[^A-Za-z0-9\n]{{0,10}}(?:{_DEFERRAL})\b"
-    rf"|negative\s+control\b[^.\n]{{0,40}}\b(?:was|is|were|are)\s+(?:{_DEFERRAL})\b",
+    rf"|negative\s+controls?[^A-Za-z0-9\n]{{0,10}}(?:{_DEFERRAL})\b"
+    rf"|negative\s+controls?\b[^.\n]{{0,40}}\b(?:was|is|were|are)\s+(?:{_DEFERRAL})\b",
     re.IGNORECASE,
 )
 # Text that only defers ("n/a", "TBD", "none yet") or is only punctuation ("-", "...") is
 # not a stated control or pasted output.
 DEFERRAL_ONLY_RE = re.compile(rf"^[^A-Za-z0-9]*(?:(?:{_DEFERRAL})[^A-Za-z0-9]*)?$", re.IGNORECASE)
-CONTROL_MENTION_RE = re.compile(r"negative\s+control", re.IGNORECASE)
+CONTROL_MENTION_RE = re.compile(r"negative\s+controls?", re.IGNORECASE)
 # Where a stated control ends: the next bold field, heading, or blank line.
 CONTROL_END_RE = re.compile(r"\n\s*(?:[-*]\s+)?(?:\*\*|__)[^*_\n]+:|\n#|\n\s*\n")
 # A task or gate ID contains a digit (P0-T1, T3, G2); headings like "### Notes — x" are not tasks.
@@ -183,9 +183,14 @@ def run(target_dir: str, annex_threshold: int = DEFAULT_ANNEX_THRESHOLD) -> int:
         for i in orphans:
             print(f"  - {i}")
 
-    # 2. Gates with no stated negative control.
+    # 2. Gates with no stated negative control. A gate still exactly as scaffolded (its title
+    #    is a template placeholder) and not yet reported DONE is an unwritten gate, not a gap.
+    log_status = {m.group(1): m.group(2).upper() for m in LOG_HEADER_RE.finditer(log_text)}
     gate_gaps = []
     for task_id, title, body in _guide_sections(guide_text):
+        unwritten = PLACEHOLDER_RE.fullmatch(title.split(":", 1)[-1].strip()) is not None
+        if unwritten and log_status.get(task_id) != "DONE":
+            continue
         if _is_gate(task_id, title) and not _states_negative_control(body):
             gate_gaps.append(task_id)
     if gate_gaps:
