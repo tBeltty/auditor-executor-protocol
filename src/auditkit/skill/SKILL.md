@@ -393,7 +393,8 @@ If `auditkit` is installed, prefer it over doing these by hand:
   compliance log in both directions, flag `DONE` reports with no pasted verify output
   (a lone "n/a" or "TBD" is not output),
   flag near-duplicate paragraphs, warn on annex count per phase, flag gates with no
-  stated negative control (a negated or deferred mention such as "n/a" or "TBD" does
+  stated negative control (it must name the action that removes the protection and the
+  failure that follows; a negated, deferred, or waived mention such as "n/a" or "TBD" does
   not count). Missing documents, an execution guide with no tasks, and tasks without a
   `**Report:**` line are errors, not a clean result. Lint checks that evidence is
   present, not that it is authentic: re-running it is still the Auditor's job.

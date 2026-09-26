@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.8] - 2026-09-26
+
+### Changed
+- `auditkit lint` recognizes a stated negative control by what it says, not by a list of
+  excuses to reject: it must name the action that removes the protection (or feeds the input it
+  must stop) and the failure that follows, with no deferral and no negated failure. Waivers and
+  refusals in any wording ("waived by the tech lead", "out of scope", "does not apply") no longer
+  pass.
+
 ## [0.3.7] - 2026-09-26
 
 ### Fixed
