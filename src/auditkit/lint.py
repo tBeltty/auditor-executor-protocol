@@ -44,7 +44,9 @@ CONTROL_MENTION_RE = re.compile(r"negative\s+controls?", re.IGNORECASE)
 # deferral in it ("will add later", "TBA") and not a bare cross-reference ("see above").
 MIN_CONTROL_WORDS = 4
 DEFERRAL_PHRASE_RE = re.compile(
-    rf"\b(?:{_DEFERRAL}|tba|will\s+(?:add|write|do|define|document)\w*|see\s+(?:above|below))\b",
+    rf"\b(?:{_DEFERRAL}|tba|tbc|tbd|will\s+(?:be\s+)?(?:add|writ|do|defin|document|creat|implement|provid|decid)\w*"
+    r"|see\s+(?:above|below)|to\s+follow|coming\s+soon|planned\s+(?:for|in)|in\s+a\s+later|once\s+\w+\s+(?:is|are|lands?)"
+    r"|next\s+(?:sprint|release|phase|iteration))\b",
     re.IGNORECASE,
 )
 WORD_RE = re.compile(r"[A-Za-z0-9_]+")
