@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.4] - 2026-09-25
+
+### Fixed
+- `auditkit lint` accepted deferred controls written in the plural ("Negative controls: none").
+- The scaffolded gate stated a generic negative control ("A negative control — remove the
+  protection, ..."), so a gate reported `DONE` without ever writing one passed lint. The
+  template now has a `**Negative control:**` placeholder, and a gate still exactly as scaffolded
+  is skipped only until it is reported `DONE`.
+
 ## [0.3.3] - 2026-09-25
 
 ### Fixed
