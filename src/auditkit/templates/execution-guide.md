@@ -68,7 +68,8 @@ A `DONE` with no pasted output is recorded as `FAILED`.
 
 ### P0-G1 — Gate: <claim under test>
 
-**Proven by:**
-1. A negative control — remove the protection, observe the check fail, restore, observe it pass.
+**Proven by:** <the check that proves the claim>
+
+**Negative control:** <how you remove the protection, which check fails, and that it passes again once restored>
 
 **Report:** `P0-G1`

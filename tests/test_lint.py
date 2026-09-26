@@ -362,3 +362,40 @@ def test_done_with_punctuation_or_none_yet_as_output_is_flagged(tmp_path, capsys
     _write(tmp_path, guide, log)
     assert lint.run(str(tmp_path)) == 1
     assert "[done without evidence] 3 report(s)" in capsys.readouterr().out
+
+
+def test_plural_negative_controls_deferral_does_not_count(tmp_path):
+    for proof in (
+        "**Negative controls:** none",
+        "Negative controls: n/a",
+        "Negative controls: TBD",
+    ):
+        guide = f"""
+### P0-G1 — Gate: login rejects bad tokens
+
+{proof}
+
+**Report:** `P0-G1`
+"""
+        _write(tmp_path, guide, "### P0-G1 — PENDING\n")
+        assert lint.run(str(tmp_path)) == 1, proof
+
+
+def test_scaffolded_gate_needs_a_control_once_reported_done(tmp_path, capsys):
+    from auditkit import scaffold
+
+    scaffold.run(str(tmp_path))
+    assert lint.run(str(tmp_path)) == 0, "a fresh scaffold is clean"
+    log = tmp_path / "compliance-log.md"
+    text = log.read_text(encoding="utf-8")
+    assert "### P0-G1 — PENDING" in text
+    log.write_text(
+        text.replace(
+            "### P0-G1 — PENDING",
+            "### P0-G1 — DONE\n**Verify output:**\n```text\n$ pytest -q\n3 passed\n```",
+        ),
+        encoding="utf-8",
+    )
+    assert lint.run(str(tmp_path)) == 1
+    out = capsys.readouterr().out
+    assert "[gate w/o negative control]" in out and "  - P0-G1" in out
