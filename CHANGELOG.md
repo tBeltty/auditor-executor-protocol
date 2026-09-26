@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.6] - 2026-09-25
+
+### Fixed
+- `auditkit lint` accepted passive or scheduled deferrals as a negative control ("will be added
+  in P1", "TBC", "to follow", "coming soon", "planned for the next release").
+
 ## [0.3.5] - 2026-09-25
 
 ### Fixed

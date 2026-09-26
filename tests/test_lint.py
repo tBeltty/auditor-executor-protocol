@@ -417,3 +417,35 @@ def test_wrapped_deferrals_and_cross_references_do_not_count(tmp_path):
 """
         _write(tmp_path, guide, "### P0-G1 — PENDING\n")
         assert lint.run(str(tmp_path)) == 1, proof
+
+
+def test_passive_and_scheduled_deferrals_do_not_count(tmp_path):
+    for proof in (
+        "**Negative control:** will be added in P1.",
+        "**Negative control:** will be written once the harness lands.",
+        "**Negative control:** TBC once the test harness exists.",
+        "**Negative control:** to follow in the next sprint.",
+        "**Negative control:** coming soon, after the harness lands.",
+        "**Negative control:** planned for the next release.",
+    ):
+        guide = f"""
+### P0-G1 — Gate: login rejects bad tokens
+
+{proof}
+
+**Report:** `P0-G1`
+"""
+        _write(tmp_path, guide, "### P0-G1 — PENDING\n")
+        assert lint.run(str(tmp_path)) == 1, proof
+
+
+def test_a_real_short_control_is_accepted(tmp_path):
+    guide = """
+### P0-G1 — Gate: login rejects bad tokens
+
+**Negative control:** revert the guard and watch test_auth fail.
+
+**Report:** `P0-G1`
+"""
+    _write(tmp_path, guide, "### P0-G1 — PENDING\n")
+    assert lint.run(str(tmp_path)) == 0
