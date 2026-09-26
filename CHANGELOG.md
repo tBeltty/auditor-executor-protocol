@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.9] - 2026-09-26
+
+### Changed
+- `auditkit lint` rejects a stated negative control that is hypothetical ("would fail",
+  "might error"), waived, postponed, or unneeded, and one whose action is itself negated
+  ("we did not remove the check"), even when it still names an action and a failure in the
+  same sentence.
+- `CONTROL_ACTION_RE` recognizes `add`, `insert`, `introduce`, and `stash` as control
+  actions, so a real control phrased with one of those verbs is no longer rejected for
+  missing an action.
+
 ## [0.3.8] - 2026-09-26
 
 ### Changed
