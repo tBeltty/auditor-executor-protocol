@@ -466,3 +466,42 @@ def test_refusals_written_as_the_control_do_not_count(tmp_path):
 """
         _write(tmp_path, guide, "### P0-G1 — PENDING\n")
         assert lint.run(str(tmp_path)) == 1, proof
+
+
+def test_waivers_and_refusals_in_other_words_do_not_count(tmp_path):
+    for proof in (
+        "**Negative control:** We decided it is not worth doing for this gate at all.",
+        "**Negative control:** Does not apply here since this gate is documentation only.",
+        "**Negative control:** Unable to break the protection without rewriting the module.",
+        "**Negative control:** Not relevant for this gate, it only renames files.",
+        "**Negative control:** We do not have one for this gate yet.",
+        "**Negative control:** Waived by the tech lead for this release.",
+        "**Negative control:** Out of scope for this gate and this phase.",
+        "**Negative control:** Remove the guard; nothing fails, so it is fine.",
+    ):
+        guide = f"""
+### P0-G1 — Gate: login rejects bad passwords
+
+{proof}
+
+**Report:** `P0-G1`
+"""
+        _write(tmp_path, guide, "### P0-G1 — PENDING\n")
+        assert lint.run(str(tmp_path)) == 1, proof
+
+
+def test_real_controls_in_different_words_are_accepted(tmp_path):
+    for proof in (
+        "**Negative control:** send an expired token and watch the request get a 401.",
+        "**Negative control:** comment out the rate limiter, run the load test, it errors out.",
+        "**Negative control:** set MAX_RETRIES to 0 and the retry test raises TimeoutError.",
+    ):
+        guide = f"""
+### P0-G1 — Gate: login rejects bad passwords
+
+{proof}
+
+**Report:** `P0-G1`
+"""
+        _write(tmp_path, guide, "### P0-G1 — PENDING\n")
+        assert lint.run(str(tmp_path)) == 0, proof

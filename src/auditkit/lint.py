@@ -52,6 +52,25 @@ DEFERRAL_PHRASE_RE = re.compile(
     re.IGNORECASE,
 )
 WORD_RE = re.compile(r"[A-Za-z0-9_]+")
+# A stated control names an action that removes the protection or feeds the input it must
+# stop, and a failure it causes. Both are required, so a refusal or a waiver in new words
+# ("waived by the lead", "out of scope") does not read as a control.
+CONTROL_ACTION_RE = re.compile(
+    r"\b(?:remov|revert|delet|disabl|comment\w*\s+out|drop|bypass|flip|mutat|replac|strip|undo"
+    r"|roll\s*back|swap|corrupt|tamper|chang|patch|turn\s+off|unset|send|feed|submit|pass|call"
+    r"|request|post|inject|use|set|break|weaken|loosen|invert|negat|stub|mock)\w*",
+    re.IGNORECASE,
+)
+CONTROL_FAILURE_RE = re.compile(
+    r"\b(?:fail\w*|error\w*|reject\w*|red|non-?zero|exit(?:s|ed)?\s+(?:code\s+)?[1-9]\d*|rais\w*|throw\w*"
+    r"|crash\w*|den(?:y|ies|ied)|block\w*|refus\w*|[45]\d\d|assert\w*|catch\w*|caught|flag\w*|trip\w*)\b",
+    re.IGNORECASE,
+)
+# "nothing fails", "would not fail", "no error": the failure is negated.
+NEGATED_FAILURE_RE = re.compile(
+    r"\b(?:not|never|no|nothing|without|n't)\s+(?:\w+\s+){0,2}(?:fail|error|reject|rais|throw|crash|block)\w*",
+    re.IGNORECASE,
+)
 # Where a stated control ends: the next bold field, heading, or blank line.
 CONTROL_END_RE = re.compile(r"\n\s*(?:[-*]\s+)?(?:\*\*|__)[^*_\n]+:|\n#|\n\s*\n")
 # A task or gate ID contains a digit (P0-T1, T3, G2); headings like "### Notes — x" are not tasks.
@@ -78,16 +97,23 @@ def _guide_sections(text: str) -> list[tuple[str, str, str]]:
 
 
 def _states_negative_control(body: str) -> bool:
-    """True when a mention of the negative control is followed by what it is: at least a
-    short sentence (not a placeholder, punctuation, cross-reference, or deferral), and nothing
-    negates it. This is a wording heuristic; the Auditor still checks the control ran."""
+    """True when a mention of the negative control is followed by what it is: a sentence that
+    names the action that removes the protection (or feeds the input it must stop) and the
+    failure it causes, with no deferral or negation. This is a wording heuristic; the Auditor
+    still re-runs the control."""
     if NEGATED_CONTROL_RE.search(body):
         return False
     for mention in CONTROL_MENTION_RE.finditer(body):
         rest = body[mention.end() :]
         end = CONTROL_END_RE.search(rest)
         text = PLACEHOLDER_RE.sub("", rest[: end.start()] if end else rest).strip()
-        if len(WORD_RE.findall(text)) >= MIN_CONTROL_WORDS and not DEFERRAL_PHRASE_RE.search(text):
+        if (
+            len(WORD_RE.findall(text)) >= MIN_CONTROL_WORDS
+            and not DEFERRAL_PHRASE_RE.search(text)
+            and CONTROL_ACTION_RE.search(text)
+            and CONTROL_FAILURE_RE.search(text)
+            and not NEGATED_FAILURE_RE.search(text)
+        ):
             return True
     return False
 
