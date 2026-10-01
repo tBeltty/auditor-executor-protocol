@@ -2,20 +2,30 @@
 
 ## Supported Versions
 
+Only the latest minor release receives security fixes.
+
 | Version | Supported          |
 | ------- | ------------------ |
 | 0.3.x   | :white_check_mark: |
-| 0.2.x   | :x:                |
-| 0.1.x   | :x:                |
+| < 0.3   | :x:                |
+
+## Scope
+
+`auditkit` reads and writes local Markdown files and makes no network calls. `auditkit negcontrol`
+runs the shell commands you pass it, with your privileges, by design; that is not a
+vulnerability. Reports that matter most: `negcontrol` leaving a file broken or deleting its
+backup, `install-skill` writing outside its destination, and `lint` or `status` reporting a
+document set as clean or closed when it is not.
 
 ## Reporting a Vulnerability
 
-We take security seriously. If you discover a vulnerability or security issue within this project:
+Do not open a public issue. Report it privately through
+[GitHub's private vulnerability reporting](https://github.com/tBeltty/auditor-executor-protocol/security/advisories/new),
+or by email to `jhonatan@tbelt.online`, with:
 
-1. **Do not create a public issue.**
-2. Send an email directly to the maintainer at `jhonatan@tbelt.online` with:
-   - A description of the issue.
-   - Steps to reproduce or a proof of concept.
-   - Affected versions and environments.
+- a description of the issue and its impact;
+- steps to reproduce or a proof of concept;
+- the affected `auditkit` version, Python version, and OS.
 
-You will receive an acknowledgment within 48 hours with next steps and remediation timelines.
+You will get an acknowledgment within a week. Fixes are released as a patch version and
+credited in `CHANGELOG.md` unless you ask otherwise.

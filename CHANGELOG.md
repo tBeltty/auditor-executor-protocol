@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- `python -m auditkit` runs the CLI.
+- `CODE_OF_CONDUCT.md`, and an issue chooser that routes vulnerability reports to private
+  disclosure.
+- `auditkit lint` flags `[phase order]`: work reported in a phase before every earlier phase is
+  `APPROVED`.
+- Tests that check the README's CLI reference, exit codes, `install-skill` destinations,
+  `negcontrol` behavior, and its promises: unevidenced `DONE`, waived controls, unplanned
+  reports, and tests that cannot fail are caught.
+
 ### Changed
 - **Breaking:** `auditkit lint` counts verify output only inside a fenced code block, so prose
   such as "all tests pass" or "looks correct" is reported as `DONE` without evidence. Logs that
@@ -16,13 +26,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   whose action removes nothing.
 - README states that the Auditor re-runs every check in its own session and that `lint` checks
   the form of evidence, not whether it is genuine.
-
-### Added
-- `auditkit lint` flags `[phase order]`: work reported in a phase before every earlier phase is
-  `APPROVED`.
-- Tests that check the README's CLI reference, exit codes, `install-skill` destinations,
-  `negcontrol` behavior, and its promises: unevidenced `DONE`, waived controls, unplanned
-  reports, and tests that cannot fail are caught.
+- Errors and warnings go to stderr; stdout carries only results and transcripts.
+- Every `auditkit` option has help text. Each subcommand module no longer carries its own copy
+  of the argument parser, so `auditkit <command> --help` is the single, complete reference.
+- Dependabot only raises a pip minimum when it no longer admits the latest release.
+- CI pins every action to a commit SHA, cancels superseded runs, and checks the built
+  distributions with `twine check --strict`.
+- Package metadata lists supported Python versions, `Development Status`, and `Typing :: Typed`;
+  the version is defined once, in `auditkit.__version__`.
+- `.gitignore` covers common virtualenv, coverage, tox/nox, and editor files; the PR template
+  matches the CONTRIBUTING checklist.
 
 ### Removed
 - Python 3.9 and 3.10 support (end of life in October 2025 and October 2026). `auditkit` now
@@ -36,18 +49,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   command's options, exit codes, and the BSD-only `sed -i ''` in the `negcontrol` example now match
   the CLI.
 
-### Changed
-- Dependabot only raises a pip minimum when it no longer admits the latest release.
-- CI cancels superseded runs and checks the built distributions with `twine check --strict`.
-- Package metadata lists supported Python versions and `Typing :: Typed`.
-- `.gitignore` covers common virtualenv, coverage, tox/nox, and editor files; the PR template
-  matches the CONTRIBUTING checklist.
-
 ## [0.3.9] - 2026-09-26
 
-### Changed
-- Fixed `auditkit lint` accepting some invalid negative controls.
-- Fixed `auditkit lint` rejecting some valid negative controls.
+### Fixed
+- `auditkit lint` accepted hypothetical, waived, and action-negated negative controls.
+- `auditkit lint` rejected some valid negative controls.
 
 ## [0.3.8] - 2026-09-26
 
@@ -219,3 +225,16 @@ Fixes from an independent review of 0.3.0.
 - `auditkit` CLI tool featuring `init`, `lint`, `negcontrol`, `status`, and `install-skill` subcommands.
 - Multi-framework agent installation support for Antigravity, Claude Code, and Cursor.
 - Zero-dependency test runner (`tests/run.py`).
+
+[Unreleased]: https://github.com/tBeltty/auditor-executor-protocol/compare/v0.3.9...HEAD
+[0.3.9]: https://github.com/tBeltty/auditor-executor-protocol/compare/v0.3.8...v0.3.9
+[0.3.8]: https://github.com/tBeltty/auditor-executor-protocol/compare/v0.3.7...v0.3.8
+[0.3.7]: https://github.com/tBeltty/auditor-executor-protocol/compare/v0.3.6...v0.3.7
+[0.3.6]: https://github.com/tBeltty/auditor-executor-protocol/compare/v0.3.5...v0.3.6
+[0.3.5]: https://github.com/tBeltty/auditor-executor-protocol/compare/v0.3.4...v0.3.5
+[0.3.4]: https://github.com/tBeltty/auditor-executor-protocol/compare/v0.3.3...v0.3.4
+[0.3.3]: https://github.com/tBeltty/auditor-executor-protocol/compare/v0.3.2...v0.3.3
+[0.3.2]: https://github.com/tBeltty/auditor-executor-protocol/compare/v0.3.1...v0.3.2
+[0.3.1]: https://github.com/tBeltty/auditor-executor-protocol/compare/v0.3.0...v0.3.1
+[0.3.0]: https://github.com/tBeltty/auditor-executor-protocol/compare/v0.2.0...v0.3.0
+[0.2.0]: https://github.com/tBeltty/auditor-executor-protocol/releases/tag/v0.2.0

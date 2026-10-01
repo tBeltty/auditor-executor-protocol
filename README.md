@@ -142,6 +142,8 @@ The `sed -i ''` form above is BSD/macOS sed; on GNU/Linux use `sed -i 's/.../...
 | `auditkit negcontrol` | `--test-cmd` (required), `--file`, `--break-cmd`, `--restore-cmd`, `--timeout` | Run automated backup, break, fail, restore, and pass cycle |
 | `auditkit status <dir>` | | Combine status board verdicts with reports; list everything not `APPROVED` |
 
+`python -m auditkit` works the same as `auditkit`. Errors go to stderr.
+
 Exit codes: `lint` and `negcontrol` return `0` when clean, `1` when they find a problem, and `2` on a usage error or missing document, so both can gate CI. `status` is informational and returns `0` whenever the compliance log exists.
 
 `auditkit` reads and writes local Markdown files only: no external databases, daemons, or network calls. `negcontrol` runs the shell commands you pass it.
@@ -167,7 +169,7 @@ pytest
 
 ## Contributing
 
-Contributions are welcome! Please read [`CONTRIBUTING.md`](CONTRIBUTING.md) for development guidelines, testing instructions, and our PR checklist. For security disclosures, refer to [`SECURITY.md`](SECURITY.md). Releases and historical updates are tracked in [`CHANGELOG.md`](CHANGELOG.md).
+Contributions are welcome. [`CONTRIBUTING.md`](CONTRIBUTING.md) covers the development setup, the quality gates, and the PR checklist; participation follows the [`CODE_OF_CONDUCT.md`](CODE_OF_CONDUCT.md). Report vulnerabilities privately as described in [`SECURITY.md`](SECURITY.md). Changes are listed in [`CHANGELOG.md`](CHANGELOG.md).
 
 ## License
 
