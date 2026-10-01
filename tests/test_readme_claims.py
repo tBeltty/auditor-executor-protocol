@@ -157,3 +157,37 @@ def test_promise_negcontrol_rejects_a_test_that_cannot_fail(tmp_path):
     )
     assert code == 1
     assert guarded.read_text(encoding="utf-8") == "protected\n"
+
+
+def test_promise_prose_is_not_evidence(tmp_path, capsys):
+    """'Reviewed and looks correct' is a claim; only pasted output in a code block counts."""
+    for claim in ("I reviewed it and it looks correct.", "All tests pass.", "```\n```"):
+        assert _lint(tmp_path, output=claim) == 1
+    assert "[done without evidence]" in capsys.readouterr().out
+
+
+def test_promise_hypothetical_or_empty_control_is_caught(tmp_path, capsys):
+    for control in (
+        "we could remove the check and it should fail",
+        "remove nothing; the test fails if it is broken",
+    ):
+        assert _lint(tmp_path, control=control) == 1
+    assert "[gate w/o negative control]" in capsys.readouterr().out
+
+
+PHASE_1 = "\n### P1-T1 — Next phase\n**Report:** `P1-T1`\n"
+PHASE_1_DONE = f"\n### P1-T1 — DONE\n**Verify output:**\n{REAL_OUTPUT}\n"
+
+
+def test_promise_phase_started_before_previous_approved_is_caught(tmp_path, capsys):
+    guide = GUIDE.format(control=REAL_CONTROL) + PHASE_1
+    (tmp_path / "execution-guide.md").write_text(guide, encoding="utf-8")
+    log = LOG.format(output=REAL_OUTPUT) + PHASE_1_DONE
+    (tmp_path / "compliance-log.md").write_text(log, encoding="utf-8")
+    assert cli.main(["lint", str(tmp_path)]) == 1
+    assert "[phase order]" in capsys.readouterr().out
+
+    approved = "### P0-T1 — APPROVED\n\n### P0-G1 — APPROVED\n"
+    log = log.replace("### P0-G1 — PENDING\n**Verify output:**\n", "") + approved
+    (tmp_path / "compliance-log.md").write_text(log, encoding="utf-8")
+    assert cli.main(["lint", str(tmp_path)]) == 0

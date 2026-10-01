@@ -50,6 +50,8 @@ DEFERRAL_PHRASE_RE = re.compile(
     r"|no\s+(?:negative\s+)?controls?|omit\w*|could\s*n[o']?t\s+\w+|can\s*n[o']?t\s+be\s+(?:broken|shown|tested)"
     r"|nothing\s+to\s+(?:show|break|test)|not\s+possible|impossible|unnecessary|unneeded"
     r"|waiv\w*|out\s+of\s+scope|hypothetical\w*|postpon\w*|would|might|anyway|eventually"
+    r"|could|should|may|maybe|perhaps|probably|presumably|supposedly|hopefully|in\s+theory"
+    r"|(?:remov|disabl|break|chang|delet|revert|bypass|mutat)\w*\s+nothing"
     r"|do\s+not\s+know|don'?t\s+know)\b",
     re.IGNORECASE,
 )
@@ -88,6 +90,10 @@ CONTROL_END_RE = re.compile(r"\n\s*(?:[-*]\s+)?(?:\*\*|__)[^*_\n]+:|\n#|\n\s*\n"
 # A task or gate ID contains a digit (P0-T1, T3, G2); headings like "### Notes — x" are not tasks.
 TASK_ID_RE = re.compile(r"\d")
 FENCE_LINE_RE = re.compile(r"^\s*(```|~~~)[\w-]*\s*$", re.MULTILINE)
+# Pasted output is a fenced block with something in it; prose about the output is a claim.
+FENCED_BLOCK_RE = re.compile(r"^\s*(```|~~~)[\w-]*\s*\n(.*?)^\s*\1\s*$", re.MULTILINE | re.DOTALL)
+PHASE_RE = re.compile(r"^P(\d+)-", re.IGNORECASE)
+VERDICTS = {"APPROVED", "CONDITIONAL", "REJECTED"}
 
 MIN_DUP_LEN = 120
 DEFAULT_ANNEX_THRESHOLD = 6
@@ -139,8 +145,9 @@ def _done_without_evidence(log_text: str) -> list[str]:
     """IDs reported DONE whose **Verify output:** field is missing, empty, or only defers.
 
     The protocol records such a report as FAILED: evidence is pasted command output,
-    not a claim that the command passed. Template placeholders, bare code fences, and a
-    lone deferral such as "n/a" or "TBD" do not count as output.
+    not a claim that the command passed. Output counts only inside a fenced code block,
+    so prose such as "all tests pass" or "looks correct" is not evidence; template
+    placeholders, empty fences, and a lone deferral such as "n/a" or "TBD" are not either.
     """
     missing = []
     for m in LOG_HEADER_RE.finditer(log_text):
@@ -156,10 +163,39 @@ def _done_without_evidence(log_text: str) -> list[str]:
         after = body[field.end() :]
         nxt = NEXT_FIELD_RE.search(after)
         evidence = after[: nxt.start()] if nxt else after
-        evidence = FENCE_LINE_RE.sub("", PLACEHOLDER_RE.sub("", evidence)).strip()
-        if not evidence or DEFERRAL_ONLY_RE.match(evidence):
+        blocks = [
+            PLACEHOLDER_RE.sub("", b.group(2)).strip() for b in FENCED_BLOCK_RE.finditer(evidence)
+        ]
+        if not any(b and not DEFERRAL_ONLY_RE.match(b) for b in blocks):
             missing.append(m.group(1))
     return missing
+
+
+def _phase_order_violations(guide_text: str, log_text: str) -> list[str]:
+    """IDs reported DONE in a phase that started before every earlier phase was APPROVED."""
+    from .status import _board_verdicts
+
+    ids = [task_id for task_id, _, _ in _guide_sections(guide_text) if TASK_ID_RE.search(task_id)]
+    verdicts = {k: v for k, v in _board_verdicts(log_text).items() if v in VERDICTS}
+    reports: dict[str, str] = {}
+    for m in LOG_HEADER_RE.finditer(log_text):
+        task_id, value = m.group(1), m.group(2).upper()
+        ids.append(task_id)
+        if value in VERDICTS:
+            verdicts.setdefault(task_id, value)
+        else:
+            reports[task_id] = value
+    phases: defaultdict[int, set[str]] = defaultdict(set)
+    for task_id in ids:
+        found = PHASE_RE.match(task_id)
+        if found:
+            phases[int(found.group(1))].add(task_id)
+    violations = []
+    for phase, members in sorted(phases.items()):
+        earlier = {i for p, m in phases.items() if p < phase for i in m}
+        if any(verdicts.get(i) != "APPROVED" for i in earlier):
+            violations += sorted(i for i in members if reports.get(i) == "DONE" or i in verdicts)
+    return violations
 
 
 HEADER_LINE_RE = re.compile(r"^###\s+.*$", re.MULTILINE)
@@ -262,6 +298,17 @@ def run(target_dir: str, annex_threshold: int = DEFAULT_ANNEX_THRESHOLD) -> int:
             "compliance-log.md have no pasted Verify output (the protocol records these as FAILED):"
         )
         for i in unevidenced:
+            print(f"  - {i}")
+
+    # 3a. Work reported in a phase whose predecessors are not all APPROVED.
+    out_of_order = _phase_order_violations(guide_text, log_text)
+    if out_of_order:
+        problems += len(out_of_order)
+        print(
+            f"[phase order] {len(out_of_order)} report(s) in a phase started before every "
+            "earlier phase was APPROVED:"
+        )
+        for i in out_of_order:
             print(f"  - {i}")
 
     # 4. Near-duplicate paragraphs in the log (append-only rot).
