@@ -163,7 +163,9 @@ def test_promise_prose_is_not_evidence(tmp_path, capsys):
     """'Reviewed and looks correct' is a claim; only pasted output in a code block counts."""
     for claim in ("I reviewed it and it looks correct.", "All tests pass.", "```\n```"):
         assert _lint(tmp_path, output=claim) == 1
-    assert "[done without evidence]" in capsys.readouterr().out
+    out = capsys.readouterr().out
+    assert "[done without evidence]" in out
+    assert "code block" in out
 
 
 def test_promise_hypothetical_or_empty_control_is_caught(tmp_path, capsys):

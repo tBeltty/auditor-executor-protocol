@@ -8,8 +8,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Changed
-- `auditkit lint` counts verify output only inside a fenced code block, so prose such as
-  "all tests pass" or "looks correct" is reported as `DONE` without evidence.
+- **Breaking:** `auditkit lint` counts verify output only inside a fenced code block, so prose
+  such as "all tests pass" or "looks correct" is reported as `DONE` without evidence. Logs that
+  pasted output without a fence fail until it is wrapped in a ``` block; the lint message says
+  how. Release this as 0.4.0.
 - `auditkit lint` rejects hypothetical negative controls ("could", "should", "may") and ones
   whose action removes nothing.
 

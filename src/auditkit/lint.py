@@ -299,6 +299,10 @@ def run(target_dir: str, annex_threshold: int = DEFAULT_ANNEX_THRESHOLD) -> int:
         )
         for i in unevidenced:
             print(f"  - {i}")
+        print(
+            "  Paste the literal command output under **Verify output:** inside a ``` code "
+            "block; a sentence about the result is not output."
+        )
 
     # 3a. Work reported in a phase whose predecessors are not all APPROVED.
     out_of_order = _phase_order_violations(guide_text, log_text)
