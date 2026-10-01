@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 - `python -m auditkit` runs the CLI.
+- A release workflow publishes to PyPI through trusted publishing when a `v*` tag is pushed.
 - `CODE_OF_CONDUCT.md`, and an issue chooser that routes vulnerability reports to private
   disclosure.
 - `auditkit lint` flags `[phase order]`: work reported in a phase before every earlier phase is
@@ -18,6 +19,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   reports, and tests that cannot fail are caught.
 
 ### Changed
+- The distribution is named `auditor-executor-protocol`, because `auditkit` on PyPI belongs to
+  an unrelated project. The command and the import package are still `auditkit`.
 - **Breaking:** `auditkit lint` counts verify output only inside a fenced code block, so prose
   such as "all tests pass" or "looks correct" is reported as `DONE` without evidence. Logs that
   pasted output without a fence fail until it is wrapped in a ``` block; the lint message says
