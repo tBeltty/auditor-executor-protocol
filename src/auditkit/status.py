@@ -58,7 +58,7 @@ def run(target_dir: str) -> int:
     target = Path(target_dir)
     log_path = target / "compliance-log.md"
     if not log_path.exists():
-        print(f"error: {log_path} not found.")
+        print(f"error: {log_path} not found.", file=sys.stderr)
         return 2
 
     text = log_path.read_text(encoding="utf-8")
@@ -120,16 +120,3 @@ def run(target_dir: str) -> int:
     last_id = last_header_id or next(reversed(order))
     print(f"\nMost recent entry: {last_id} ({states[last_id]})")
     return 0
-
-
-def main(argv: list[str] | None = None) -> int:
-    import argparse
-
-    parser = argparse.ArgumentParser(prog="auditkit status")
-    parser.add_argument("target_dir")
-    args = parser.parse_args(argv)
-    return run(args.target_dir)
-
-
-if __name__ == "__main__":
-    sys.exit(main())

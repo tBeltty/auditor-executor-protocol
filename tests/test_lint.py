@@ -122,13 +122,6 @@ def test_annex_phase_breakdown_warns(tmp_path, capsys):
     assert "Phase 2" in out
 
 
-def test_lint_main_cli(tmp_path):
-    guide = "### P0-T1 — Do a thing\n**Report:** `P0-T1`\n"
-    _write(tmp_path, guide=guide, log="### P0-T1 — PENDING\n")
-    code = lint.main([str(tmp_path), "--annex-threshold", "10"])
-    assert code == 0
-
-
 def test_done_without_verify_output_is_flagged(tmp_path, capsys):
     guide = """
 ### P0-T1 — Do a thing
@@ -188,7 +181,7 @@ def test_missing_directory_or_documents_is_an_error(tmp_path, capsys):
     assert lint.run(str(tmp_path / "does-not-exist")) == 2
     (tmp_path / "execution-guide.md").write_text("", encoding="utf-8")
     assert lint.run(str(tmp_path)) == 2
-    assert "missing compliance-log.md" in capsys.readouterr().out
+    assert "missing compliance-log.md" in capsys.readouterr().err
 
 
 def test_orphan_log_entry_is_flagged(tmp_path, capsys):

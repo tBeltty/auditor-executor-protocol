@@ -1,4 +1,12 @@
+import argparse
+import os
+import subprocess
+import sys
+from pathlib import Path
+
 from auditkit import __version__, cli
+
+SRC = Path(__file__).resolve().parent.parent / "src"
 
 
 def test_cli_version(capsys):
@@ -62,3 +70,32 @@ def test_cli_negcontrol_command(tmp_path):
         ]
     )
     assert code == 0
+
+
+def test_python_dash_m_runs_the_cli():
+    result = subprocess.run(
+        [sys.executable, "-m", "auditkit", "--version"],
+        capture_output=True,
+        text=True,
+        check=False,
+        env={**os.environ, "PYTHONPATH": str(SRC)},
+    )
+    assert result.returncode == 0
+    assert result.stdout.strip() == f"auditkit {__version__}"
+
+
+def test_every_option_has_help():
+    parser = cli.build_parser()
+    subparsers = next(a for a in parser._actions if isinstance(a, argparse._SubParsersAction))
+    for name, sub in subparsers.choices.items():
+        for action in sub._actions:
+            if isinstance(action, argparse._HelpAction):
+                continue
+            assert action.help, f"auditkit {name} {action.dest} has no help text"
+
+
+def test_errors_go_to_stderr(tmp_path, capsys):
+    assert cli.main(["status", str(tmp_path)]) == 2
+    captured = capsys.readouterr()
+    assert "error:" in captured.err
+    assert captured.out == ""

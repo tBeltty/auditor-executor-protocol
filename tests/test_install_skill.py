@@ -82,7 +82,7 @@ def test_install_skill_missing_source_returns_error(tmp_path, capsys):
         assert install_skill.run(dest_path=str(tmp_path / "SKILL.md")) == 2
     finally:
         install_skill._skill_source_dir = original  # type: ignore[assignment]
-    assert "could not be found" in capsys.readouterr().out
+    assert "could not be found" in capsys.readouterr().err
 
 
 def test_install_skill_auto_detects_claude(tmp_path):
@@ -123,13 +123,6 @@ def test_install_skill_global_flag():
     assert ".cursor" in str(dest_cursor)
     dest_anti = install_skill.resolve_dest_path(agent="antigravity", is_global=True)
     assert ".gemini" in str(dest_anti)
-
-
-def test_install_skill_main_cli(tmp_path):
-    dest = tmp_path / "installed_skill.md"
-    code = install_skill.main(["--dest", str(dest), "--force"])
-    assert code == 0
-    assert dest.exists()
 
 
 def test_install_skill_markers_and_env(tmp_path):
