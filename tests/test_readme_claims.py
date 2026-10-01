@@ -83,3 +83,77 @@ def test_negcontrol_verifies_a_real_protection(tmp_path):
     # A break that removes nothing: the test never fails, so the control is rejected.
     assert cli.main([*args, "--break-cmd", f'{PY} -c "pass"']) == 1
     assert cli.main(["negcontrol", "--test-cmd", test_cmd]) == 2
+
+
+# The README's promises: drift and unverified claims are caught, not just reported.
+
+GUIDE = """### P0-T1 — Add auth middleware
+**Report:** `P0-T1`
+
+### P0-G1 — Gate: anonymous requests are rejected
+**Negative control:** {control}
+**Report:** `P0-G1`
+"""
+LOG = """### P0-T1 — DONE
+**Verify output:**
+{output}
+**Observations:** none
+
+### P0-G1 — PENDING
+**Verify output:**
+"""
+REAL_CONTROL = "remove requireAuth from the router; auth.test.js fails with 200 instead of 401"
+REAL_OUTPUT = "```\nPASS auth.test.js (3 tests)\n```"
+
+
+def _lint(tmp_path, control=REAL_CONTROL, output=REAL_OUTPUT, extra_log=""):
+    (tmp_path / "execution-guide.md").write_text(GUIDE.format(control=control), encoding="utf-8")
+    log = LOG.format(output=output) + extra_log
+    (tmp_path / "compliance-log.md").write_text(log, encoding="utf-8")
+    return cli.main(["lint", str(tmp_path)])
+
+
+def test_promise_honest_document_set_is_clean(tmp_path):
+    assert _lint(tmp_path) == 0
+
+
+def test_promise_done_without_pasted_output_is_caught(tmp_path, capsys):
+    assert _lint(tmp_path, output="n/a") == 1
+    assert "[done without evidence]" in capsys.readouterr().out
+
+
+def test_promise_waived_negative_control_is_caught(tmp_path, capsys):
+    for waiver in ("n/a", "not needed, the framework handles auth"):
+        assert _lint(tmp_path, control=waiver) == 1
+    assert "[gate w/o negative control]" in capsys.readouterr().out
+
+
+def test_promise_report_for_unplanned_work_is_caught(tmp_path, capsys):
+    assert _lint(tmp_path, extra_log="\n### P0-T9 — DONE\n**Verify output:**\nok\n") == 1
+    assert "[orphan report]" in capsys.readouterr().out
+
+
+def test_promise_self_reported_done_stays_open(tmp_path, capsys):
+    _lint(tmp_path)
+    cli.main(["status", str(tmp_path)])
+    assert "P0-T1: AWAITING AUDIT" in capsys.readouterr().out
+
+
+def test_promise_negcontrol_rejects_a_test_that_cannot_fail(tmp_path):
+    """A suite that stays green because it never checks the protection is not verification."""
+    guarded = tmp_path / "guard.txt"
+    guarded.write_text("protected\n", encoding="utf-8")
+    break_cmd = f"{PY} -c \"import os; os.remove(r'{guarded}')\""
+    code = cli.main(
+        [
+            "negcontrol",
+            "--file",
+            str(guarded),
+            "--break-cmd",
+            break_cmd,
+            "--test-cmd",
+            f'{PY} -c "pass"',
+        ]
+    )
+    assert code == 1
+    assert guarded.read_text(encoding="utf-8") == "protected\n"

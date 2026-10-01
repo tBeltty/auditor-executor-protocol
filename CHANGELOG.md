@@ -8,8 +8,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
-- Tests that check the README's CLI reference, exit codes, `install-skill` destinations, and
-  `negcontrol` behavior against the CLI.
+- Tests that check the README's CLI reference, exit codes, `install-skill` destinations,
+  `negcontrol` behavior, and its promises: unevidenced `DONE`, waived controls, unplanned
+  reports, and tests that cannot fail are caught.
 
 ### Removed
 - Python 3.9 and 3.10 support (end of life in October 2025 and October 2026). `auditkit` now
