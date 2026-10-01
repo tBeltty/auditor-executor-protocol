@@ -220,7 +220,8 @@ def run(target_dir: str, annex_threshold: int = DEFAULT_ANNEX_THRESHOLD) -> int:
     ]
     if missing_docs:
         print(
-            f"error: {target} is missing {', '.join(missing_docs)} (run `auditkit init {target}`)."
+            f"error: {target} is missing {', '.join(missing_docs)} (run `auditkit init {target}`).",
+            file=sys.stderr,
         )
         return 2
     guide_text = _read(target / "execution-guide.md")
@@ -359,17 +360,3 @@ def run(target_dir: str, annex_threshold: int = DEFAULT_ANNEX_THRESHOLD) -> int:
 
     print(f"\n{problems} issue(s) found.")
     return 1
-
-
-def main(argv: list[str] | None = None) -> int:
-    import argparse
-
-    parser = argparse.ArgumentParser(prog="auditkit lint")
-    parser.add_argument("target_dir")
-    parser.add_argument("--annex-threshold", type=int, default=DEFAULT_ANNEX_THRESHOLD)
-    args = parser.parse_args(argv)
-    return run(args.target_dir, args.annex_threshold)
-
-
-if __name__ == "__main__":
-    sys.exit(main())

@@ -1,3 +1,6 @@
 # The sdist ships the canonical skill so tests/test_skill_sync.py can run from it.
 include SKILL.md
 recursive-include references *.md
+# README tells sdist users to run tests/run.py; setuptools only picks up test_*.py on its own.
+include tests/run.py
+include CHANGELOG.md
