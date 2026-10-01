@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import os
 import shutil
+import sys
 from pathlib import Path
 
 REFERENCES_DIR = "references"
@@ -109,7 +110,7 @@ def run(
     try:
         source = _skill_source_dir()
     except FileNotFoundError as e:
-        print(f"error: {e}")
+        print(f"error: {e}", file=sys.stderr)
         return 2
 
     dest = resolve_dest_path(
@@ -123,52 +124,3 @@ def run(
     _install(source, dest)
     print(f"installed {dest}")
     return 0
-
-
-def main(argv: list[str] | None = None) -> int:
-    import argparse
-
-    parser = argparse.ArgumentParser(prog="auditkit install-skill")
-    parser.add_argument(
-        "target_dir",
-        nargs="?",
-        default=".",
-        help="target project directory (defaults to current directory)",
-    )
-    parser.add_argument(
-        "--agent",
-        choices=["antigravity", "claude", "cursor", "auto"],
-        default="auto",
-        help="target agent framework (default: auto-detect)",
-    )
-    parser.add_argument(
-        "--global",
-        dest="is_global",
-        action="store_true",
-        help="install to user-level global configuration directory",
-    )
-    parser.add_argument(
-        "--dest",
-        dest="dest_path",
-        default=None,
-        help="explicit destination file path (SKILL.md installs references/ beside it; any other name gets a single bundled file)",
-    )
-    parser.add_argument(
-        "--force",
-        action="store_true",
-        help="overwrite existing destination file",
-    )
-    args = parser.parse_args(argv)
-    return run(
-        target_dir=args.target_dir,
-        agent=args.agent,
-        is_global=args.is_global,
-        dest_path=args.dest_path,
-        force=args.force,
-    )
-
-
-if __name__ == "__main__":
-    import sys
-
-    sys.exit(main())

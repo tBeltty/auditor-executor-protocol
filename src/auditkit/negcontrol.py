@@ -101,10 +101,16 @@ def run(
     timeout: float | None = None,
 ) -> int:
     if not break_cmd and not restore_cmd:
-        print("error: pass --break-cmd, or --restore-cmd for a break you apply yourself.")
+        print(
+            "error: pass --break-cmd, or --restore-cmd for a break you apply yourself.",
+            file=sys.stderr,
+        )
         return 2
     if not file_path and not restore_cmd:
-        print("error: without --file, --restore-cmd is required (nothing to copy back).")
+        print(
+            "error: without --file, --restore-cmd is required (nothing to copy back).",
+            file=sys.stderr,
+        )
         return 2
 
     tmp_dir: Path | None = None
@@ -117,7 +123,7 @@ def run(
         if file_path:
             src = Path(file_path)
             if not src.exists():
-                print(f"error: {file_path} does not exist.")
+                print(f"error: {file_path} does not exist.", file=sys.stderr)
                 return 2
             tmp_dir = Path(tempfile.mkdtemp(prefix="auditkit-negcontrol-"))
             backup_path = tmp_dir / src.name
@@ -132,7 +138,9 @@ def run(
                 transcript.append(out.rstrip("\n"))
                 if code != 0:
                     print(
-                        f"warning: break command exited {code}. Continuing, but check it did what you meant."
+                        f"warning: break command exited {code}. "
+                        "Continuing, but check it did what you meant.",
+                        file=sys.stderr,
                     )
 
             transcript.append(f"$ {test_cmd}   # expect FAILURE")
@@ -183,43 +191,4 @@ def run(
             if restored_ok:
                 shutil.rmtree(tmp_dir, ignore_errors=True)
             else:
-                print(f"Backup kept at {backup_path}")
-
-
-def main(argv: list[str] | None = None) -> int:
-    import argparse
-
-    parser = argparse.ArgumentParser(prog="auditkit negcontrol")
-    parser.add_argument(
-        "--file", dest="file_path", default=None, help="file to back up and restore"
-    )
-    parser.add_argument(
-        "--break-cmd",
-        dest="break_cmd",
-        default=None,
-        help="shell command that removes the protection",
-    )
-    parser.add_argument(
-        "--test-cmd",
-        dest="test_cmd",
-        required=True,
-        help="shell command that should fail without the protection",
-    )
-    parser.add_argument(
-        "--restore-cmd",
-        dest="restore_cmd",
-        default=None,
-        help="shell command to restore; with --file, the backup still wins if the file differs",
-    )
-    parser.add_argument(
-        "--timeout",
-        type=float,
-        default=None,
-        help="seconds allowed per command (default: no limit)",
-    )
-    args = parser.parse_args(argv)
-    return run(args.test_cmd, args.break_cmd, args.file_path, args.restore_cmd, args.timeout)
-
-
-if __name__ == "__main__":
-    sys.exit(main())
+                print(f"Backup kept at {backup_path}", file=sys.stderr)
