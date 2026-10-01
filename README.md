@@ -1,6 +1,7 @@
 # Auditor/Executor Protocol
 
 [![CI](https://github.com/tBeltty/auditor-executor-protocol/actions/workflows/ci.yml/badge.svg)](https://github.com/tBeltty/auditor-executor-protocol/actions/workflows/ci.yml)
+[![PyPI](https://img.shields.io/pypi/v/auditor-executor-protocol)](https://pypi.org/project/auditor-executor-protocol/)
 [![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Code style: ruff](https://img.shields.io/badge/code%20style-ruff-000000.svg)](https://github.com/astral-sh/ruff)
@@ -65,8 +66,10 @@ One person can run this workflow alone by switching hats between two isolated ag
 Requires Python 3.11+ with zero third-party dependencies:
 
 ```bash
-pipx install git+https://github.com/tBeltty/auditor-executor-protocol
+pipx install auditor-executor-protocol
 ```
+
+The distribution is `auditor-executor-protocol` on PyPI; the command is `auditkit`. To run the latest `main` instead, use `pipx install git+https://github.com/tBeltty/auditor-executor-protocol`.
 
 Or from a clone, for development:
 

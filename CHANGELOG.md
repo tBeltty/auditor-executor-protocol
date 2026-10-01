@@ -23,7 +23,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 - The distribution is named `auditor-executor-protocol`, because `auditkit` on PyPI belongs to
-  an unrelated project. The command and the import package are still `auditkit`.
+  an unrelated project. The command and the import package are still `auditkit`. The README
+  installs it from PyPI.
 - **Breaking:** `auditkit lint` counts verify output only inside a fenced code block, so prose
   such as "all tests pass" or "looks correct" is reported as `DONE` without evidence. Logs that
   pasted output without a fence fail until it is wrapped in a ``` block; the lint message says
