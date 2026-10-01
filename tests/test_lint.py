@@ -357,7 +357,7 @@ def test_done_with_punctuation_or_none_yet_as_output_is_flagged(tmp_path, capsys
     guide = "".join(f"\n### {i} — Do a thing\n**Report:** `{i}`\n" for i in ids)
     log = "".join(
         f"\n### {i} — DONE\n**Verify output:**\n{value}\n**Observations:** none\n"
-        for i, value in zip(ids, ("-", "…", "None yet"))
+        for i, value in zip(ids, ("-", "…", "None yet"), strict=True)
     )
     _write(tmp_path, guide, log)
     assert lint.run(str(tmp_path)) == 1
