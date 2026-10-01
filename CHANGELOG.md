@@ -7,17 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Removed
+- Python 3.9 support (end of life since October 2025). `auditkit` now requires Python 3.10+.
+
 ### Fixed
-- `AGENTS.md` had been overwritten with the import stub meant for `GEMINI.md` (a symlink to it),
-  so the agent rules imported themselves and said nothing. The rules are restored, and
-  `GEMINI.md` and a new `CLAUDE.md` are plain files that import `AGENTS.md`.
+- `AGENTS.md` imported itself and said nothing, because `GEMINI.md` was a symlink to it. It is
+  now a short, generic agent guide that points to `CONTRIBUTING.md`; tool-specific instruction
+  files (`CLAUDE.md`, `GEMINI.md`) are no longer tracked.
 - README: the compliance log template, `install-skill` detection and `--global`/`--dest`, every
   command's options, exit codes, and the BSD-only `sed -i ''` in the `negcontrol` example now match
   the CLI.
 
 ### Changed
-- Dependabot only raises a pip minimum when it no longer admits the latest release, so updates
-  no longer raise floors that cannot install on Python 3.9.
+- Dependabot only raises a pip minimum when it no longer admits the latest release.
 - CI cancels superseded runs and checks the built distributions with `twine check --strict`.
 - Package metadata lists supported Python versions and `Typing :: Typed`.
 - `.gitignore` covers common virtualenv, coverage, tox/nox, and editor files; the PR template
