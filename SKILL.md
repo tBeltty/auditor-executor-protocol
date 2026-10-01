@@ -391,11 +391,12 @@ If `auditkit` is installed, prefer it over doing these by hand:
   log from templates, plus an empty `annexes/` directory.
 - `auditkit lint <dir>` — cross-check task IDs between the execution guide and the
   compliance log in both directions, flag `DONE` reports with no pasted verify output
-  (a lone "n/a" or "TBD" is not output),
-  flag near-duplicate paragraphs, warn on annex count per phase, flag gates with no
+  (output counts only inside a fenced code block; prose such as "all tests pass" or a lone
+  "n/a" is not output), flag work reported in a phase before every earlier phase is
+  `APPROVED`, flag near-duplicate paragraphs, warn on annex count per phase, flag gates with no
   stated negative control (it must name the action that removes the protection and the
-  failure that follows; a negated, deferred, or waived mention such as "n/a" or "TBD" does
-  not count). Missing documents, an execution guide with no tasks, and tasks without a
+  failure that follows; a negated, deferred, hypothetical, or waived mention such as "n/a",
+  "TBD", or "we could remove it" does not count). Missing documents, an execution guide with no tasks, and tasks without a
   `**Report:**` line are errors, not a clean result. Lint checks that evidence is
   present, not that it is authentic: re-running it is still the Auditor's job.
 - `auditkit negcontrol --file <path> --break-cmd "<cmd>" --test-cmd "<cmd>"` — backs the
