@@ -11,6 +11,9 @@ updates:
 
   - package-ecosystem: "pip"
     directory: "/"
+    # The pyproject entries are minimum versions, not pins. Only raise a floor when it no longer
+    # admits the latest release, so updates never drop support for an older Python in CI.
+    versioning-strategy: "increase-if-necessary"
     schedule:
       interval: "weekly"
     groups:
