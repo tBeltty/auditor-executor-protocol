@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- Tests that check the README's CLI reference, exit codes, `install-skill` destinations, and
+  `negcontrol` behavior against the CLI.
+
 ### Removed
 - Python 3.9 and 3.10 support (end of life in October 2025 and October 2026). `auditkit` now
   requires Python 3.11+.
