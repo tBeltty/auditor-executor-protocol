@@ -41,7 +41,9 @@ The Auditor/Executor Protocol prevents both using a strict four-document paper t
 | **Auditor** | Instructions, gates, verdicts | Writes feature code | Task expansions, verdicts, remediation orders |
 | **Executor** | Implementation, terminal evidence | Redesigns architecture, expands scope | Working code, unedited terminal output |
 
-One person can run this workflow alone by switching hats between two isolated agent sessions.
+The Auditor never takes the Executor's word for a result: it re-runs every verify command and gate itself before giving a verdict. That is what stops a pasted "tested and working" from closing a task.
+
+One person can run this workflow alone by switching hats between two isolated agent sessions. Keep them isolated, so the Auditor is never checking its own work.
 
 ---
 
@@ -111,7 +113,7 @@ Cross-check document consistency:
 auditkit lint docs/<task-name>
 ```
 
-`auditkit lint` catches an empty guide, tasks without a report line, missing report entries, log entries with no matching task, `DONE` reports whose verify output is not pasted in a code block, gates without a stated negative control (hypothetical or waived ones do not count), work reported in a phase before every earlier phase is `APPROVED`, duplicated log paragraphs, and annex buildup past `--annex-threshold` (default 6, overall or per phase).
+`auditkit lint` catches an empty guide, tasks without a report line, missing report entries, log entries with no matching task, `DONE` reports whose verify output is not pasted in a code block, gates without a stated negative control (hypothetical or waived ones do not count), work reported in a phase before every earlier phase is `APPROVED`, duplicated log paragraphs, and annex buildup past `--annex-threshold` (default 6, overall or per phase). It checks that evidence is present and in the right form, not that it is genuine; the Auditor's re-run does that.
 
 ### 5. Run a Negative Control
 

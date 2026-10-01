@@ -14,6 +14,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   how. Release this as 0.4.0.
 - `auditkit lint` rejects hypothetical negative controls ("could", "should", "may") and ones
   whose action removes nothing.
+- README states that the Auditor re-runs every check in its own session and that `lint` checks
+  the form of evidence, not whether it is genuine.
 
 ### Added
 - `auditkit lint` flags `[phase order]`: work reported in a phase before every earlier phase is
