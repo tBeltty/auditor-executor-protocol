@@ -8,7 +8,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Removed
-- Python 3.9 support (end of life since October 2025). `auditkit` now requires Python 3.10+.
+- Python 3.9 and 3.10 support (end of life in October 2025 and October 2026). `auditkit` now
+  requires Python 3.11+.
 
 ### Fixed
 - `AGENTS.md` imported itself and said nothing, because `GEMINI.md` was a symlink to it. It is

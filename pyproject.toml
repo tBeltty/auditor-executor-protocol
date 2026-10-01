@@ -7,7 +7,7 @@ name = "auditkit"
 version = "0.3.9"
 description = "Mechanical support for the Auditor/Executor protocol: scaffold, lint, and negative-control the document set for a multi-phase, multi-agent execution."
 readme = "README.md"
-requires-python = ">=3.10"
+requires-python = ">=3.11"
 license = "MIT"
 authors = [{ name = "tBeltty", email = "jhonatan@tbelt.online" }]
 keywords = [
@@ -23,7 +23,6 @@ classifiers = [
     "Intended Audience :: Developers",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3 :: Only",
-    "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
@@ -64,7 +63,7 @@ where = ["src"]
 
 [tool.ruff]
 line-length = 100
-target-version = "py310"
+target-version = "py311"
 
 [tool.ruff.lint]
 select = ["E", "F", "W", "I", "UP", "B", "PL", "RUF"]
@@ -82,7 +81,7 @@ ignore = [
 "tests/*" = ["RUF001", "BLE001"]
 
 [tool.mypy]
-python_version = "3.10"
+python_version = "3.11"
 strict = true
 warn_unused_configs = true
 disallow_untyped_defs = true

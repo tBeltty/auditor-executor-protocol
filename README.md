@@ -1,7 +1,7 @@
 # Auditor/Executor Protocol
 
 [![CI](https://github.com/tBeltty/auditor-executor-protocol/actions/workflows/ci.yml/badge.svg)](https://github.com/tBeltty/auditor-executor-protocol/actions/workflows/ci.yml)
-[![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
+[![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Code style: ruff](https://img.shields.io/badge/code%20style-ruff-000000.svg)](https://github.com/astral-sh/ruff)
 [![Checked with mypy](https://img.shields.io/badge/mypy-strict-blue)](https://mypy-lang.org/)
@@ -60,7 +60,7 @@ One person can run this workflow alone by switching hats between two isolated ag
 
 ### 1. Install `auditkit`
 
-Requires Python 3.10+ with zero third-party dependencies:
+Requires Python 3.11+ with zero third-party dependencies:
 
 ```bash
 pipx install git+https://github.com/tBeltty/auditor-executor-protocol
