@@ -7,9 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.4.0] - 2026-10-01
+
 ### Added
 - `python -m auditkit` runs the CLI.
-- A release workflow publishes to PyPI through trusted publishing when a `v*` tag is pushed.
+- A release workflow publishes to PyPI through trusted publishing when a `v*` tag is pushed,
+  then creates the GitHub release from this changelog.
 - `CODE_OF_CONDUCT.md`, and an issue chooser that routes vulnerability reports to private
   disclosure.
 - `auditkit lint` flags `[phase order]`: work reported in a phase before every earlier phase is
@@ -229,7 +232,8 @@ Fixes from an independent review of 0.3.0.
 - Multi-framework agent installation support for Antigravity, Claude Code, and Cursor.
 - Zero-dependency test runner (`tests/run.py`).
 
-[Unreleased]: https://github.com/tBeltty/auditor-executor-protocol/compare/v0.3.9...HEAD
+[Unreleased]: https://github.com/tBeltty/auditor-executor-protocol/compare/v0.4.0...HEAD
+[0.4.0]: https://github.com/tBeltty/auditor-executor-protocol/compare/v0.3.9...v0.4.0
 [0.3.9]: https://github.com/tBeltty/auditor-executor-protocol/compare/v0.3.8...v0.3.9
 [0.3.8]: https://github.com/tBeltty/auditor-executor-protocol/compare/v0.3.7...v0.3.8
 [0.3.7]: https://github.com/tBeltty/auditor-executor-protocol/compare/v0.3.6...v0.3.7
