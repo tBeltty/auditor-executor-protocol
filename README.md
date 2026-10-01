@@ -11,7 +11,7 @@ A two-role protocol for running multi-phase work through AI agents without the p
 
 The **Auditor** defines what "done" means and proves it independently. The **Executor** implements one numbered task at a time and logs command output. Neither role crosses into the other.
 
-[`SKILL.md`](SKILL.md) specifies the protocol core; [`references/`](references/) holds the parts an agent loads only when it reaches that step (task and gate writing, handoff templates, Autonomous mode, failure modes and a worked example). `auditkit` is a zero-dependency Python CLI that automates scaffolding, drift linting, and negative controls.
+[`SKILL.md`](SKILL.md) specifies the protocol core; [`references/`](references/) holds the parts an agent loads only when it reaches that step (task and gate writing, handoff templates, Autonomous mode, failure modes and a worked example). `auditkit` is a zero-dependency Python CLI that automates scaffolding, drift linting, negative controls, status tallies, and installing the skill into your agent.
 
 ---
 
@@ -51,7 +51,7 @@ One person can run this workflow alone by switching hats between two isolated ag
 
 1. **Plan of Record (`plan-of-record.md`):** Explains the *what* and the *why*. Architecture decisions, rejected alternatives, and phase roadmaps. Nobody implements directly from this file.
 2. **Execution Guide (`execution-guide.md`):** Explains the *how*. Numbered tasks (`P0-T1`) with target files, steps, literal verify commands, and phase gates (`P0-G1`).
-3. **Compliance Log (`compliance-log.md`):** Records evidence. Pre-populated with every task and gate ID. The Executor pastes verbatim command output here.
+3. **Compliance Log (`compliance-log.md`):** Records evidence. Holds a status board and one report entry per task and gate ID; the template starts with `P0-T1` and `P0-G1`, and you add an entry for each task you write. The Executor pastes verbatim command output here.
 4. **Remediation Annexes (`annexes/`):** When an audit yields `CONDITIONAL` or `REJECTED`, the Auditor issues a standalone annex instead of editing tasks in flight. Rapid annex growth signals an under-planned phase.
 
 ---
@@ -83,8 +83,11 @@ auditkit install-skill                     # auto-detects Antigravity, Claude Co
 auditkit install-skill --agent antigravity # writes to .agents/skills/auditor-executor-protocol/
 auditkit install-skill --agent claude      # writes to .claude/skills/auditor-executor-protocol/
 auditkit install-skill --agent cursor      # writes to .cursor/rules/auditor-executor-protocol.mdc
-auditkit install-skill --global            # installs to user home skills directory
+auditkit install-skill --global            # user-level install (Antigravity unless --agent is given)
+auditkit install-skill --dest <path>       # explicit destination; a non-SKILL.md file name gets one bundled file
 ```
+
+Auto-detection checks the target directory for `.agents/` or `.gemini/`, `.claude/`, and `.cursor/`, then agent environment variables, and falls back to Antigravity. With `--global`, the skill goes to `~/.gemini/config/skills/`, `~/.claude/skills/`, or `~/.cursor/rules/`. An existing install is skipped unless you pass `--force`.
 
 ### 3. Scaffold a Phased Project
 
@@ -92,7 +95,7 @@ auditkit install-skill --global            # installs to user home skills direct
 auditkit init docs/<task-name> --name "<Task Name>"
 ```
 
-Creates `plan-of-record.md`, `execution-guide.md`, `compliance-log.md`, and `annexes/`.
+Creates `plan-of-record.md`, `execution-guide.md`, `compliance-log.md`, and `annexes/`. `--name` defaults to the directory name; existing documents are kept unless you pass `--force`.
 
 ### 4. Track Status and Lint Drift
 
@@ -108,7 +111,7 @@ Cross-check document consistency:
 auditkit lint docs/<task-name>
 ```
 
-`auditkit lint` catches an empty guide, tasks without a report line, missing report entries, log entries with no matching task, `DONE` reports with no pasted verify output, gates without negative controls, duplicated log paragraphs, and phase annex buildup.
+`auditkit lint` catches an empty guide, tasks without a report line, missing report entries, log entries with no matching task, `DONE` reports with no pasted verify output, gates without a stated negative control, duplicated log paragraphs, and annex buildup past `--annex-threshold` (default 6, overall or per phase).
 
 ### 5. Run a Negative Control
 
@@ -121,21 +124,25 @@ auditkit negcontrol \
   --test-cmd "npm test -- auth.test.js"
 ```
 
-`negcontrol` backs up the target file, applies the break mutation, confirms the test fails, restores the file with byte-level verification, confirms the test passes, and outputs a transcript ready for `compliance-log.md`.
+The `sed -i ''` form above is BSD/macOS sed; on GNU/Linux use `sed -i 's/.../.../' file`.
+
+`negcontrol` backs up the target file, applies the break mutation, confirms the test fails, restores the file with byte-level verification, confirms the test passes, and outputs a transcript ready for `compliance-log.md`. Without `--file`, pass `--restore-cmd` to undo the break yourself; with both, the backup still wins if the file is not byte-identical afterwards. `--timeout` limits each command in seconds.
 
 ---
 
 ## CLI Reference
 
-| Command | Description |
-|---|---|
-| `auditkit init <dir>` | Scaffold the 4-document protocol set from templates |
-| `auditkit install-skill` | Provision `SKILL.md` into Antigravity, Claude Code, or Cursor |
-| `auditkit lint <dir>` | Cross-check IDs both ways, flag `DONE` without evidence, detect missing negative controls, and flag log rot |
-| `auditkit negcontrol` | Run automated backup, break, fail, restore, and pass cycle |
-| `auditkit status <dir>` | Combine status board verdicts with reports; list everything not `APPROVED` |
+| Command | Options | Description |
+|---|---|---|
+| `auditkit init <dir>` | `--name`, `--force` | Scaffold the three documents and `annexes/` from templates |
+| `auditkit install-skill [dir]` | `--agent`, `--global`, `--dest`, `--force` | Provision `SKILL.md` and `references/` into Antigravity, Claude Code, or Cursor |
+| `auditkit lint <dir>` | `--annex-threshold` | Cross-check IDs both ways, flag `DONE` without evidence, detect missing negative controls, and flag log rot |
+| `auditkit negcontrol` | `--test-cmd` (required), `--file`, `--break-cmd`, `--restore-cmd`, `--timeout` | Run automated backup, break, fail, restore, and pass cycle |
+| `auditkit status <dir>` | | Combine status board verdicts with reports; list everything not `APPROVED` |
 
-Every command operates on local Markdown files. No external databases, daemons, or network calls.
+Exit codes: `lint` and `negcontrol` return `0` when clean, `1` when they find a problem, and `2` on a usage error or missing document, so both can gate CI. `status` is informational and returns `0` whenever the compliance log exists.
+
+`auditkit` reads and writes local Markdown files only: no external databases, daemons, or network calls. `negcontrol` runs the shell commands you pass it.
 
 ---
 

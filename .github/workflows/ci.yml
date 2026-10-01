@@ -9,6 +9,10 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   lint:
     name: Lint, Format & Strict Types
@@ -94,11 +98,13 @@ jobs:
         with:
           python-version: "3.12"
 
-      - name: Install build tool
-        run: pip install build
+      - name: Install build tools
+        run: pip install build twine
 
       - name: Build sdist and wheel
         run: python -m build
 
       - name: Check build outputs
-        run: ls -lh dist/
+        run: |
+          ls -lh dist/
+          twine check --strict dist/*
