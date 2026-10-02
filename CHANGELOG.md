@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- `auditkit negcontrol --expect REGEX`: the failing run's output must match the expression, so
+  a test that fails for an unrelated reason (a syntax error, a missing import, a mistyped
+  command) fails the control instead of passing it.
+- Without `--expect`, `negcontrol` adds a `WARNING` to its verdict when the failing output looks
+  like a syntax, import, collection, timeout or command-not-found error, rather than the
+  protection being caught.
+
 ## [0.4.0] - 2026-10-01
 
 ### Added

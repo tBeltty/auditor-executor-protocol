@@ -8,12 +8,18 @@ tends to get shortened under time pressure.
 With --file, the backup is the source of truth: whatever --restore-cmd does, the file
 must end byte-identical to the backup, or it is restored from the backup. The backup is
 deleted only once the file is verified identical; otherwise its path is printed.
+
+A failure only counts if it is the right failure. With --expect, the output of the
+failing run must match that regular expression, so a syntax error, a missing import or a
+typo in the test command cannot pass for the protection being caught. Without it, output
+that looks like such an error is flagged in the verdict.
 """
 
 from __future__ import annotations
 
 import filecmp
 import os
+import re
 import shutil
 import signal
 import subprocess
@@ -22,6 +28,14 @@ import tempfile
 from pathlib import Path
 
 TIMEOUT_EXIT = 124
+
+# Output that usually means the test never ran, rather than ran and caught the break.
+_CRASH_SIGNATURES = re.compile(
+    r"SyntaxError|IndentationError|ImportError|ModuleNotFoundError|ERROR collecting"
+    r"|Cannot find module|command not found|is not recognized as an internal or external command"
+    r"|^\(timed out after ",
+    re.MULTILINE,
+)
 
 
 def _kill_tree(proc: subprocess.Popen[str]) -> None:
@@ -99,7 +113,15 @@ def run(
     file_path: str | None = None,
     restore_cmd: str | None = None,
     timeout: float | None = None,
+    expect: str | None = None,
 ) -> int:
+    expect_re: re.Pattern[str] | None = None
+    if expect is not None:
+        try:
+            expect_re = re.compile(expect, re.MULTILINE)
+        except re.error as error:
+            print(f"error: --expect is not a valid regular expression: {error}", file=sys.stderr)
+            return 2
     if not break_cmd and not restore_cmd:
         print(
             "error: pass --break-cmd, or --restore-cmd for a break you apply yourself.",
@@ -131,6 +153,7 @@ def run(
             transcript.append(f"$ backed up {file_path} -> {backup_path}")
 
         broke_as_expected = False
+        out1 = ""
         try:
             if break_cmd:
                 transcript.append(f"$ {break_cmd}")
@@ -143,7 +166,8 @@ def run(
                         file=sys.stderr,
                     )
 
-            transcript.append(f"$ {test_cmd}   # expect FAILURE")
+            expect_note = f" matching /{expect}/" if expect is not None else ""
+            transcript.append(f"$ {test_cmd}   # expect FAILURE{expect_note}")
             code1, out1 = _run(test_cmd, timeout)
             transcript.append(out1.rstrip("\n"))
             broke_as_expected = code1 != 0
@@ -178,6 +202,13 @@ def run(
                 "Either the break command didn't do what you meant, or the protection isn't real."
             )
             return 1
+        if expect_re is not None and not expect_re.search(out1):
+            print(
+                f"FAIL: the test failed, but its output does not match --expect /{expect}/. "
+                "It may have failed for an unrelated reason (a syntax error, a missing import, "
+                "a wrong command); read the output above."
+            )
+            return 1
         if not restored_to_green:
             print("FAIL: the test did not return to passing after restore. The tree may be dirty.")
             return 1
@@ -185,6 +216,14 @@ def run(
         print(
             "OK: negative control verified — the check fails without the protection and passes with it."
         )
+        if expect_re is None:
+            crash = _CRASH_SIGNATURES.search(out1)
+            if crash:
+                print(
+                    f"WARNING: the failing output contains {crash.group(0).strip()!r}, which "
+                    "usually means the test did not run rather than caught the break. Read the "
+                    "output above, and pass --expect with the failure you mean to see."
+                )
         return 0
     finally:
         if tmp_dir and tmp_dir.exists():
