@@ -109,6 +109,7 @@ def _ensure_restored(
 
 def run(
     test_cmd: str,
+    *,
     break_cmd: str | None = None,
     file_path: str | None = None,
     restore_cmd: str | None = None,

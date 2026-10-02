@@ -130,11 +130,11 @@ def main(argv: list[str] | None = None) -> int:
     if args.command == "negcontrol":
         return negcontrol.run(
             args.test_cmd,
-            args.break_cmd,
-            args.file_path,
-            args.restore_cmd,
-            args.timeout,
-            args.expect,
+            break_cmd=args.break_cmd,
+            file_path=args.file_path,
+            restore_cmd=args.restore_cmd,
+            timeout=args.timeout,
+            expect=args.expect,
         )
     if args.command == "status":
         return status.run(args.target_dir)
