@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.5.0] - 2026-10-02
+
 ### Added
 - `auditkit negcontrol --expect REGEX`: the failing run's output must match the expression, so
   a test that fails for an unrelated reason (a syntax error, a missing import, a mistyped
@@ -14,6 +16,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Without `--expect`, `negcontrol` adds a `WARNING` to its verdict when the failing output looks
   like a syntax, import, collection, timeout or command-not-found error, rather than the
   protection being caught.
+
+### Changed
+- `auditkit.negcontrol.run()` takes every argument after `test_cmd` by keyword only.
 
 ## [0.4.0] - 2026-10-01
 
@@ -241,7 +246,8 @@ Fixes from an independent review of 0.3.0.
 - Multi-framework agent installation support for Antigravity, Claude Code, and Cursor.
 - Zero-dependency test runner (`tests/run.py`).
 
-[Unreleased]: https://github.com/tBeltty/auditor-executor-protocol/compare/v0.4.0...HEAD
+[Unreleased]: https://github.com/tBeltty/auditor-executor-protocol/compare/v0.5.0...HEAD
+[0.5.0]: https://github.com/tBeltty/auditor-executor-protocol/compare/v0.4.0...v0.5.0
 [0.4.0]: https://github.com/tBeltty/auditor-executor-protocol/compare/v0.3.9...v0.4.0
 [0.3.9]: https://github.com/tBeltty/auditor-executor-protocol/compare/v0.3.8...v0.3.9
 [0.3.8]: https://github.com/tBeltty/auditor-executor-protocol/compare/v0.3.7...v0.3.8
