@@ -18,7 +18,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   protection being caught.
 
 ### Changed
-- `auditkit.negcontrol.run()` takes every argument after `test_cmd` by keyword only.
+- **Breaking (Python API only):** `auditkit.negcontrol.run()` takes every argument after
+  `test_cmd` by keyword. The `auditkit negcontrol` command is unchanged.
 
 ## [0.4.0] - 2026-10-01
 
