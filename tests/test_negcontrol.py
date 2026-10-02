@@ -178,3 +178,75 @@ def test_negcontrol_timeout_kills_processes_the_command_started(tmp_path, capsys
     assert "timed out after 0.5s" in capsys.readouterr().out
     time.sleep(2.5)
     assert guarded_file.read_text() == "protected\n", "a process started by the break kept running"
+
+
+def _guard_and_test(tmp_path):
+    """A guarded file, and a test script that fails with 'access denied' once it changes."""
+    guarded_file = tmp_path / "flag.txt"
+    guarded_file.write_text("protected\n")
+    check = tmp_path / "check.py"
+    check.write_text(
+        f"import sys\nif open({str(guarded_file)!r}).read() != 'protected\\n':\n"
+        "    sys.exit('AssertionError: access denied was not enforced')\n"
+    )
+    return guarded_file, f'"{sys.executable}" "{check}"'
+
+
+def _corrupt_the_test(tmp_path):
+    """Commands that leave the protection alone but put a syntax error in the test."""
+    _guard_and_test(tmp_path)
+    check = tmp_path / "check.py"
+    saved = tmp_path / "check.saved"
+    saved.write_text(check.read_text())
+    py = f'"{sys.executable}" -c'
+    break_cmd = f"{py} \"open(r'{check}', 'w').write('def (')\""
+    restore_cmd = f"{py} \"import shutil; shutil.copy(r'{saved}', r'{check}')\""
+    return check, break_cmd, restore_cmd
+
+
+def test_negcontrol_expect_passes_when_the_failure_matches(tmp_path, capsys):
+    guarded_file, test_cmd = _guard_and_test(tmp_path)
+    code = negcontrol.run(
+        test_cmd=test_cmd,
+        break_cmd=f'echo broken > "{guarded_file}"',
+        file_path=str(guarded_file),
+        expect=r"access denied",
+    )
+    out = capsys.readouterr().out
+    assert code == 0, out
+    assert "expect FAILURE matching /access denied/" in out
+    assert "WARNING" not in out
+
+
+def test_negcontrol_expect_rejects_a_failure_for_another_reason(tmp_path, capsys):
+    # The break leaves the protection alone but corrupts the test itself.
+    check, break_cmd, restore_cmd = _corrupt_the_test(tmp_path)
+    code = negcontrol.run(
+        test_cmd=f'"{sys.executable}" "{check}"',
+        break_cmd=break_cmd,
+        restore_cmd=restore_cmd,
+        expect=r"access denied",
+    )
+    out = capsys.readouterr().out
+    assert code == 1
+    assert "does not match --expect /access denied/" in out
+    assert "SyntaxError" in out
+
+
+def test_negcontrol_warns_on_a_crash_without_expect(tmp_path, capsys):
+    check, break_cmd, restore_cmd = _corrupt_the_test(tmp_path)
+    code = negcontrol.run(
+        test_cmd=f'"{sys.executable}" "{check}"',
+        break_cmd=break_cmd,
+        restore_cmd=restore_cmd,
+    )
+    out = capsys.readouterr().out
+    assert code == 0
+    assert "WARNING: the failing output contains 'SyntaxError'" in out
+    assert "--expect" in out
+
+
+def test_negcontrol_rejects_an_invalid_expect(capsys):
+    code = negcontrol.run(test_cmd="true", break_cmd="true", restore_cmd="true", expect="(")
+    assert code == 2
+    assert "--expect is not a valid regular expression" in capsys.readouterr().err

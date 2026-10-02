@@ -53,8 +53,11 @@ visibility check was observed failing with the filter removed" is.
 Every gate names how it is proven. Include, whenever the phase produces a security,
 privacy, or financial-integrity boundary, a **negative control**: the Executor must
 remove the protection, observe the check fail, restore it, and observe it pass. A
-check never seen failing has not been verified. `auditkit negcontrol` runs this
-sequence and produces a paste-ready transcript.
+check never seen failing has not been verified. It must also fail for the right
+reason: a syntax error or a missing import fails just as loudly, so the control names
+the failure it expects (the assertion, the status code) and the Auditor checks the
+output shows it. `auditkit negcontrol` runs this sequence and produces a paste-ready
+transcript; `--expect "<regex>"` makes it reject a failure whose output does not match.
 
 **A gate defined by more than one command must be re-run in full, not cited from
 whichever half was last checked.** A compound gate closed in one phase by running only

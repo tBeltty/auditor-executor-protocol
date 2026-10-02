@@ -126,12 +126,15 @@ When validating an authorization, tenant, or schema boundary:
 auditkit negcontrol \
   --file server/middleware/auth.js \
   --break-cmd "sed -i '' 's/requireAuth/\/\/requireAuth/' server/middleware/auth.js" \
-  --test-cmd "npm test -- auth.test.js"
+  --test-cmd "npm test -- auth.test.js" \
+  --expect "401|Unauthorized"
 ```
 
 The `sed -i ''` form above is BSD/macOS sed; on GNU/Linux use `sed -i 's/.../.../' file`.
 
 `negcontrol` backs up the target file, applies the break mutation, confirms the test fails, restores the file with byte-level verification, confirms the test passes, and outputs a transcript ready for `compliance-log.md`. Without `--file`, pass `--restore-cmd` to undo the break yourself; with both, the backup still wins if the file is not byte-identical afterwards. `--timeout` limits each command in seconds.
+
+A failure only proves something if it is the failure you meant. A syntax error, a missing import or a mistyped test command also makes the test exit non-zero. `--expect` takes a regular expression that the failing run's output must match, and the control fails if it does not. Without `--expect`, output that looks like a syntax, import, collection, timeout or command-not-found error is flagged with a `WARNING` next to the `OK`, and you need to read the transcript to confirm the reason.
 
 ---
 
@@ -142,7 +145,7 @@ The `sed -i ''` form above is BSD/macOS sed; on GNU/Linux use `sed -i 's/.../...
 | `auditkit init <dir>` | `--name`, `--force` | Scaffold the three documents and `annexes/` from templates |
 | `auditkit install-skill [dir]` | `--agent`, `--global`, `--dest`, `--force` | Provision `SKILL.md` and `references/` into Antigravity, Claude Code, or Cursor |
 | `auditkit lint <dir>` | `--annex-threshold` | Cross-check IDs both ways, flag `DONE` without evidence, detect missing negative controls, and flag log rot |
-| `auditkit negcontrol` | `--test-cmd` (required), `--file`, `--break-cmd`, `--restore-cmd`, `--timeout` | Run automated backup, break, fail, restore, and pass cycle |
+| `auditkit negcontrol` | `--test-cmd` (required), `--file`, `--break-cmd`, `--restore-cmd`, `--expect`, `--timeout` | Run automated backup, break, fail, restore, and pass cycle |
 | `auditkit status <dir>` | | Combine status board verdicts with reports; list everything not `APPROVED` |
 
 `python -m auditkit` works the same as `auditkit`. Errors go to stderr.
