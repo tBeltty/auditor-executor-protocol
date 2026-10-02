@@ -403,7 +403,10 @@ If `auditkit` is installed, prefer it over doing these by hand:
   file up, runs the break command, runs the test (expects failure), restores from the
   backup, runs the test again (expects success), and prints a paste-ready transcript.
   With `--restore-cmd`, the file must still end byte-identical to the backup or it is
-  restored from it; `--timeout` bounds each command.
+  restored from it; `--timeout` bounds each command. Pass `--expect "<regex>"` with the
+  failure the break should cause (an assertion message, a 403): a test that fails for
+  another reason, such as a syntax error or a missing import, then fails the control
+  instead of passing it. Without `--expect`, such output is only flagged as a warning.
 - `auditkit status <dir>` — combines the status board verdicts with the latest report
   per ID and prints what's still open. Only `APPROVED` closes an item; a `DONE` with no
   verdict is listed as awaiting audit.

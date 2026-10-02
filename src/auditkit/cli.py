@@ -68,6 +68,12 @@ def build_parser() -> argparse.ArgumentParser:
         help="shell command to restore; with --file, the backup still wins if the file differs",
     )
     p_neg.add_argument(
+        "--expect",
+        metavar="REGEX",
+        default=None,
+        help="the failing run's output must match this regular expression to count",
+    )
+    p_neg.add_argument(
         "--timeout",
         type=float,
         metavar="SECONDS",
@@ -123,7 +129,12 @@ def main(argv: list[str] | None = None) -> int:
         return lint.run(args.target_dir, args.annex_threshold)
     if args.command == "negcontrol":
         return negcontrol.run(
-            args.test_cmd, args.break_cmd, args.file_path, args.restore_cmd, args.timeout
+            args.test_cmd,
+            break_cmd=args.break_cmd,
+            file_path=args.file_path,
+            restore_cmd=args.restore_cmd,
+            timeout=args.timeout,
+            expect=args.expect,
         )
     if args.command == "status":
         return status.run(args.target_dir)
