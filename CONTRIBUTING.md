@@ -81,3 +81,11 @@ Before submitting a PR:
 - [ ] Documentation is updated if relevant.
 - [ ] Edits to `SKILL.md` or `references/` are copied to `src/auditkit/skill/` (`tests/test_skill_sync.py` enforces it).
 
+
+## Releasing
+
+Every change that reaches users ships as a release:
+
+1. In the PR, bump `auditkit.__version__` (Semantic Versioning) and move the `## [Unreleased]` entries of `CHANGELOG.md` into a new `## [X.Y.Z] - YYYY-MM-DD` section, with its compare link at the bottom.
+2. For a new minor version, update the supported-versions table in [`SECURITY.md`](SECURITY.md).
+3. After the PR is merged, tag the merge commit `vX.Y.Z` and push the tag. The release workflow runs the full CI, checks the tag matches `__version__`, publishes to PyPI, and creates the GitHub release from the changelog section.

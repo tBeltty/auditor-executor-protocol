@@ -7,6 +7,34 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.5.1] - 2026-10-04
+
+### Fixed
+- `negcontrol --file` without `--break-cmd` is now a usage error (exit 2). The backup was taken
+  of a file already broken by hand, so a correct `--restore-cmd` was overwritten with the broken
+  copy and blamed for it.
+- `negcontrol` fails the control when the test times out with the protection removed: a hang is
+  not a caught break. It used to print `OK` with a warning.
+- `negcontrol --file <directory>` and `auditkit init <existing file>` print an error and exit 2
+  instead of crashing with a traceback.
+- The execution guide's reporting format puts the verify output in a fenced block, so a report
+  written as the template shows no longer fails `lint`.
+- `lint` no longer cuts a report short at a `#`, `---` or `**Field:**` line inside pasted output.
+- `lint`'s phase-order check reads verdicts the way `status` does: the latest report header wins,
+  and a status board verdict that disagrees with it is a conflict, not an approval.
+- `install-skill` auto-detects Claude Code through `CLAUDECODE`, the variable Claude Code sets.
+- The install-skill tests no longer depend on the agent environment they run in.
+
+### Changed
+- The release workflow runs the full CI before building and publishing.
+- CI pins ruff, mypy, build and twine through the `dev` extra, and smoke-tests the built wheel in
+  a clean environment.
+- README links are absolute, so they work on PyPI; `auditkit --help` and the installed skill
+  link to GitHub instead of "the repo root".
+- `--annex-threshold` is documented as a total with a per-phase breakdown, which is what it
+  checks.
+- `SECURITY.md` lists 0.5.x as supported; `CONTRIBUTING.md` documents the release steps.
+
 ## [0.5.0] - 2026-10-02
 
 ### Added
@@ -247,7 +275,8 @@ Fixes from an independent review of 0.3.0.
 - Multi-framework agent installation support for Antigravity, Claude Code, and Cursor.
 - Zero-dependency test runner (`tests/run.py`).
 
-[Unreleased]: https://github.com/tBeltty/auditor-executor-protocol/compare/v0.5.0...HEAD
+[Unreleased]: https://github.com/tBeltty/auditor-executor-protocol/compare/v0.5.1...HEAD
+[0.5.1]: https://github.com/tBeltty/auditor-executor-protocol/compare/v0.5.0...v0.5.1
 [0.5.0]: https://github.com/tBeltty/auditor-executor-protocol/compare/v0.4.0...v0.5.0
 [0.4.0]: https://github.com/tBeltty/auditor-executor-protocol/compare/v0.3.9...v0.4.0
 [0.3.9]: https://github.com/tBeltty/auditor-executor-protocol/compare/v0.3.8...v0.3.9
@@ -261,3 +290,4 @@ Fixes from an independent review of 0.3.0.
 [0.3.1]: https://github.com/tBeltty/auditor-executor-protocol/compare/v0.3.0...v0.3.1
 [0.3.0]: https://github.com/tBeltty/auditor-executor-protocol/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/tBeltty/auditor-executor-protocol/releases/tag/v0.2.0
+[0.1.0]: https://github.com/tBeltty/auditor-executor-protocol/tree/7e9701cdacf732fa63b28428eedd9dcc7250fa2f

@@ -12,7 +12,8 @@ deleted only once the file is verified identical; otherwise its path is printed.
 A failure only counts if it is the right failure. With --expect, the output of the
 failing run must match that regular expression, so a syntax error, a missing import or a
 typo in the test command cannot pass for the protection being caught. Without it, output
-that looks like such an error is flagged in the verdict.
+that looks like such an error is flagged in the verdict. A failing run that timed out never
+counts: a hang is not a caught break.
 """
 
 from __future__ import annotations
@@ -32,8 +33,7 @@ TIMEOUT_EXIT = 124
 # Output that usually means the test never ran, rather than ran and caught the break.
 _CRASH_SIGNATURES = re.compile(
     r"SyntaxError|IndentationError|ImportError|ModuleNotFoundError|ERROR collecting"
-    r"|Cannot find module|command not found|is not recognized as an internal or external command"
-    r"|^\(timed out after ",
+    r"|Cannot find module|command not found|is not recognized as an internal or external command",
     re.MULTILINE,
 )
 
@@ -135,6 +135,15 @@ def run(
             file=sys.stderr,
         )
         return 2
+    if file_path and not break_cmd:
+        # The backup is taken before the break; a file you already broke would be backed up
+        # broken and then "restored" to that broken copy.
+        print(
+            "error: --file needs --break-cmd (the backup must be taken before the break). "
+            "For a break you apply yourself, drop --file and use --restore-cmd.",
+            file=sys.stderr,
+        )
+        return 2
 
     tmp_dir: Path | None = None
     backup_path: Path | None = None
@@ -145,8 +154,8 @@ def run(
     try:
         if file_path:
             src = Path(file_path)
-            if not src.exists():
-                print(f"error: {file_path} does not exist.", file=sys.stderr)
+            if not src.is_file():
+                print(f"error: {file_path} is not an existing file.", file=sys.stderr)
                 return 2
             tmp_dir = Path(tempfile.mkdtemp(prefix="auditkit-negcontrol-"))
             backup_path = tmp_dir / src.name
@@ -154,6 +163,7 @@ def run(
             transcript.append(f"$ backed up {file_path} -> {backup_path}")
 
         broke_as_expected = False
+        timed_out = False
         out1 = ""
         try:
             if break_cmd:
@@ -171,7 +181,8 @@ def run(
             transcript.append(f"$ {test_cmd}   # expect FAILURE{expect_note}")
             code1, out1 = _run(test_cmd, timeout)
             transcript.append(out1.rstrip("\n"))
-            broke_as_expected = code1 != 0
+            timed_out = code1 == TIMEOUT_EXIT and out1.startswith("(timed out after ")
+            broke_as_expected = code1 != 0 and not timed_out
             transcript.append(f"(exit {code1})")
         finally:
             if restore_cmd:
@@ -196,6 +207,12 @@ def run(
 
         if not restored_ok:
             print("FAIL: the protection was not restored. Check the tree before continuing.")
+            return 1
+        if timed_out:
+            print(
+                "FAIL: the test timed out when the protection was removed. A hang is not a "
+                "caught break; make the test fail fast, or raise --timeout."
+            )
             return 1
         if not broke_as_expected:
             print(

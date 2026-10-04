@@ -393,7 +393,7 @@ If `auditkit` is installed, prefer it over doing these by hand:
   compliance log in both directions, flag `DONE` reports with no pasted verify output
   (output counts only inside a fenced code block; prose such as "all tests pass" or a lone
   "n/a" is not output), flag work reported in a phase before every earlier phase is
-  `APPROVED`, flag near-duplicate paragraphs, warn on annex count per phase, flag gates with no
+  `APPROVED`, flag near-duplicate paragraphs, warn on annex count (listed per phase), flag gates with no
   stated negative control (it must name the action that removes the protection and the
   failure that follows; a negated, deferred, hypothetical, or waived mention such as "n/a",
   "TBD", or "we could remove it" does not count). Missing documents, an execution guide with no tasks, and tasks without a
@@ -403,7 +403,9 @@ If `auditkit` is installed, prefer it over doing these by hand:
   file up, runs the break command, runs the test (expects failure), restores from the
   backup, runs the test again (expects success), and prints a paste-ready transcript.
   With `--restore-cmd`, the file must still end byte-identical to the backup or it is
-  restored from it; `--timeout` bounds each command. Pass `--expect "<regex>"` with the
+  restored from it. `--file` needs `--break-cmd`, since the backup must come before the
+  break. `--timeout` bounds each command, and a test that times out instead of failing
+  fails the control. Pass `--expect "<regex>"` with the
   failure the break should cause (an assertion message, a 403): a test that fails for
   another reason, such as a syntax error or a missing import, then fails the control
   instead of passing it. Without `--expect`, such output is only flagged as a warning.
@@ -411,4 +413,4 @@ If `auditkit` is installed, prefer it over doing these by hand:
   per ID and prints what's still open. Only `APPROVED` closes an item; a `DONE` with no
   verdict is listed as awaiting audit.
 
-See the repo's `README.md` for install instructions.
+Install instructions: https://github.com/tBeltty/auditor-executor-protocol#quickstart

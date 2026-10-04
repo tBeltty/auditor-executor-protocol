@@ -32,7 +32,7 @@ def _cells(line: str) -> list[str]:
     return [c.strip().strip("`*").strip() for c in line.strip().strip("|").split("|")]
 
 
-def _board_verdicts(text: str) -> dict[str, str]:
+def board_verdicts(text: str) -> dict[str, str]:
     """ID -> verdict from the first table whose header has "ID" and "Verdict" columns."""
     lines = text.splitlines()
     for i, line in enumerate(lines):
@@ -68,7 +68,7 @@ def run(target_dir: str) -> int:
     reports: dict[str, str] = {}
     header_verdicts: dict[str, str] = {}
     last_header_id = ""
-    board = _board_verdicts(text)
+    board = board_verdicts(text)
     for task_id in board:
         order.setdefault(task_id, None)
     for m in LOG_HEADER_RE.finditer(text):
