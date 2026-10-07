@@ -61,7 +61,7 @@ def _detect_agent(target: Path) -> str:
     # 2. Check runtime environment variables
     if os.environ.get("ANTIGRAVITY_AGENT") or os.environ.get("GEMINI_CLI"):
         return "antigravity"
-    if os.environ.get("CLAUDE_CODE") or os.environ.get("CLAUDE_PROJECT_DIR"):
+    if any(os.environ.get(v) for v in ("CLAUDECODE", "CLAUDE_CODE", "CLAUDE_PROJECT_DIR")):
         return "claude"
     if os.environ.get("CURSOR_PROJECT_DIR"):
         return "cursor"

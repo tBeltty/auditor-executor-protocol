@@ -12,6 +12,8 @@ import sys
 from collections import Counter, defaultdict
 from pathlib import Path
 
+from .status import VERDICTS, board_verdicts
+
 REPORT_ID_RE = re.compile(r"\*\*Report:\*\*\s*`?([A-Za-z0-9_.\-]+)`?")
 GUIDE_HEADER_RE = re.compile(r"^###\s+([A-Za-z0-9_.\-]+)\s+[\u2014\u2013\-]\s*(.*)$", re.MULTILINE)
 LOG_HEADER_RE = re.compile(
@@ -93,7 +95,6 @@ FENCE_LINE_RE = re.compile(r"^\s*(```|~~~)[\w-]*\s*$", re.MULTILINE)
 # Pasted output is a fenced block with something in it; prose about the output is a claim.
 FENCED_BLOCK_RE = re.compile(r"^\s*(```|~~~)[\w-]*\s*\n(.*?)^\s*\1\s*$", re.MULTILINE | re.DOTALL)
 PHASE_RE = re.compile(r"^P(\d+)-", re.IGNORECASE)
-VERDICTS = {"APPROVED", "CONDITIONAL", "REJECTED"}
 
 MIN_DUP_LEN = 120
 DEFAULT_ANNEX_THRESHOLD = 6
@@ -141,6 +142,11 @@ def _is_gate(task_id: str, title: str) -> bool:
     return bool(GATE_ID_RE.search(task_id)) or "gate" in title.lower()
 
 
+def _mask_fences(text: str) -> str:
+    """text with every fenced block blanked out, keeping offsets and line breaks."""
+    return FENCED_BLOCK_RE.sub(lambda b: re.sub(r"[^\n]", " ", b.group(0)), text)
+
+
 def _done_without_evidence(log_text: str) -> list[str]:
     """IDs reported DONE whose **Verify output:** field is missing, empty, or only defers.
 
@@ -154,15 +160,16 @@ def _done_without_evidence(log_text: str) -> list[str]:
         if m.group(2).upper() != "DONE":
             continue
         rest = log_text[m.end() :]
-        end = SECTION_END_RE.search(rest)
-        body = rest[: end.start()] if end else rest
-        field = VERIFY_FIELD_RE.search(body)
+        # A "#", "---" or "**Field:**" line inside pasted output does not end the report.
+        masked = _mask_fences(rest)
+        end = SECTION_END_RE.search(masked)
+        body_end = end.start() if end else len(rest)
+        field = VERIFY_FIELD_RE.search(masked, 0, body_end)
         if not field:
             missing.append(m.group(1))
             continue
-        after = body[field.end() :]
-        nxt = NEXT_FIELD_RE.search(after)
-        evidence = after[: nxt.start()] if nxt else after
+        nxt = NEXT_FIELD_RE.search(masked, field.end(), body_end)
+        evidence = rest[field.end() : nxt.start() if nxt else body_end]
         blocks = [
             PLACEHOLDER_RE.sub("", b.group(2)).strip() for b in FENCED_BLOCK_RE.finditer(evidence)
         ]
@@ -173,18 +180,23 @@ def _done_without_evidence(log_text: str) -> list[str]:
 
 def _phase_order_violations(guide_text: str, log_text: str) -> list[str]:
     """IDs reported DONE in a phase that started before every earlier phase was APPROVED."""
-    from .status import _board_verdicts
-
     ids = [task_id for task_id, _, _ in _guide_sections(guide_text) if TASK_ID_RE.search(task_id)]
-    verdicts = {k: v for k, v in _board_verdicts(log_text).items() if v in VERDICTS}
+    board = {k: v for k, v in board_verdicts(log_text).items() if v in VERDICTS}
+    # As in `auditkit status`: the last report header per ID wins, and a board verdict that
+    # disagrees with the header verdict is a conflict, which does not count as APPROVED.
+    header_verdicts: dict[str, str] = {}
     reports: dict[str, str] = {}
     for m in LOG_HEADER_RE.finditer(log_text):
         task_id, value = m.group(1), m.group(2).upper()
         ids.append(task_id)
         if value in VERDICTS:
-            verdicts.setdefault(task_id, value)
+            header_verdicts[task_id] = value
         else:
             reports[task_id] = value
+    verdicts = {**header_verdicts, **board}
+    for task_id, value in header_verdicts.items():
+        if board.get(task_id, value) != value:
+            verdicts[task_id] = "CONFLICT"
     phases: defaultdict[int, set[str]] = defaultdict(set)
     for task_id in ids:
         found = PHASE_RE.match(task_id)
@@ -341,8 +353,7 @@ def run(target_dir: str, annex_threshold: int = DEFAULT_ANNEX_THRESHOLD) -> int:
             else:
                 phase_counts["General"] += 1
 
-        phase_exceeded = {p: c for p, c in phase_counts.items() if c > annex_threshold}
-        if len(annex_files) > annex_threshold or phase_exceeded:
+        if len(annex_files) > annex_threshold:
             problems += 1
             print(
                 f"[annex count] {len(annex_files)} annexes exceeds the threshold of "

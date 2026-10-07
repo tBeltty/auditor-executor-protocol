@@ -64,7 +64,7 @@ def test_negcontrol_nonexistent_file(capsys):
     )
     out = capsys.readouterr().err
     assert code == 2
-    assert "does not exist" in out
+    assert "is not an existing file" in out
 
 
 def test_negcontrol_custom_restore_cmd(tmp_path):
@@ -250,3 +250,44 @@ def test_negcontrol_rejects_an_invalid_expect(capsys):
     code = negcontrol.run(test_cmd="true", break_cmd="true", restore_cmd="true", expect="(")
     assert code == 2
     assert "--expect is not a valid regular expression" in capsys.readouterr().err
+
+
+def test_negcontrol_file_without_break_cmd_is_a_usage_error(tmp_path, capsys):
+    # A file broken before the run would be backed up broken, then "restored" to that copy.
+    guarded_file = tmp_path / "flag.txt"
+    guarded_file.write_text("broken\n")
+    original = tmp_path / "flag.orig"
+    original.write_text("protected\n")
+    code = negcontrol.run(
+        test_cmd=f'grep -q protected "{guarded_file}"',
+        file_path=str(guarded_file),
+        restore_cmd=f'cp "{original}" "{guarded_file}"',
+    )
+    assert code == 2
+    assert "--file needs --break-cmd" in capsys.readouterr().err
+    assert guarded_file.read_text() == "broken\n"
+
+
+def test_negcontrol_directory_as_file_is_a_usage_error(tmp_path, capsys):
+    code = negcontrol.run(test_cmd="true", break_cmd="true", file_path=str(tmp_path))
+    captured = capsys.readouterr()
+    assert code == 2
+    assert "is not an existing file" in captured.err
+    assert "Backup kept" not in captured.err
+
+
+def test_negcontrol_a_test_that_hangs_does_not_pass(tmp_path, capsys):
+    guarded_file = tmp_path / "flag.txt"
+    guarded_file.write_text("protected\n")
+    hang = f'"{sys.executable}" -c "import time; time.sleep(5)"'
+    code = negcontrol.run(
+        test_cmd=f'grep -q protected "{guarded_file}" || {hang}',
+        break_cmd=f'echo broken > "{guarded_file}"',
+        file_path=str(guarded_file),
+        timeout=0.5,
+    )
+    out = capsys.readouterr().out
+    assert code == 1
+    assert "timed out" in out and "A hang is not a caught break" in out
+    assert "OK:" not in out
+    assert guarded_file.read_text() == "protected\n"

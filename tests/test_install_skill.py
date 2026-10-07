@@ -1,4 +1,32 @@
+import os
+from collections.abc import Iterator
+from contextlib import contextmanager
+
 from auditkit import install_skill
+
+# Every variable _detect_agent reads, so the caller's own agent cannot leak into a test.
+DETECTION_VARS = (
+    "ANTIGRAVITY_AGENT",
+    "GEMINI_CLI",
+    "CLAUDECODE",
+    "CLAUDE_CODE",
+    "CLAUDE_PROJECT_DIR",
+    "CURSOR_PROJECT_DIR",
+)
+
+
+@contextmanager
+def _detection_env(**values: str) -> Iterator[None]:
+    """Clear every detection variable, set only `values`, and restore all of them after."""
+    saved = {var: os.environ.pop(var, None) for var in DETECTION_VARS}
+    os.environ.update(values)
+    try:
+        yield
+    finally:
+        for var, value in saved.items():
+            os.environ.pop(var, None)
+            if value is not None:
+                os.environ[var] = value
 
 
 def test_install_skill_explicit_dest(tmp_path):
@@ -93,27 +121,15 @@ def test_install_skill_auto_detects_claude(tmp_path):
     assert expected.exists()
 
 
-def test_install_skill_auto_detects_via_env_var(tmp_path, monkeypatch=None):
-    import os
-
-    old_claude = os.environ.get("CLAUDE_CODE")
-    old_antigravity = os.environ.get("ANTIGRAVITY_AGENT")
-    try:
-        os.environ["CLAUDE_CODE"] = "1"
-        if "ANTIGRAVITY_AGENT" in os.environ:
-            del os.environ["ANTIGRAVITY_AGENT"]
-        code = install_skill.run(target_dir=str(tmp_path), agent="auto")
+def test_install_skill_auto_detects_via_env_var(tmp_path):
+    for var in ("CLAUDECODE", "CLAUDE_CODE", "CLAUDE_PROJECT_DIR"):
+        target = tmp_path / var
+        target.mkdir()
+        with _detection_env(**{var: "1"}):
+            code = install_skill.run(target_dir=str(target), agent="auto")
         assert code == 0
-        expected = tmp_path / ".claude" / "skills" / "auditor-executor-protocol" / "SKILL.md"
-        assert expected.exists()
-    finally:
-        if old_claude is not None:
-            os.environ["CLAUDE_CODE"] = old_claude
-        elif "CLAUDE_CODE" in os.environ:
-            del os.environ["CLAUDE_CODE"]
-
-        if old_antigravity is not None:
-            os.environ["ANTIGRAVITY_AGENT"] = old_antigravity
+        expected = target / ".claude" / "skills" / "auditor-executor-protocol" / "SKILL.md"
+        assert expected.exists(), var
 
 
 def test_install_skill_global_flag():
@@ -126,8 +142,6 @@ def test_install_skill_global_flag():
 
 
 def test_install_skill_markers_and_env(tmp_path):
-    import os
-
     # Marker .gemini
     gemini_dir = tmp_path / "gemini_proj"
     (gemini_dir / ".gemini").mkdir(parents=True)
@@ -141,25 +155,10 @@ def test_install_skill_markers_and_env(tmp_path):
     # Env CURSOR_PROJECT_DIR
     clean_dir = tmp_path / "clean_proj"
     clean_dir.mkdir(parents=True)
-    old_cursor = os.environ.get("CURSOR_PROJECT_DIR")
-    old_anti = os.environ.get("ANTIGRAVITY_AGENT")
-    old_gemini = os.environ.get("GEMINI_CLI")
-    try:
-        os.environ["CURSOR_PROJECT_DIR"] = "/fake"
-        if "ANTIGRAVITY_AGENT" in os.environ:
-            del os.environ["ANTIGRAVITY_AGENT"]
-        if "GEMINI_CLI" in os.environ:
-            del os.environ["GEMINI_CLI"]
+    with _detection_env(CURSOR_PROJECT_DIR="/fake"):
         assert install_skill._detect_agent(clean_dir) == "cursor"
-    finally:
-        if old_cursor is not None:
-            os.environ["CURSOR_PROJECT_DIR"] = old_cursor
-        elif "CURSOR_PROJECT_DIR" in os.environ:
-            del os.environ["CURSOR_PROJECT_DIR"]
-        if old_anti is not None:
-            os.environ["ANTIGRAVITY_AGENT"] = old_anti
-        if old_gemini is not None:
-            os.environ["GEMINI_CLI"] = old_gemini
+    with _detection_env():
+        assert install_skill._detect_agent(clean_dir) == "antigravity"
 
 
 def test_install_skill_dest_directory_receives_skill_md(tmp_path):
