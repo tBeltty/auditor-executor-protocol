@@ -34,16 +34,19 @@
 
 For each task, append to `compliance-log.md`:
 
-```
+````
 ### <TASK-ID> — DONE | BLOCKED | FAILED
 **Changed:** <paths>
 **Verify output:**
+```text
 <pasted, literal, unedited command output>
+```
 **Observations:** <or "none">
 **Decisions made without stopping:** <or "none">
-```
+````
 
-A `DONE` with no pasted output is recorded as `FAILED`.
+A `DONE` with no pasted output is recorded as `FAILED`. The output goes inside a fenced
+code block: `auditkit lint` counts nothing outside one as evidence.
 
 ---
 

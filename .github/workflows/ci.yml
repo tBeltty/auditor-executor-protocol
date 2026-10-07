@@ -5,6 +5,8 @@ on:
     branches: [main]
   pull_request:
     branches: [main]
+  # The release workflow runs this whole pipeline before it publishes.
+  workflow_call:
 
 permissions:
   contents: read
@@ -109,7 +111,7 @@ jobs:
           python-version: "3.12"
 
       - name: Install build tools
-        run: pip install build twine
+        run: pip install ".[dev]"
 
       - name: Build sdist and wheel
         run: python -m build
@@ -118,3 +120,14 @@ jobs:
         run: |
           ls -lh dist/
           twine check --strict dist/*
+
+      - name: Smoke-test the built wheel in a clean environment
+        run: |
+          python -m venv /tmp/wheel-env
+          /tmp/wheel-env/bin/pip install dist/*.whl
+          cd "$(mktemp -d)"
+          /tmp/wheel-env/bin/auditkit --version
+          /tmp/wheel-env/bin/auditkit init smoke
+          /tmp/wheel-env/bin/auditkit lint smoke
+          /tmp/wheel-env/bin/auditkit install-skill smoke --agent claude
+          test -f smoke/.claude/skills/auditor-executor-protocol/references/handoffs.md

@@ -1,9 +1,11 @@
 """auditkit — mechanical support for the Auditor/Executor protocol.
 
-See SKILL.md in the repo root for the protocol itself. This CLI operationalizes the
-parts of it that are checklist work, not judgment: scaffolding the document set,
-cross-checking it for drift, running a negative control end to end, and reporting
-status.
+The protocol itself is SKILL.md:
+https://github.com/tBeltty/auditor-executor-protocol/blob/main/SKILL.md
+
+This CLI operationalizes the parts of it that are checklist work, not judgment:
+scaffolding the document set, cross-checking it for drift, running a negative control
+end to end, and reporting status.
 """
 
 from __future__ import annotations
@@ -15,7 +17,9 @@ from . import __version__, install_skill, lint, negcontrol, scaffold, status
 
 
 def build_parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(prog="auditkit", description=__doc__)
+    parser = argparse.ArgumentParser(
+        prog="auditkit", description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter
+    )
     parser.add_argument("--version", action="version", version=f"auditkit {__version__}")
     sub = parser.add_subparsers(dest="command", required=True)
 
@@ -39,7 +43,7 @@ def build_parser() -> argparse.ArgumentParser:
         type=int,
         metavar="N",
         default=lint.DEFAULT_ANNEX_THRESHOLD,
-        help="flag more annexes than this, overall or per phase (default: %(default)s)",
+        help="flag more annexes than this in total, listed per phase (default: %(default)s)",
     )
 
     p_neg = sub.add_parser("negcontrol", help="run a backup/break/test/restore/test cycle")

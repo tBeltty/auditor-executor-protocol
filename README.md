@@ -6,13 +6,13 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Code style: ruff](https://img.shields.io/badge/code%20style-ruff-000000.svg)](https://github.com/astral-sh/ruff)
 [![Checked with mypy](https://img.shields.io/badge/mypy-strict-blue)](https://mypy-lang.org/)
-[![Zero Dependencies](https://img.shields.io/badge/dependencies-0-brightgreen)](pyproject.toml)
+[![Zero Dependencies](https://img.shields.io/badge/dependencies-0-brightgreen)](https://github.com/tBeltty/auditor-executor-protocol/blob/main/pyproject.toml)
 
 A two-role protocol for running multi-phase work through AI agents without the plan drifting into open-ended discussion and without "all tests pass" masquerading as verification.
 
 The **Auditor** defines what "done" means and proves it independently. The **Executor** implements one numbered task at a time and logs command output. Neither role crosses into the other.
 
-[`SKILL.md`](SKILL.md) specifies the protocol core; [`references/`](references/) holds the parts an agent loads only when it reaches that step (task and gate writing, handoff templates, Autonomous mode, failure modes and a worked example). `auditkit` is a zero-dependency Python CLI that automates scaffolding, drift linting, negative controls, status tallies, and installing the skill into your agent.
+[`SKILL.md`](https://github.com/tBeltty/auditor-executor-protocol/blob/main/SKILL.md) specifies the protocol core; [`references/`](https://github.com/tBeltty/auditor-executor-protocol/tree/main/references) holds the parts an agent loads only when it reaches that step (task and gate writing, handoff templates, Autonomous mode, failure modes and a worked example). `auditkit` is a zero-dependency Python CLI that automates scaffolding, drift linting, negative controls, status tallies, and installing the skill into your agent.
 
 ---
 
@@ -116,7 +116,7 @@ Cross-check document consistency:
 auditkit lint docs/<task-name>
 ```
 
-`auditkit lint` catches an empty guide, tasks without a report line, missing report entries, log entries with no matching task, `DONE` reports whose verify output is not pasted in a code block, gates without a stated negative control (hypothetical or waived ones do not count), work reported in a phase before every earlier phase is `APPROVED`, duplicated log paragraphs, and annex buildup past `--annex-threshold` (default 6, overall or per phase). It checks that evidence is present and in the right form, not that it is genuine; the Auditor's re-run does that.
+`auditkit lint` catches an empty guide, tasks without a report line, missing report entries, log entries with no matching task, `DONE` reports whose verify output is not pasted in a code block, gates without a stated negative control (hypothetical or waived ones do not count), work reported in a phase before every earlier phase is `APPROVED`, duplicated log paragraphs, and annex buildup past `--annex-threshold` (default 6 in total, with a per-phase breakdown). It checks that evidence is present and in the right form, not that it is genuine; the Auditor's re-run does that.
 
 ### 5. Run a Negative Control
 
@@ -132,9 +132,9 @@ auditkit negcontrol \
 
 The `sed -i ''` form above is BSD/macOS sed; on GNU/Linux use `sed -i 's/.../.../' file`.
 
-`negcontrol` backs up the target file, applies the break mutation, confirms the test fails, restores the file with byte-level verification, confirms the test passes, and outputs a transcript ready for `compliance-log.md`. Without `--file`, pass `--restore-cmd` to undo the break yourself; with both, the backup still wins if the file is not byte-identical afterwards. `--timeout` limits each command in seconds.
+`negcontrol` backs up the target file, applies the break mutation, confirms the test fails, restores the file with byte-level verification, confirms the test passes, and outputs a transcript ready for `compliance-log.md`. Without `--file`, pass `--restore-cmd` to undo the break yourself; with both, the backup still wins if the file is not byte-identical afterwards. `--file` needs `--break-cmd`, because the backup must be taken before the break. `--timeout` limits each command in seconds, and a test that times out instead of failing fails the control: a hang is not a caught break.
 
-A failure only proves something if it is the failure you meant. A syntax error, a missing import or a mistyped test command also makes the test exit non-zero. `--expect` takes a regular expression that the failing run's output must match, and the control fails if it does not. Without `--expect`, output that looks like a syntax, import, collection, timeout or command-not-found error is flagged with a `WARNING` next to the `OK`, and you need to read the transcript to confirm the reason.
+A failure only proves something if it is the failure you meant. A syntax error, a missing import or a mistyped test command also makes the test exit non-zero. `--expect` takes a regular expression that the failing run's output must match, and the control fails if it does not. Without `--expect`, output that looks like a syntax, import, collection or command-not-found error is flagged with a `WARNING` next to the `OK`, and you need to read the transcript to confirm the reason.
 
 ---
 
@@ -175,11 +175,11 @@ pytest
 
 ## Contributing
 
-Contributions are welcome. [`CONTRIBUTING.md`](CONTRIBUTING.md) covers the development setup, the quality gates, and the PR checklist; participation follows the [`CODE_OF_CONDUCT.md`](CODE_OF_CONDUCT.md). Report vulnerabilities privately as described in [`SECURITY.md`](SECURITY.md). Changes are listed in [`CHANGELOG.md`](CHANGELOG.md).
+Contributions are welcome. [`CONTRIBUTING.md`](https://github.com/tBeltty/auditor-executor-protocol/blob/main/CONTRIBUTING.md) covers the development setup, the quality gates, and the PR checklist; participation follows the [`CODE_OF_CONDUCT.md`](https://github.com/tBeltty/auditor-executor-protocol/blob/main/CODE_OF_CONDUCT.md). Report vulnerabilities privately as described in [`SECURITY.md`](https://github.com/tBeltty/auditor-executor-protocol/blob/main/SECURITY.md). Changes are listed in [`CHANGELOG.md`](https://github.com/tBeltty/auditor-executor-protocol/blob/main/CHANGELOG.md).
 
 ## License
 
-MIT (see [`LICENSE`](LICENSE)).
+MIT (see [`LICENSE`](https://github.com/tBeltty/auditor-executor-protocol/blob/main/LICENSE)).
 
 ---
 

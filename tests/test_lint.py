@@ -540,3 +540,90 @@ def test_control_actions_missing_from_the_verb_list_are_accepted(tmp_path):
 """
         _write(tmp_path, guide, "### P0-G1 — PENDING\n")
         assert lint.run(str(tmp_path)) == 0, proof
+
+
+GUIDE_P0_T1 = """
+### P0-T1 — Do a thing
+
+**Report:** `P0-T1`
+"""
+
+
+def test_report_in_the_scaffold_format_passes(tmp_path):
+    # The execution guide's reporting format, filled in as written.
+    from auditkit import scaffold
+
+    scaffold.run(str(tmp_path / "scaffold"))
+    template = (tmp_path / "scaffold" / "execution-guide.md").read_text(encoding="utf-8")
+    assert "```text\n<pasted, literal, unedited command output>\n```" in template
+    log = """
+### P0-T1 — DONE
+**Changed:** foo.py
+**Verify output:**
+```text
+$ pytest -q
+3 passed in 0.12s
+```
+**Observations:** none
+"""
+    _write(tmp_path / "set", GUIDE_P0_T1, log)
+    assert lint.run(str(tmp_path / "set")) == 0
+
+
+def test_heading_or_rule_lines_inside_pasted_output_do_not_end_the_report(tmp_path, capsys):
+    log = """
+### P0-T1 — DONE
+**Verify output:**
+```
+# run the suite
+---
+**Summary:** from the tool
+$ pytest -q
+3 passed in 0.12s
+```
+**Observations:** none
+"""
+    _write(tmp_path, GUIDE_P0_T1, log)
+    assert lint.run(str(tmp_path)) == 0, capsys.readouterr().out
+
+
+def test_phase_order_uses_the_latest_verdict_like_status(tmp_path, capsys):
+    guide = (
+        GUIDE_P0_T1
+        + """
+### P1-T1 — Next thing
+
+**Report:** `P1-T1`
+"""
+    )
+    evidence = "**Verify output:**\n```\n3 passed\n```\n"
+    log = (
+        f"### P0-T1 — DONE\n{evidence}\n### P0-T1 — REJECTED\n\n"
+        f"### P0-T1 — DONE\n{evidence}\n### P0-T1 — APPROVED\n\n"
+        f"### P1-T1 — DONE\n{evidence}"
+    )
+    _write(tmp_path, guide, log)
+    code = lint.run(str(tmp_path))
+    out = capsys.readouterr().out
+    assert "[phase order]" not in out
+    assert code == 0, out
+
+
+def test_phase_order_treats_a_board_and_header_conflict_as_not_approved(tmp_path, capsys):
+    guide = (
+        GUIDE_P0_T1
+        + """
+### P1-T1 — Next thing
+
+**Report:** `P1-T1`
+"""
+    )
+    evidence = "**Verify output:**\n```\n3 passed\n```\n"
+    log = (
+        "| ID | Verdict |\n|----|---------|\n| P0-T1 | APPROVED |\n\n"
+        f"### P0-T1 — DONE\n{evidence}\n### P0-T1 — REJECTED\n\n"
+        f"### P1-T1 — DONE\n{evidence}"
+    )
+    _write(tmp_path, guide, log)
+    assert lint.run(str(tmp_path)) == 1
+    assert "[phase order]" in capsys.readouterr().out

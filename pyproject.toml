@@ -45,12 +45,15 @@ test = [
     "pytest>=7.0",
     "pytest-cov>=4.0",
 ]
+# Exact pins, so a new linter rule or build-tool release cannot turn CI red or change a
+# published build without a commit; Dependabot bumps them.
 dev = [
     "pytest>=7.0",
     "pytest-cov>=4.0",
-    "ruff>=0.1.0",
-    "mypy>=1.0.0",
-    "build>=1.0.0",
+    "ruff==0.16.10",
+    "mypy==2.4.0",
+    "build==1.6.1",
+    "twine==7.0.0",
 ]
 
 [project.scripts]
@@ -82,7 +85,7 @@ ignore = [
 ]
 
 [tool.ruff.lint.per-file-ignores]
-"tests/*" = ["RUF001", "BLE001"]
+"tests/*" = ["RUF001"]
 
 [tool.mypy]
 python_version = "3.11"
