@@ -10,10 +10,10 @@ Hard limits: no new agent pilots, no `git push`, no emails, no arXiv actions, no
 The manuscript "Beyond Vibe Coding and AI Waterfall..." (author Jhonatan Correa M., arXiv cs.SE), rewritten as "protocol + staged exploratory evaluation". New material: Section 4.5 (Part E, three pilots), Section 5 (discussion and threats), Section 6 (recommended full study), Section 7 (conclusion and replication), the abstract, and the contributions list. Sections 1 to 3 and Parts A to D (4.1 to 4.4) were audited before and changed little.
 
 ## Files
-- Paper dir: `/Users/jhonatan/Documents/Research/topics/opportunity-driven-development/paper/`
+- Paper dir: `<paper dir>/`
   - `manuscript.md` (output), `manuscript.pdf` (15 pages), `build_v2.py` (builds Parts A to D and assembles), `pilot_text.py` (generates Part E, Sections 5 to 7 from result files), `PREREGISTRATION_DRAFT.md`, `arxiv_submission/arxiv_metadata.txt`.
   - Pre-rewrite copies for diffing: `manuscript_before_pilots.md`, `manuscript_before_pilots.pdf`, `build_v2_before_pilots.py`.
-- Repo (branch `bench/paper-replication`, local commits `fb48452`, `bc0c6df`, `4a3e668`, not pushed): `/Users/jhonatan/Documents/auditor-executor-protocol/benchmarks/`
+- Repo (branch `bench/paper-replication`, local commits `fb48452`, `bc0c6df`, `4a3e668`, not pushed): `<repo>/benchmarks/`
   - `exp2/` (specs, reference implementations, hidden suites: refunds, CRM; `score.py` AST-mutant oracle), `exp3/` (`fixed_mutants.py`, `score3.py`, `prompts3.py`, `analyze3.py`), `pilot/` (design notes, deviation logs, `FROZEN_HASHES*.txt`, `BACKLOG_PILOT4.md`, preregistration copy), `results/` (`pilot_runs.jsonl`, `pilot2_runs.jsonl`, `pilot3_runs.jsonl`, summaries, driver logs, model checks, calibration), `runs/pilot`, `runs/pilot2`, `runs/pilot3` (every agent-produced directory).
 - The scratch lab in `/tmp/aep-lab` may no longer exist. Everything you need is in the repo and the paper dir.
 

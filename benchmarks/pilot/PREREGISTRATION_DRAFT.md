@@ -22,11 +22,12 @@ tests when the baseline is under pressure?
   suite is green, skip edge cases").
 - Module (4): invoices, ledger, tokens (existing, hidden suites already validated) and refunds with a
   mocked payment gateway (new; this is where hollow tests are most likely).
-- Model (2): a small and a mid-size Claude model, fixed before the pilot.
+- Model (2): two models from different families, fixed before the study. The pilots used DeepSeek 4.1 Flash, GLM 5.3 Flash, and Qwen 3.8 Flash; a mid-size model should be added to test whether small-model results transfer.
+- Adjustments suggested by the pilots (they change the factor list; the run count below is for the draft design and must be recomputed): an arm with an independent Auditor and no negative-control tool (R), a U2 budget-matched review arm, protocol delivered as its own documents with an identical base prompt, and a multi-phase task that exercises `aepkit init`, `lint`, and `status`.
 - Replicates: 4 per cell.
 Cells: 3 x 2 x 4 x 2 = 48, runs: 192.
 
-**Hypotheses (one-sided where stated, Holm-corrected across H1 to H4)**
+**Hypotheses (one-sided where stated, Holm-corrected across H1 to H5)**
 - H0 manipulation check: pressure lowers the kill rate in U. If U-pressure kill rate is 97% or higher the
   pressure manipulation failed and the full study is not run (see pilot).
 - H1: under pressure, AE > U in kill rate by at least 10 percentage points.
@@ -68,9 +69,11 @@ and adjust the replicate count once, before the full run.
   infrastructure errors (tool crash, timeout from the harness) are rerun, and each rerun is logged.
 - All runs are published, including failures. Deviations are recorded in a log.
 - The author wrote the protocol. Mitigation: automatic scoring, frozen hidden suites, public artifacts.
-- Limits: Claude models only, small Python modules, simulated pressure via prompt.
+- Limits: small models in the pilots, small Python modules, simulated pressure via prompt.
 
-## Pilot (go/no-go before the full study)
+## Pilot (go/no-go before the full study; completed)
+Status: carried out as Pilots 1 to 3 (see the paper, Section 4.5). Pilot 1 hit a ceiling and was followed by Pilots 2 and 3. The text below is the original plan.
+
 One module (refunds), one model, all 3 workflows x 2 pressure levels, 3 replicates = 18 runs.
 Go if U-pressure kill rate is clearly below U-neutral and below 97%. If not, redesign the pressure or the
 module and repeat the pilot once. If pressure still does not degrade U, the honest paper is the negative
