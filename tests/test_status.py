@@ -1,4 +1,4 @@
-from auditkit import status
+from aepkit import status
 
 
 def test_status_counts_verdicts(tmp_path, capsys):
@@ -87,7 +87,7 @@ def test_status_reads_verdicts_from_the_status_board(tmp_path, capsys):
 
 
 def test_status_on_a_fresh_scaffold_lists_every_item_open(tmp_path, capsys):
-    from auditkit import scaffold
+    from aepkit import scaffold
 
     scaffold.run(str(tmp_path), "demo")
     capsys.readouterr()

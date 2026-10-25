@@ -7,6 +7,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.6.0] - 2026-10-24
+
+### Added
+- `plan-of-record.md` template and `SKILL.md`: Opportunity & Shaping gate (`Target outcome`,
+  `Problem / friction`, `Cost of doing nothing`, three-option set-based comparison with
+  `Selected option & rationale`, `Riskiest assumption & first-phase validation`, `Explicit
+  non-goals`, and the `Deferred items ledger` table), plus a fast-track bypass
+  (`N/A (Deterministic Fix/Compliance)`) for bugfixes, security patches, migrations, and
+  strict compliance work.
+- `aepkit lint` flags `[unfilled plan]` when `plan-of-record.md` is present and work has
+  been reported `DONE` or given a verdict while required opportunity, shaping, riskiest-assumption,
+  or non-goal fields remain empty, deferred, or placeholders (unless the shaping/assumption
+  fields declare `N/A (Deterministic Fix/Compliance)`).
+- `aepkit lint` flags `[open deferred item]` when a row in the deferred items ledger of
+  `plan-of-record.md` references a closing task ID that does not exist in `execution-guide.md`
+  or remains open when its target phase is being closed.
+
+### Changed
+- **Breaking:** Renamed the PyPI distribution, Python package, and CLI binary to `aepkit`
+  (`pipx install aepkit`, `aepkit`, `python -m aepkit`) to eliminate naming collisions with
+  external `auditkit` packages and binaries.
+
 ## [0.5.1] - 2026-10-04
 
 ### Fixed
@@ -275,7 +297,8 @@ Fixes from an independent review of 0.3.0.
 - Multi-framework agent installation support for Antigravity, Claude Code, and Cursor.
 - Zero-dependency test runner (`tests/run.py`).
 
-[Unreleased]: https://github.com/tBeltty/auditor-executor-protocol/compare/v0.5.1...HEAD
+[Unreleased]: https://github.com/tBeltty/auditor-executor-protocol/compare/v0.6.0...HEAD
+[0.6.0]: https://github.com/tBeltty/auditor-executor-protocol/compare/v0.5.1...v0.6.0
 [0.5.1]: https://github.com/tBeltty/auditor-executor-protocol/compare/v0.5.0...v0.5.1
 [0.5.0]: https://github.com/tBeltty/auditor-executor-protocol/compare/v0.4.0...v0.5.0
 [0.4.0]: https://github.com/tBeltty/auditor-executor-protocol/compare/v0.3.9...v0.4.0

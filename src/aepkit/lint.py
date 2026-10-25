@@ -1,8 +1,9 @@
 """Cross-check the document set for the failure modes this protocol names by hand:
 task IDs that exist in one document but not the other, gates with no stated negative
-control, DONE reports with no pasted verify output, near-duplicate paragraphs from
-append-only logging, and an annex count that signals an under-verified plan rather than
-a healthy one.
+control, DONE reports with no pasted verify output, work started in a later phase before
+earlier phases are APPROVED, unfilled opportunity/shaping/non-goal fields or open deferred
+items in plan-of-record.md, near-duplicate paragraphs from append-only logging, and an
+annex count that signals an under-verified plan rather than a healthy one.
 """
 
 from __future__ import annotations
@@ -12,7 +13,7 @@ import sys
 from collections import Counter, defaultdict
 from pathlib import Path
 
-from .status import VERDICTS, board_verdicts
+from .status import VERDICTS, _cells, board_verdicts
 
 REPORT_ID_RE = re.compile(r"\*\*Report:\*\*\s*`?([A-Za-z0-9_.\-]+)`?")
 GUIDE_HEADER_RE = re.compile(r"^###\s+([A-Za-z0-9_.\-]+)\s+[\u2014\u2013\-]\s*(.*)$", re.MULTILINE)
@@ -95,6 +96,34 @@ FENCE_LINE_RE = re.compile(r"^\s*(```|~~~)[\w-]*\s*$", re.MULTILINE)
 # Pasted output is a fenced block with something in it; prose about the output is a claim.
 FENCED_BLOCK_RE = re.compile(r"^\s*(```|~~~)[\w-]*\s*\n(.*?)^\s*\1\s*$", re.MULTILINE | re.DOTALL)
 PHASE_RE = re.compile(r"^P(\d+)-", re.IGNORECASE)
+DEFERRED_PHASE_RE = re.compile(r"\b(?:P|Phase\s*)(\d+)\b", re.IGNORECASE)
+DETERMINISTIC_BYPASS_RE = re.compile(
+    r"\b(?:n/?a|not\s+applicable)\b[^\n]{0,60}\b"
+    r"(?:deterministic|bug\s*fix|fix|compliance|security|patch|migration)\b",
+    re.IGNORECASE,
+)
+PLAN_DEFERRAL_RE = re.compile(
+    r"^\s*(?:n/?a|n\.\s?a\.?|none(?:\s+yet)?|tbd|todo|tba|tbc|later|pending|skip(?:ped)?|deferred)\s*$"
+    r"|\b(?:tbd|todo|tba|tbc|to\s+be\s+(?:written|done|added|decided|determined|defined|confirmed))\b",
+    re.IGNORECASE,
+)
+PLAN_ALWAYS_REQUIRED: tuple[tuple[str, re.Pattern[str]], ...] = (
+    ("Target outcome", re.compile(r"\*\*Target outcome:\*\*", re.IGNORECASE)),
+    ("Problem / friction", re.compile(r"\*\*Problem\s*/\s*friction:\*\*", re.IGNORECASE)),
+    ("Cost of doing nothing", re.compile(r"\*\*Cost of doing nothing:\*\*", re.IGNORECASE)),
+    ("Explicit non-goals", re.compile(r"\*\*Explicit non-goals:\*\*", re.IGNORECASE)),
+)
+PLAN_SHAPING_OPTIONS: tuple[tuple[str, re.Pattern[str]], ...] = (
+    ("Option A", re.compile(r"\*\*Option A(?:\s*\([^*\n]*\))?:\*\*", re.IGNORECASE)),
+    ("Option B", re.compile(r"\*\*Option B(?:\s*\([^*\n]*\))?:\*\*", re.IGNORECASE)),
+    ("Option C", re.compile(r"\*\*Option C(?:\s*\([^*\n]*\))?:\*\*", re.IGNORECASE)),
+)
+PLAN_SELECTED_OPTION_RE = re.compile(
+    r"\*\*Selected option\s*(?:&|and)\s*rationale:\*\*", re.IGNORECASE
+)
+PLAN_RISKIEST_ASSUMPTION_RE = re.compile(
+    r"\*\*Riskiest assumption(?:\s*(?:&|and)\s*first-phase validation)?:\*\*", re.IGNORECASE
+)
 
 MIN_DUP_LEN = 120
 DEFAULT_ANNEX_THRESHOLD = 6
@@ -182,7 +211,7 @@ def _phase_order_violations(guide_text: str, log_text: str) -> list[str]:
     """IDs reported DONE in a phase that started before every earlier phase was APPROVED."""
     ids = [task_id for task_id, _, _ in _guide_sections(guide_text) if TASK_ID_RE.search(task_id)]
     board = {k: v for k, v in board_verdicts(log_text).items() if v in VERDICTS}
-    # As in `auditkit status`: the last report header per ID wins, and a board verdict that
+    # As in `aepkit status`: the last report header per ID wins, and a board verdict that
     # disagrees with the header verdict is a conflict, which does not count as APPROVED.
     header_verdicts: dict[str, str] = {}
     reports: dict[str, str] = {}
@@ -222,6 +251,132 @@ def _duplicate_paragraphs(text: str) -> list[tuple[str, int]]:
     return [(p, n) for p, n in counts.items() if n > 1]
 
 
+def _extract_plan_field(plan_text: str, pattern: re.Pattern[str]) -> str | None:
+    match = pattern.search(plan_text)
+    if not match:
+        return None
+    rest = plan_text[match.end() :]
+    end = CONTROL_END_RE.search(rest)
+    raw = rest[: end.start()] if end else rest
+    return PLACEHOLDER_RE.sub("", raw).strip()
+
+
+def _is_filled_plan_value(value: str | None) -> bool:
+    if not value:
+        return False
+    if PLAN_DEFERRAL_RE.search(value) or DEFERRAL_ONLY_RE.match(value):
+        return False
+    return len(WORD_RE.findall(value)) >= 2
+
+
+def _plan_gaps(plan_text: str) -> list[str]:
+    """Return missing or unfilled opportunity/shaping/non-goal fields in plan-of-record.md."""
+    gaps: list[str] = []
+    for label, pattern in PLAN_ALWAYS_REQUIRED:
+        val = _extract_plan_field(plan_text, pattern)
+        if not _is_filled_plan_value(val):
+            gaps.append(label)
+
+    selected = _extract_plan_field(plan_text, PLAN_SELECTED_OPTION_RE)
+    is_bypass = bool(selected and DETERMINISTIC_BYPASS_RE.search(selected))
+    if not is_bypass and not _is_filled_plan_value(selected):
+        gaps.append("Selected option & rationale (or state 'N/A (Deterministic Fix/Compliance)')")
+
+    riskiest = _extract_plan_field(plan_text, PLAN_RISKIEST_ASSUMPTION_RE)
+    if not (
+        (riskiest and DETERMINISTIC_BYPASS_RE.search(riskiest)) or _is_filled_plan_value(riskiest)
+    ):
+        gaps.append(
+            "Riskiest assumption & first-phase validation "
+            "(or state 'N/A (Deterministic Fix/Compliance)')"
+        )
+
+    if not is_bypass:
+        for opt_label, opt_pattern in PLAN_SHAPING_OPTIONS:
+            opt_val = _extract_plan_field(plan_text, opt_pattern)
+            if not _is_filled_plan_value(opt_val):
+                gaps.append(opt_label)
+
+    return gaps
+
+
+def _open_deferred_items(plan_text: str, known_ids: set[str], log_text: str) -> list[str]:
+    """Flag deferred-ledger rows whose closing task ID does not exist or remains empty when
+    its target phase is being closed."""
+    verdicts = {k: v for k, v in board_verdicts(log_text).items() if v in VERDICTS}
+    reports: dict[str, str] = {}
+    for m in LOG_HEADER_RE.finditer(log_text):
+        tid, val = m.group(1), m.group(2).upper()
+        if val in VERDICTS:
+            verdicts.setdefault(tid, val)
+        else:
+            reports[tid] = val
+
+    closing_phases: set[int] = set()
+    phase_members: defaultdict[int, set[str]] = defaultdict(set)
+    for tid in known_ids | set(verdicts) | set(reports):
+        pm = PHASE_RE.match(tid)
+        if not pm:
+            continue
+        pnum = int(pm.group(1))
+        phase_members[pnum].add(tid)
+        if GATE_ID_RE.search(tid) and (
+            reports.get(tid) == "DONE" or verdicts.get(tid) == "APPROVED"
+        ):
+            closing_phases.add(pnum)
+    for pnum, members in phase_members.items():
+        if members and all(
+            reports.get(i) == "DONE" or verdicts.get(i) == "APPROVED" for i in members
+        ):
+            closing_phases.add(pnum)
+
+    issues: list[str] = []
+    lines = plan_text.splitlines()
+    for i, line in enumerate(lines):
+        if not line.lstrip().startswith("|"):
+            continue
+        header = [c.lower() for c in _cells(line)]
+        if "id" not in header or "deferred to" not in header or "closed by" not in header:
+            continue
+        id_col = header.index("id")
+        def_col = header.index("deferred to")
+        closed_col = header.index("closed by")
+        for row in lines[i + 1 :]:
+            if not row.lstrip().startswith("|"):
+                break
+            cells = _cells(row)
+            if len(cells) <= max(id_col, def_col, closed_col):
+                continue
+            item_id = PLACEHOLDER_RE.sub("", cells[id_col]).strip()
+            if not item_id or set(item_id) <= set("-: "):
+                continue
+            deferred_to = PLACEHOLDER_RE.sub("", cells[def_col]).strip()
+            closed_by = PLACEHOLDER_RE.sub("", cells[closed_col]).strip()
+            closing_ids = (
+                []
+                if PLAN_DEFERRAL_RE.search(closed_by)
+                else [
+                    tok
+                    for tok in re.findall(r"[A-Za-z0-9_.\-]+", closed_by)
+                    if TASK_ID_RE.search(tok)
+                ]
+            )
+            unknown = [cid for cid in closing_ids if cid not in known_ids]
+            if unknown:
+                issues.append(
+                    f"{item_id} (Closed by {', '.join(unknown)}, which is not in execution-guide.md)"
+                )
+                continue
+            if not closing_ids:
+                pm = DEFERRED_PHASE_RE.search(deferred_to)
+                if pm and int(pm.group(1)) in closing_phases:
+                    issues.append(
+                        f"{item_id} (deferred to Phase {pm.group(1)}, still open in Closed by)"
+                    )
+        break
+    return issues
+
+
 def run(target_dir: str, annex_threshold: int = DEFAULT_ANNEX_THRESHOLD) -> int:
     target = Path(target_dir)
     # A missing document is an error, not a clean result: linting nothing proves nothing.
@@ -232,7 +387,7 @@ def run(target_dir: str, annex_threshold: int = DEFAULT_ANNEX_THRESHOLD) -> int:
     ]
     if missing_docs:
         print(
-            f"error: {target} is missing {', '.join(missing_docs)} (run `auditkit init {target}`).",
+            f"error: {target} is missing {', '.join(missing_docs)} (run `aepkit init {target}`).",
             file=sys.stderr,
         )
         return 2
@@ -327,6 +482,34 @@ def run(target_dir: str, annex_threshold: int = DEFAULT_ANNEX_THRESHOLD) -> int:
         )
         for i in out_of_order:
             print(f"  - {i}")
+
+    # 3b. Plan of record: opportunity/shaping/non-goals (once work starts) and deferred items.
+    plan_path = target / "plan-of-record.md"
+    if plan_path.is_file():
+        plan_text = _read(plan_path)
+        board = board_verdicts(log_text)
+        work_started = any(
+            v == "DONE" or v in VERDICTS for v in (*log_status.values(), *board.values())
+        )
+        if work_started:
+            plan_gaps = _plan_gaps(plan_text)
+            if plan_gaps:
+                problems += len(plan_gaps)
+                print(
+                    f"[unfilled plan] {len(plan_gaps)} required field(s) in plan-of-record.md "
+                    "are missing, empty, or still placeholders while work is reported DONE/audited:"
+                )
+                for g in plan_gaps:
+                    print(f"  - {g}")
+        deferred_issues = _open_deferred_items(plan_text, known_ids, log_text)
+        if deferred_issues:
+            problems += len(deferred_issues)
+            print(
+                f"[open deferred item] {len(deferred_issues)} row(s) in the deferred items "
+                "ledger of plan-of-record.md are open or reference an unknown task:"
+            )
+            for d in deferred_issues:
+                print(f"  - {d}")
 
     # 4. Near-duplicate paragraphs in the log (append-only rot).
     dups = _duplicate_paragraphs(log_text)

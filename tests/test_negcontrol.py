@@ -1,6 +1,6 @@
 import sys
 
-from auditkit import negcontrol
+from aepkit import negcontrol
 
 
 def test_negcontrol_detects_real_protection(tmp_path):

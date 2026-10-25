@@ -1,4 +1,4 @@
-from auditkit import lint
+from aepkit import lint
 
 
 def _write(target, guide="", log="", annexes=None):
@@ -375,7 +375,7 @@ def test_plural_negative_controls_deferral_does_not_count(tmp_path):
 
 
 def test_scaffolded_gate_needs_a_control_once_reported_done(tmp_path, capsys):
-    from auditkit import scaffold
+    from aepkit import scaffold
 
     scaffold.run(str(tmp_path))
     assert lint.run(str(tmp_path)) == 0, "a fresh scaffold is clean"
@@ -551,7 +551,7 @@ GUIDE_P0_T1 = """
 
 def test_report_in_the_scaffold_format_passes(tmp_path):
     # The execution guide's reporting format, filled in as written.
-    from auditkit import scaffold
+    from aepkit import scaffold
 
     scaffold.run(str(tmp_path / "scaffold"))
     template = (tmp_path / "scaffold" / "execution-guide.md").read_text(encoding="utf-8")
@@ -627,3 +627,162 @@ def test_phase_order_treats_a_board_and_header_conflict_as_not_approved(tmp_path
     _write(tmp_path, guide, log)
     assert lint.run(str(tmp_path)) == 1
     assert "[phase order]" in capsys.readouterr().out
+
+
+FILLED_OPEN_DESIGN_PLAN = """
+# Demo — Plan of Record
+
+## 1. Why this exists (opportunity framing)
+- **Target outcome:** Reduce webhook retry latency below 200ms p95.
+- **Problem / friction:** Synchronous retries block the HTTP worker pool under load.
+- **Cost of doing nothing:** Worker exhaustion during provider outages drops incoming orders.
+
+## 3. Opportunity shaping & decisions
+- **Option A (minimal / existing tooling / config-only):** Lower timeout to 1s; zero code, still drops retries.
+- **Option B (balanced / pragmatic implementation):** SQLite-backed outbox worker in current process.
+- **Option C (full architectural / custom build):** Dedicated Kafka cluster and consumer fleet.
+- **Selected option & rationale:** Option B gives durable retries without new infra dependencies.
+- **Riskiest assumption & first-phase validation:** SQLite WAL handles 500 writes/sec without lock contention; P0-T1 benchmarks it.
+
+## 4. What this deliberately does not do
+- **Explicit non-goals:** No multi-region replication or external message broker.
+
+## 6. Deferred items ledger
+
+| ID | What | Deferred to | Closed by |
+|---|---|---|---|
+| | | | |
+"""
+
+FILLED_DETERMINISTIC_PLAN = """
+# Demo — Plan of Record
+
+## 1. Why this exists (opportunity framing)
+- **Target outcome:** Reject expired JWTs on the admin endpoint.
+- **Problem / friction:** `verify_exp` was disabled in `auth.py` line 42.
+- **Cost of doing nothing:** Stale tokens retain admin access indefinitely.
+
+## 3. Opportunity shaping & decisions
+- **Option A (minimal / existing tooling / config-only):** <placeholder>
+- **Option B (balanced / pragmatic implementation):** <placeholder>
+- **Option C (full architectural / custom build):** <placeholder>
+- **Selected option & rationale:** N/A (Deterministic Fix/Compliance)
+- **Riskiest assumption & first-phase validation:** N/A (Deterministic Fix/Compliance)
+
+## 4. What this deliberately does not do
+- **Explicit non-goals:** No rotation of signing keys in this patch.
+"""
+
+
+def test_unfilled_plan_is_flagged_once_work_starts(tmp_path, capsys):
+    from aepkit import scaffold
+
+    scaffold.run(str(tmp_path))
+    guide = """
+### P0-T1 — Benchmark WAL throughput
+**Report:** `P0-T1`
+"""
+    log = """
+### P0-T1 — DONE
+**Verify output:**
+```text
+500 ops/sec passed
+```
+"""
+    (tmp_path / "execution-guide.md").write_text(guide, encoding="utf-8")
+    (tmp_path / "compliance-log.md").write_text(log, encoding="utf-8")
+    assert lint.run(str(tmp_path)) == 1
+    out = capsys.readouterr().out
+    assert "[unfilled plan]" in out
+    assert "Target outcome" in out
+    assert "Option A" in out
+
+
+def test_filled_open_design_and_deterministic_plans_pass(tmp_path):
+    guide = """
+### P0-T1 — Do the work
+**Report:** `P0-T1`
+"""
+    log = """
+### P0-T1 — DONE
+**Verify output:**
+```text
+1 passed
+```
+"""
+    _write(tmp_path, guide, log)
+    (tmp_path / "plan-of-record.md").write_text(FILLED_OPEN_DESIGN_PLAN, encoding="utf-8")
+    assert lint.run(str(tmp_path)) == 0
+
+    (tmp_path / "plan-of-record.md").write_text(FILLED_DETERMINISTIC_PLAN, encoding="utf-8")
+    assert lint.run(str(tmp_path)) == 0
+
+
+def test_bare_na_without_deterministic_reason_is_rejected_in_plan(tmp_path, capsys):
+    guide = "### P0-T1 — Do work\n**Report:** `P0-T1`\n"
+    log = "### P0-T1 — DONE\n**Verify output:**\n```text\nok\n```\n"
+    _write(tmp_path, guide, log)
+    bad_plan = FILLED_DETERMINISTIC_PLAN.replace("N/A (Deterministic Fix/Compliance)", "n/a")
+    (tmp_path / "plan-of-record.md").write_text(bad_plan, encoding="utf-8")
+    assert lint.run(str(tmp_path)) == 1
+    out = capsys.readouterr().out
+    assert "[unfilled plan]" in out
+    assert "Selected option & rationale" in out
+
+
+def test_deferred_items_ledger_open_or_unknown_task_is_flagged(tmp_path, capsys):
+    guide = """
+### P0-T1 — First task
+**Report:** `P0-T1`
+
+### P0-G1 — Gate: phase 0 closes
+**Negative control:** revert the guard in auth.py and watch test_auth fail.
+**Report:** `P0-G1`
+"""
+    log_pending = """
+### P0-T1 — PENDING
+### P0-G1 — PENDING
+"""
+    _write(tmp_path, guide, log_pending)
+    plan_with_open_row = FILLED_OPEN_DESIGN_PLAN.replace(
+        "| | | | |", "| D14 | Move export job to worker | P0 | — |"
+    )
+    (tmp_path / "plan-of-record.md").write_text(plan_with_open_row, encoding="utf-8")
+    # While P0 is still pending, the open row for P0 is allowed.
+    assert lint.run(str(tmp_path)) == 0
+
+    # Once P0-G1 is reported DONE (or APPROVED), the open deferred item for P0 is a stop.
+    log_closing = """
+### P0-T1 — DONE
+**Verify output:**
+```text
+ok
+```
+
+### P0-G1 — DONE
+**Verify output:**
+```text
+ok
+```
+"""
+    (tmp_path / "compliance-log.md").write_text(log_closing, encoding="utf-8")
+    assert lint.run(str(tmp_path)) == 1
+    out = capsys.readouterr().out
+    assert "[open deferred item]" in out
+    assert "D14 (deferred to Phase 0, still open in Closed by)" in out
+
+    # Naming a task ID that does not exist in execution-guide.md is also flagged.
+    plan_with_ghost_id = FILLED_OPEN_DESIGN_PLAN.replace(
+        "| | | | |", "| D14 | Move export job to worker | P0 | P0-T99 |"
+    )
+    (tmp_path / "plan-of-record.md").write_text(plan_with_ghost_id, encoding="utf-8")
+    assert lint.run(str(tmp_path)) == 1
+    out = capsys.readouterr().out
+    assert "D14 (Closed by P0-T99, which is not in execution-guide.md)" in out
+
+    # Closing it with a real task ID from execution-guide.md passes.
+    plan_closed = FILLED_OPEN_DESIGN_PLAN.replace(
+        "| | | | |", "| D14 | Move export job to worker | P0 | `P0-T1` |"
+    )
+    (tmp_path / "plan-of-record.md").write_text(plan_closed, encoding="utf-8")
+    assert lint.run(str(tmp_path)) == 0

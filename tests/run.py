@@ -57,7 +57,7 @@ def run_tests() -> int:
             params = sig.parameters
 
             try:
-                with tempfile.TemporaryDirectory(prefix="auditkit-test-") as tmp_dir:
+                with tempfile.TemporaryDirectory(prefix="aepkit-test-") as tmp_dir:
                     tmp_path = Path(tmp_dir)
                     stdout_buf = io.StringIO()
                     stderr_buf = io.StringIO()

@@ -3,7 +3,7 @@ requires = ["setuptools>=77.0"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "auditor-executor-protocol"
+name = "aepkit"
 dynamic = ["version"]
 description = "Mechanical support for the Auditor/Executor protocol: scaffold, lint, and negative-control the document set for a multi-phase, multi-agent execution."
 readme = "README.md"
@@ -57,13 +57,13 @@ dev = [
 ]
 
 [project.scripts]
-auditkit = "auditkit.cli:main"
+aepkit = "aepkit.cli:main"
 
 [tool.setuptools.dynamic]
-version = { attr = "auditkit.__version__" }
+version = { attr = "aepkit.__version__" }
 
 [tool.setuptools.package-data]
-auditkit = ["templates/*.md", "skill/*.md", "skill/references/*.md", "py.typed"]
+aepkit = ["templates/*.md", "skill/*.md", "skill/references/*.md", "py.typed"]
 
 [tool.setuptools.packages.find]
 where = ["src"]
@@ -98,7 +98,7 @@ testpaths = ["tests"]
 python_files = ["test_*.py"]
 
 [tool.coverage.run]
-source = ["auditkit"]
+source = ["aepkit"]
 branch = true
 
 [tool.coverage.report]

@@ -1,7 +1,7 @@
 # Auditor/Executor Protocol
 
 [![CI](https://github.com/tBeltty/auditor-executor-protocol/actions/workflows/ci.yml/badge.svg)](https://github.com/tBeltty/auditor-executor-protocol/actions/workflows/ci.yml)
-[![PyPI](https://img.shields.io/pypi/v/auditor-executor-protocol)](https://pypi.org/project/auditor-executor-protocol/)
+[![PyPI](https://img.shields.io/pypi/v/aepkit)](https://pypi.org/project/aepkit/)
 [![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Code style: ruff](https://img.shields.io/badge/code%20style-ruff-000000.svg)](https://github.com/astral-sh/ruff)
@@ -12,7 +12,7 @@ A two-role protocol for running multi-phase work through AI agents without the p
 
 The **Auditor** defines what "done" means and proves it independently. The **Executor** implements one numbered task at a time and logs command output. Neither role crosses into the other.
 
-[`SKILL.md`](https://github.com/tBeltty/auditor-executor-protocol/blob/main/SKILL.md) specifies the protocol core; [`references/`](https://github.com/tBeltty/auditor-executor-protocol/tree/main/references) holds the parts an agent loads only when it reaches that step (task and gate writing, handoff templates, Autonomous mode, failure modes and a worked example). `auditkit` is a zero-dependency Python CLI that automates scaffolding, drift linting, negative controls, status tallies, and installing the skill into your agent.
+[`SKILL.md`](https://github.com/tBeltty/auditor-executor-protocol/blob/main/SKILL.md) specifies the protocol core; [`references/`](https://github.com/tBeltty/auditor-executor-protocol/tree/main/references) holds the parts an agent loads only when it reaches that step (task and gate writing, handoff templates, Autonomous mode, failure modes and a worked example). `aepkit` is a zero-dependency Python CLI that automates scaffolding, drift linting, negative controls, status tallies, and installing the skill into your agent.
 
 ---
 
@@ -50,9 +50,9 @@ One person can run this workflow alone by switching hats between two isolated ag
 
 ## The Four-Document Paper Trail
 
-`auditkit init` generates the first three documents and an empty `annexes/` directory for the fourth. Keeping them separate prevents instructions from turning back into a discussion:
+`aepkit init` generates the first three documents and an empty `annexes/` directory for the fourth. Keeping them separate prevents instructions from turning back into a discussion:
 
-1. **Plan of Record (`plan-of-record.md`):** Explains the *what* and the *why*. Architecture decisions, rejected alternatives, and phase roadmaps. Nobody implements directly from this file.
+1. **Plan of Record (`plan-of-record.md`):** Explains the *what* and the *why*. Opportunity framing (target outcome, problem/friction, cost of doing nothing), set-based shaping (three evaluated options or an explicit `N/A (Deterministic Fix/Compliance)` bypass), riskiest-assumption prioritization for the first phase, architecture decisions, explicit non-goals, phase roadmaps, and the deferred items ledger. Nobody implements directly from this file.
 2. **Execution Guide (`execution-guide.md`):** Explains the *how*. Numbered tasks (`P0-T1`) with target files, steps, literal verify commands, and phase gates (`P0-G1`).
 3. **Compliance Log (`compliance-log.md`):** Records evidence. Holds a status board and one report entry per task and gate ID; the template starts with `P0-T1` and `P0-G1`, and you add an entry for each task you write. The Executor pastes verbatim command output here.
 4. **Remediation Annexes (`annexes/`):** When an audit yields `CONDITIONAL` or `REJECTED`, the Auditor issues a standalone annex instead of editing tasks in flight. Rapid annex growth signals an under-planned phase.
@@ -61,15 +61,15 @@ One person can run this workflow alone by switching hats between two isolated ag
 
 ## Quickstart
 
-### 1. Install `auditkit`
+### 1. Install `aepkit`
 
 Requires Python 3.11+ with zero third-party dependencies:
 
 ```bash
-pipx install auditor-executor-protocol
+pipx install aepkit
 ```
 
-The distribution is `auditor-executor-protocol` on PyPI; the command is `auditkit`. To run the latest `main` instead, use `pipx install git+https://github.com/tBeltty/auditor-executor-protocol`.
+To run the latest `main` instead, use `pipx install git+https://github.com/tBeltty/auditor-executor-protocol`.
 
 Or from a clone, for development:
 
@@ -84,12 +84,12 @@ pip install -e .
 Provision `SKILL.md` and its `references/` directory into your workspace or global environment. Cursor rules hold a single file, so Cursor receives one bundled `.mdc` with the references appended:
 
 ```bash
-auditkit install-skill                     # auto-detects Antigravity, Claude Code, or Cursor
-auditkit install-skill --agent antigravity # writes to .agents/skills/auditor-executor-protocol/
-auditkit install-skill --agent claude      # writes to .claude/skills/auditor-executor-protocol/
-auditkit install-skill --agent cursor      # writes to .cursor/rules/auditor-executor-protocol.mdc
-auditkit install-skill --global            # user-level install (Antigravity unless --agent is given)
-auditkit install-skill --dest <path>       # explicit destination; a non-SKILL.md file name gets one bundled file
+aepkit install-skill                     # auto-detects Antigravity, Claude Code, or Cursor
+aepkit install-skill --agent antigravity # writes to .agents/skills/auditor-executor-protocol/
+aepkit install-skill --agent claude      # writes to .claude/skills/auditor-executor-protocol/
+aepkit install-skill --agent cursor      # writes to .cursor/rules/auditor-executor-protocol.mdc
+aepkit install-skill --global            # user-level install (Antigravity unless --agent is given)
+aepkit install-skill --dest <path>       # explicit destination; a non-SKILL.md file name gets one bundled file
 ```
 
 Auto-detection checks the target directory for `.agents/` or `.gemini/`, `.claude/`, and `.cursor/`, then agent environment variables, and falls back to Antigravity. With `--global`, the skill goes to `~/.gemini/config/skills/`, `~/.claude/skills/`, or `~/.cursor/rules/`. An existing install is skipped unless you pass `--force`.
@@ -97,7 +97,7 @@ Auto-detection checks the target directory for `.agents/` or `.gemini/`, `.claud
 ### 3. Scaffold a Phased Project
 
 ```bash
-auditkit init docs/<task-name> --name "<Task Name>"
+aepkit init docs/<task-name> --name "<Task Name>"
 ```
 
 Creates `plan-of-record.md`, `execution-guide.md`, `compliance-log.md`, and `annexes/`. `--name` defaults to the directory name; existing documents are kept unless you pass `--force`.
@@ -107,23 +107,23 @@ Creates `plan-of-record.md`, `execution-guide.md`, `compliance-log.md`, and `ann
 Inspect open tasks and tallied verdicts:
 
 ```bash
-auditkit status docs/<task-name>
+aepkit status docs/<task-name>
 ```
 
 Cross-check document consistency:
 
 ```bash
-auditkit lint docs/<task-name>
+aepkit lint docs/<task-name>
 ```
 
-`auditkit lint` catches an empty guide, tasks without a report line, missing report entries, log entries with no matching task, `DONE` reports whose verify output is not pasted in a code block, gates without a stated negative control (hypothetical or waived ones do not count), work reported in a phase before every earlier phase is `APPROVED`, duplicated log paragraphs, and annex buildup past `--annex-threshold` (default 6 in total, with a per-phase breakdown). It checks that evidence is present and in the right form, not that it is genuine; the Auditor's re-run does that.
+`aepkit lint` catches an empty guide, tasks without a report line, missing report entries, log entries with no matching task, `DONE` reports whose verify output is not pasted in a code block, gates without a stated negative control (hypothetical or waived ones do not count), work reported in a phase before every earlier phase is `APPROVED`, unfilled opportunity/shaping/non-goal fields in `plan-of-record.md` once work is reported `DONE` or audited, open rows in the deferred items ledger for a phase being closed, duplicated log paragraphs, and annex buildup past `--annex-threshold` (default 6 in total, with a per-phase breakdown). It checks that evidence is present and in the right form, not that it is genuine; the Auditor's re-run does that.
 
 ### 5. Run a Negative Control
 
 When validating an authorization, tenant, or schema boundary:
 
 ```bash
-auditkit negcontrol \
+aepkit negcontrol \
   --file server/middleware/auth.js \
   --break-cmd "sed -i '' 's/requireAuth/\/\/requireAuth/' server/middleware/auth.js" \
   --test-cmd "npm test -- auth.test.js" \
@@ -142,17 +142,17 @@ A failure only proves something if it is the failure you meant. A syntax error, 
 
 | Command | Options | Description |
 |---|---|---|
-| `auditkit init <dir>` | `--name`, `--force` | Scaffold the three documents and `annexes/` from templates |
-| `auditkit install-skill [dir]` | `--agent`, `--global`, `--dest`, `--force` | Provision `SKILL.md` and `references/` into Antigravity, Claude Code, or Cursor |
-| `auditkit lint <dir>` | `--annex-threshold` | Cross-check IDs both ways, flag `DONE` without evidence, detect missing negative controls, and flag log rot |
-| `auditkit negcontrol` | `--test-cmd` (required), `--file`, `--break-cmd`, `--restore-cmd`, `--expect`, `--timeout` | Run automated backup, break, fail, restore, and pass cycle |
-| `auditkit status <dir>` | | Combine status board verdicts with reports; list everything not `APPROVED` |
+| `aepkit init <dir>` | `--name`, `--force` | Scaffold the three documents and `annexes/` from templates |
+| `aepkit install-skill [dir]` | `--agent`, `--global`, `--dest`, `--force` | Provision `SKILL.md` and `references/` into Antigravity, Claude Code, or Cursor |
+| `aepkit lint <dir>` | `--annex-threshold` | Cross-check IDs both ways, flag `DONE` without evidence, detect missing negative controls, and flag log rot |
+| `aepkit negcontrol` | `--test-cmd` (required), `--file`, `--break-cmd`, `--restore-cmd`, `--expect`, `--timeout` | Run automated backup, break, fail, restore, and pass cycle |
+| `aepkit status <dir>` | | Combine status board verdicts with reports; list everything not `APPROVED` |
 
-`python -m auditkit` works the same as `auditkit`. Errors go to stderr.
+`python -m aepkit` works the same as `aepkit`. Errors go to stderr.
 
 Exit codes: `lint` and `negcontrol` return `0` when clean, `1` when they find a problem, and `2` on a usage error or missing document, so both can gate CI. `status` is informational and returns `0` whenever the compliance log exists.
 
-`auditkit` reads and writes local Markdown files only: no external databases, daemons, or network calls. `negcontrol` runs the shell commands you pass it.
+`aepkit` reads and writes local Markdown files only: no external databases, daemons, or network calls. `negcontrol` runs the shell commands you pass it.
 
 ---
 

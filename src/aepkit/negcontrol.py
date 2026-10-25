@@ -157,7 +157,7 @@ def run(
             if not src.is_file():
                 print(f"error: {file_path} is not an existing file.", file=sys.stderr)
                 return 2
-            tmp_dir = Path(tempfile.mkdtemp(prefix="auditkit-negcontrol-"))
+            tmp_dir = Path(tempfile.mkdtemp(prefix="aepkit-negcontrol-"))
             backup_path = tmp_dir / src.name
             shutil.copy2(src, backup_path)
             transcript.append(f"$ backed up {file_path} -> {backup_path}")

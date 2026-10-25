@@ -30,9 +30,9 @@ jobs:
 
       - name: Check the tag matches the package version
         run: |
-          version=$(python -c "import sys; sys.path.insert(0, 'src'); import auditkit; print(auditkit.__version__)")
+          version=$(python -c "import sys; sys.path.insert(0, 'src'); import aepkit; print(aepkit.__version__)")
           test "v${version}" = "${GITHUB_REF_NAME}" || {
-            echo "::error::tag ${GITHUB_REF_NAME} does not match auditkit.__version__ ${version}"
+            echo "::error::tag ${GITHUB_REF_NAME} does not match aepkit.__version__ ${version}"
             exit 1
           }
 
@@ -55,7 +55,7 @@ jobs:
     timeout-minutes: 10
     environment:
       name: pypi
-      url: https://pypi.org/project/auditor-executor-protocol/
+      url: https://pypi.org/project/aepkit/
     permissions:
       # Trusted publishing: PyPI accepts this workflow's OIDC token, so no API token is stored.
       id-token: write
@@ -68,6 +68,8 @@ jobs:
 
       - name: Publish
         uses: pypa/gh-action-pypi-publish@dc37677b2e1c63e2034f94d8a5b11f265b73ba33 # v1.14.2
+        with:
+          skip-existing: true
 
   github-release:
     name: Create GitHub release
