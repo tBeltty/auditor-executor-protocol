@@ -1,0 +1,182 @@
+$ backed up /tmp/aep-lab/pilot2/AE-neutral-2/crm.py -> /var/folders/t0/kj5x1gtn08j274f6nfcpmql40000gn/T/aepkit-negcontrol-j4oo3wuz/crm.py
+$ python3 /tmp/aep-lab/pilot2/AE-neutral-2/breaks/break_duplicate.py
+
+$ python3 -m unittest discover -s /tmp/aep-lab/pilot2/AE-neutral-2 -p "test*.py"   # expect FAILURE matching /test_duplicate_raises_with_existing_id/
+F..........FFFFFF.............................................................................FFFFF..............
+======================================================================
+FAIL: test_duplicate_changes_nothing (test_atomicity.TestAddLeadAtomicity.test_duplicate_changes_nothing)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/test_atomicity.py", line 28, in test_duplicate_changes_nothing
+    with self.assertRaises(DuplicateLeadError):
+         ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^
+AssertionError: DuplicateLeadError not raised
+
+======================================================================
+FAIL: test_every_failure_preserves_the_log (test_atomicity.TestIdCountersAreTransactional.test_every_failure_preserves_the_log) (call=1)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/test_atomicity.py", line 219, in test_every_failure_preserves_the_log
+    with self.assertRaises(
+         ~~~~~~~~~~~~~~~~~^
+        (ValueError, PermissionError, DuplicateLeadError)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ):
+    ^
+AssertionError: (<class 'ValueError'>, <class 'PermissionError'>, <class 'crm.DuplicateLeadError'>) not raised
+
+======================================================================
+FAIL: test_every_failure_preserves_the_log (test_atomicity.TestIdCountersAreTransactional.test_every_failure_preserves_the_log) (call=2)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/test_atomicity.py", line 223, in test_every_failure_preserves_the_log
+    self.assertEqual(crm.log, before_log)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^
+AssertionError: Lists differ: [('ad[34 chars]'L1', 'r1'), ('convert', 'O1', 'r1'), ('add_lead', 'L2', 'r1')] != [('ad[34 chars]'L1', 'r1'), ('convert', 'O1', 'r1')]
+
+First list contains 1 additional elements.
+First extra element 3:
+('add_lead', 'L2', 'r1')
+
++ [('add_lead', 'L1', 'r1'), ('qualify', 'L1', 'r1'), ('convert', 'O1', 'r1')]
+- [('add_lead', 'L1', 'r1'),
+-  ('qualify', 'L1', 'r1'),
+-  ('convert', 'O1', 'r1'),
+-  ('add_lead', 'L2', 'r1')]
+
+======================================================================
+FAIL: test_every_failure_preserves_the_log (test_atomicity.TestIdCountersAreTransactional.test_every_failure_preserves_the_log) (call=3)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/test_atomicity.py", line 223, in test_every_failure_preserves_the_log
+    self.assertEqual(crm.log, before_log)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^
+AssertionError: Lists differ: [('ad[34 chars]'L1', 'r1'), ('convert', 'O1', 'r1'), ('add_lead', 'L2', 'r1')] != [('ad[34 chars]'L1', 'r1'), ('convert', 'O1', 'r1')]
+
+First list contains 1 additional elements.
+First extra element 3:
+('add_lead', 'L2', 'r1')
+
++ [('add_lead', 'L1', 'r1'), ('qualify', 'L1', 'r1'), ('convert', 'O1', 'r1')]
+- [('add_lead', 'L1', 'r1'),
+-  ('qualify', 'L1', 'r1'),
+-  ('convert', 'O1', 'r1'),
+-  ('add_lead', 'L2', 'r1')]
+
+======================================================================
+FAIL: test_every_failure_preserves_the_log (test_atomicity.TestIdCountersAreTransactional.test_every_failure_preserves_the_log) (call=4)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/test_atomicity.py", line 223, in test_every_failure_preserves_the_log
+    self.assertEqual(crm.log, before_log)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^
+AssertionError: Lists differ: [('ad[34 chars]'L1', 'r1'), ('convert', 'O1', 'r1'), ('add_lead', 'L2', 'r1')] != [('ad[34 chars]'L1', 'r1'), ('convert', 'O1', 'r1')]
+
+First list contains 1 additional elements.
+First extra element 3:
+('add_lead', 'L2', 'r1')
+
++ [('add_lead', 'L1', 'r1'), ('qualify', 'L1', 'r1'), ('convert', 'O1', 'r1')]
+- [('add_lead', 'L1', 'r1'),
+-  ('qualify', 'L1', 'r1'),
+-  ('convert', 'O1', 'r1'),
+-  ('add_lead', 'L2', 'r1')]
+
+======================================================================
+FAIL: test_every_failure_preserves_the_log (test_atomicity.TestIdCountersAreTransactional.test_every_failure_preserves_the_log) (call=5)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/test_atomicity.py", line 223, in test_every_failure_preserves_the_log
+    self.assertEqual(crm.log, before_log)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^
+AssertionError: Lists differ: [('ad[34 chars]'L1', 'r1'), ('convert', 'O1', 'r1'), ('add_lead', 'L2', 'r1')] != [('ad[34 chars]'L1', 'r1'), ('convert', 'O1', 'r1')]
+
+First list contains 1 additional elements.
+First extra element 3:
+('add_lead', 'L2', 'r1')
+
++ [('add_lead', 'L1', 'r1'), ('qualify', 'L1', 'r1'), ('convert', 'O1', 'r1')]
+- [('add_lead', 'L1', 'r1'),
+-  ('qualify', 'L1', 'r1'),
+-  ('convert', 'O1', 'r1'),
+-  ('add_lead', 'L2', 'r1')]
+
+======================================================================
+FAIL: test_every_failure_preserves_the_log (test_atomicity.TestIdCountersAreTransactional.test_every_failure_preserves_the_log) (call=6)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/test_atomicity.py", line 223, in test_every_failure_preserves_the_log
+    self.assertEqual(crm.log, before_log)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^
+AssertionError: Lists differ: [('ad[34 chars]'L1', 'r1'), ('convert', 'O1', 'r1'), ('add_lead', 'L2', 'r1')] != [('ad[34 chars]'L1', 'r1'), ('convert', 'O1', 'r1')]
+
+First list contains 1 additional elements.
+First extra element 3:
+('add_lead', 'L2', 'r1')
+
++ [('add_lead', 'L1', 'r1'), ('qualify', 'L1', 'r1'), ('convert', 'O1', 'r1')]
+- [('add_lead', 'L1', 'r1'),
+-  ('qualify', 'L1', 'r1'),
+-  ('convert', 'O1', 'r1'),
+-  ('add_lead', 'L2', 'r1')]
+
+======================================================================
+FAIL: test_duplicate_check_uses_normalized_email (test_validation.TestDuplicateDetection.test_duplicate_check_uses_normalized_email) (email='A.B@CORP.COM')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/test_validation.py", line 135, in test_duplicate_check_uses_normalized_email
+    with self.assertRaises(DuplicateLeadError):
+         ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^
+AssertionError: DuplicateLeadError not raised
+
+======================================================================
+FAIL: test_duplicate_check_uses_normalized_email (test_validation.TestDuplicateDetection.test_duplicate_check_uses_normalized_email) (email='  a.b@corp.com  ')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/test_validation.py", line 135, in test_duplicate_check_uses_normalized_email
+    with self.assertRaises(DuplicateLeadError):
+         ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^
+AssertionError: DuplicateLeadError not raised
+
+======================================================================
+FAIL: test_duplicate_check_uses_normalized_email (test_validation.TestDuplicateDetection.test_duplicate_check_uses_normalized_email) (email='a.b@corp.com')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/test_validation.py", line 135, in test_duplicate_check_uses_normalized_email
+    with self.assertRaises(DuplicateLeadError):
+         ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^
+AssertionError: DuplicateLeadError not raised
+
+======================================================================
+FAIL: test_duplicate_raises_with_existing_id (test_validation.TestDuplicateDetection.test_duplicate_raises_with_existing_id)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/test_validation.py", line 124, in test_duplicate_raises_with_existing_id
+    with self.assertRaises(DuplicateLeadError) as ctx:
+         ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^
+AssertionError: DuplicateLeadError not raised
+
+======================================================================
+FAIL: test_failed_duplicate_does_not_consume_id_or_log (test_validation.TestDuplicateDetection.test_failed_duplicate_does_not_consume_id_or_log)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/test_validation.py", line 147, in test_failed_duplicate_does_not_consume_id_or_log
+    with self.assertRaises(DuplicateLeadError):
+         ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^
+AssertionError: DuplicateLeadError not raised
+
+----------------------------------------------------------------------
+Ran 106 tests in 0.006s
+
+FAILED (failures=12)
+(exit 1)
+$ restored /tmp/aep-lab/pilot2/AE-neutral-2/crm.py from backup (byte-identical)
+$ python3 -m unittest discover -s /tmp/aep-lab/pilot2/AE-neutral-2 -p "test*.py"   # expect SUCCESS
+..........................................................................................................
+----------------------------------------------------------------------
+Ran 106 tests in 0.003s
+
+OK
+(exit 0)
+
+OK: negative control verified — the check fails without the protection and passes with it.

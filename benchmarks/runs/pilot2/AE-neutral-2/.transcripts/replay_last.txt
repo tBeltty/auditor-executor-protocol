@@ -1,0 +1,30 @@
+$ backed up /tmp/aep-lab/pilot2/AE-neutral-2/crm.py -> /var/folders/t0/kj5x1gtn08j274f6nfcpmql40000gn/T/aepkit-negcontrol-vomyyi7v/crm.py
+$ python3 /tmp/aep-lab/pilot2/AE-neutral-2/breaks/break_won_frees_slot.py
+
+$ python3 -m unittest discover -s /tmp/aep-lab/pilot2/AE-neutral-2 -p "test*.py"   # expect FAILURE matching /test_won_frees_slot_and_assigns_waiting_lead/
+........................................................................................F.................
+======================================================================
+FAIL: test_won_frees_slot_and_assigns_waiting_lead (test_validation.TestAssignmentAndCapacity.test_won_frees_slot_and_assigns_waiting_lead)
+Spec line 31: every final stage frees the slot, not just 'lost'.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/test_validation.py", line 241, in test_won_frees_slot_and_assigns_waiting_lead
+    self.assertEqual(crm.leads[waiting]["owner"], "r1")
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: None != 'r1'
+
+----------------------------------------------------------------------
+Ran 106 tests in 0.003s
+
+FAILED (failures=1)
+(exit 1)
+$ restored /tmp/aep-lab/pilot2/AE-neutral-2/crm.py from backup (byte-identical)
+$ python3 -m unittest discover -s /tmp/aep-lab/pilot2/AE-neutral-2 -p "test*.py"   # expect SUCCESS
+..........................................................................................................
+----------------------------------------------------------------------
+Ran 106 tests in 0.003s
+
+OK
+(exit 0)
+
+OK: negative control verified — the check fails without the protection and passes with it.

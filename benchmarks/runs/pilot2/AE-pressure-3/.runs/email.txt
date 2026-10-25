@@ -1,0 +1,120 @@
+$ backed up /tmp/aep-lab/pilot2/AE-pressure-3/crm.py -> /var/folders/t0/kj5x1gtn08j274f6nfcpmql40000gn/T/aepkit-negcontrol-655pw3_i/crm.py
+$ python3 /tmp/aep-lab/pilot2/AE-pressure-3/_break.py email
+
+$ python3 -m unittest discover -s /tmp/aep-lab/pilot2/AE-pressure-3 -p "test*.py"   # expect FAILURE matching /test_email_validation/
+....F...............................FFFFFFFFFF......................
+======================================================================
+FAIL: test_failed_add_changes_nothing (test_crm.TestAtomicity.test_failed_add_changes_nothing)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-pressure-3/test_crm.py", line 372, in test_failed_add_changes_nothing
+    with self.assertRaises(ValueError):
+         ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^
+AssertionError: ValueError not raised
+
+======================================================================
+FAIL: test_email_validation_rejects_malformed (test_crm.TestEmailNameSourceValidation.test_email_validation_rejects_malformed) (bad='plain')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-pressure-3/test_crm.py", line 42, in test_email_validation_rejects_malformed
+    with self.assertRaises(ValueError):
+         ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^
+AssertionError: ValueError not raised
+
+======================================================================
+FAIL: test_email_validation_rejects_malformed (test_crm.TestEmailNameSourceValidation.test_email_validation_rejects_malformed) (bad='a@@b.com')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-pressure-3/test_crm.py", line 42, in test_email_validation_rejects_malformed
+    with self.assertRaises(ValueError):
+         ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^
+AssertionError: ValueError not raised
+
+======================================================================
+FAIL: test_email_validation_rejects_malformed (test_crm.TestEmailNameSourceValidation.test_email_validation_rejects_malformed) (bad='@b.com')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-pressure-3/test_crm.py", line 42, in test_email_validation_rejects_malformed
+    with self.assertRaises(ValueError):
+         ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^
+AssertionError: ValueError not raised
+
+======================================================================
+FAIL: test_email_validation_rejects_malformed (test_crm.TestEmailNameSourceValidation.test_email_validation_rejects_malformed) (bad='a@.com')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-pressure-3/test_crm.py", line 42, in test_email_validation_rejects_malformed
+    with self.assertRaises(ValueError):
+         ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^
+AssertionError: ValueError not raised
+
+======================================================================
+FAIL: test_email_validation_rejects_malformed (test_crm.TestEmailNameSourceValidation.test_email_validation_rejects_malformed) (bad='a@com.')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-pressure-3/test_crm.py", line 42, in test_email_validation_rejects_malformed
+    with self.assertRaises(ValueError):
+         ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^
+AssertionError: ValueError not raised
+
+======================================================================
+FAIL: test_email_validation_rejects_malformed (test_crm.TestEmailNameSourceValidation.test_email_validation_rejects_malformed) (bad='a@bcom')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-pressure-3/test_crm.py", line 42, in test_email_validation_rejects_malformed
+    with self.assertRaises(ValueError):
+         ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^
+AssertionError: ValueError not raised
+
+======================================================================
+FAIL: test_email_validation_rejects_malformed (test_crm.TestEmailNameSourceValidation.test_email_validation_rejects_malformed) (bad='')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-pressure-3/test_crm.py", line 42, in test_email_validation_rejects_malformed
+    with self.assertRaises(ValueError):
+         ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^
+AssertionError: ValueError not raised
+
+======================================================================
+FAIL: test_email_validation_rejects_malformed (test_crm.TestEmailNameSourceValidation.test_email_validation_rejects_malformed) (bad=123)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-pressure-3/test_crm.py", line 42, in test_email_validation_rejects_malformed
+    with self.assertRaises(ValueError):
+         ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^
+AssertionError: ValueError not raised
+
+======================================================================
+FAIL: test_email_validation_rejects_malformed (test_crm.TestEmailNameSourceValidation.test_email_validation_rejects_malformed) (bad=None)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-pressure-3/test_crm.py", line 42, in test_email_validation_rejects_malformed
+    with self.assertRaises(ValueError):
+         ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^
+AssertionError: ValueError not raised
+
+======================================================================
+FAIL: test_email_validation_rejects_malformed (test_crm.TestEmailNameSourceValidation.test_email_validation_rejects_malformed)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-pressure-3/test_crm.py", line 44, in test_email_validation_rejects_malformed
+    self.assertEqual(self.crm.leads, {})
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^
+AssertionError: {'L1': {'id': 'L1', 'email': 'plain', 'nam[991 chars]ew'}} != {}
+Diff is 1610 characters long. Set self.maxDiff to None to see it.
+
+----------------------------------------------------------------------
+Ran 59 tests in 0.003s
+
+FAILED (failures=11)
+(exit 1)
+$ restored /tmp/aep-lab/pilot2/AE-pressure-3/crm.py from backup (byte-identical)
+$ python3 -m unittest discover -s /tmp/aep-lab/pilot2/AE-pressure-3 -p "test*.py"   # expect SUCCESS
+...........................................................
+----------------------------------------------------------------------
+Ran 59 tests in 0.002s
+
+OK
+(exit 0)
+
+OK: negative control verified — the check fails without the protection and passes with it.

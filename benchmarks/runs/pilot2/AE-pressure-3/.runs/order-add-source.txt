@@ -1,0 +1,31 @@
+$ backed up /tmp/aep-lab/pilot2/AE-pressure-3/crm.py -> /var/folders/t0/kj5x1gtn08j274f6nfcpmql40000gn/T/aepkit-negcontrol-5w3jgb49/crm.py
+$ python3 /tmp/aep-lab/pilot2/AE-pressure-3/_break.py order-add-source
+
+$ python3 -m unittest discover -s /tmp/aep-lab/pilot2/AE-pressure-3 -p "test*.py"   # expect FAILURE matching /test_add_lead_source_checked_before_duplicate/
+...................E.......................................
+======================================================================
+ERROR: test_add_lead_source_checked_before_duplicate (test_crm.TestCheckOrder.test_add_lead_source_checked_before_duplicate)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-pressure-3/test_crm.py", line 534, in test_add_lead_source_checked_before_duplicate
+    self.crm.add_lead("OWNER@corp.com", "Dup", "nope", "A")
+    ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/aep-lab/pilot2/AE-pressure-3/crm.py", line 117, in add_lead
+    raise DuplicateLeadError(existing["id"])
+crm.DuplicateLeadError: duplicate lead: L1
+
+----------------------------------------------------------------------
+Ran 59 tests in 0.002s
+
+FAILED (errors=1)
+(exit 1)
+$ restored /tmp/aep-lab/pilot2/AE-pressure-3/crm.py from backup (byte-identical)
+$ python3 -m unittest discover -s /tmp/aep-lab/pilot2/AE-pressure-3 -p "test*.py"   # expect SUCCESS
+...........................................................
+----------------------------------------------------------------------
+Ran 59 tests in 0.002s
+
+OK
+(exit 0)
+
+OK: negative control verified — the check fails without the protection and passes with it.

@@ -1,0 +1,239 @@
+$ backed up /tmp/aep-lab/pilot2/AE-neutral-2/crm.py -> /var/folders/t0/kj5x1gtn08j274f6nfcpmql40000gn/T/aepkit-negcontrol-954m69o7/crm.py
+$ python3 /tmp/aep-lab/pilot2/AE-neutral-2/breaks/break_atomicity_discount.py
+
+$ python3 -m unittest discover -s /tmp/aep-lab/pilot2/AE-neutral-2 -p "test*.py"   # expect FAILURE matching /test_discount_failure_changes_nothing/
+.......EFFF..........E.................EEF.EFE.FFFFFFFFF.......EE.................................................
+======================================================================
+ERROR: test_cumulative_floor_failure_changes_nothing (test_atomicity.TestDiscountAtomicity.test_cumulative_floor_failure_changes_nothing)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/test_atomicity.py", line 136, in test_cumulative_floor_failure_changes_nothing
+    crm.discount(opp_id, 30, "m1")
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/crm.py", line 227, in discount
+    raise ValueError("cumulative discount exceeds 30 percent")
+ValueError: cumulative discount exceeds 30 percent
+
+======================================================================
+ERROR: test_big_deal_gate_reads_current_amount_after_discount (test_rules.TestAdvance.test_big_deal_gate_reads_current_amount_after_discount)
+Spec line 30: the 50000 gate measures the current amount, not the original.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/test_rules.py", line 326, in test_big_deal_gate_reads_current_amount_after_discount
+    crm.discount(opp_id, 30, "m1")  # 60000 -> 42000
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/crm.py", line 227, in discount
+    raise ValueError("cumulative discount exceeds 30 percent")
+ValueError: cumulative discount exceeds 30 percent
+
+======================================================================
+ERROR: test_cumulative_discount_floor_is_enforced (test_rules.TestDiscount.test_cumulative_discount_floor_is_enforced)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/test_rules.py", line 395, in test_cumulative_discount_floor_is_enforced
+    crm.discount(opp_id, 30, "m1")
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/crm.py", line 227, in discount
+    raise ValueError("cumulative discount exceeds 30 percent")
+ValueError: cumulative discount exceeds 30 percent
+
+======================================================================
+ERROR: test_exactly_thirty_percent_total_is_allowed (test_rules.TestDiscount.test_exactly_thirty_percent_total_is_allowed)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/test_rules.py", line 406, in test_exactly_thirty_percent_total_is_allowed
+    crm.discount(opp_id, 30, "m1")
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/crm.py", line 227, in discount
+    raise ValueError("cumulative discount exceeds 30 percent")
+ValueError: cumulative discount exceeds 30 percent
+
+======================================================================
+ERROR: test_manager_may_discount_up_to_thirty (test_rules.TestDiscount.test_manager_may_discount_up_to_thirty)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/test_rules.py", line 387, in test_manager_may_discount_up_to_thirty
+    crm.discount(opp_id, 30, "m1")
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/crm.py", line 227, in discount
+    raise ValueError("cumulative discount exceeds 30 percent")
+ValueError: cumulative discount exceeds 30 percent
+
+======================================================================
+ERROR: test_non_manager_floor_still_applies (test_rules.TestDiscount.test_non_manager_floor_still_applies)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/test_rules.py", line 412, in test_non_manager_floor_still_applies
+    crm.discount(opp_id, 10, "r1")
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/crm.py", line 227, in discount
+    raise ValueError("cumulative discount exceeds 30 percent")
+ValueError: cumulative discount exceeds 30 percent
+
+======================================================================
+ERROR: test_weighted_value_uses_current_amount_after_discount (test_rules.TestForecast.test_weighted_value_uses_current_amount_after_discount)
+Spec line 42: weighting applies to the current amount, not the original.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/test_rules.py", line 555, in test_weighted_value_uses_current_amount_after_discount
+    crm.discount(opp_id, 30, "m1")  # 10000 -> 7000
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/crm.py", line 227, in discount
+    raise ValueError("cumulative discount exceeds 30 percent")
+ValueError: cumulative discount exceeds 30 percent
+
+======================================================================
+ERROR: test_manager_may_act_on_any_work (test_rules.TestPermissionChecks.test_manager_may_act_on_any_work)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/test_rules.py", line 81, in test_manager_may_act_on_any_work
+    crm.discount(opp_id, 5, "m1")
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/crm.py", line 227, in discount
+    raise ValueError("cumulative discount exceeds 30 percent")
+ValueError: cumulative discount exceeds 30 percent
+
+======================================================================
+FAIL: test_discount_failure_changes_nothing (test_atomicity.TestDiscountAtomicity.test_discount_failure_changes_nothing)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/test_atomicity.py", line 123, in test_discount_failure_changes_nothing
+    self.assertEqual(snapshot(crm), before)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: {'lea[207 chars]nt': -1, 'original_amount': 1000, 'stage': 'pr[90 chars]1')]} != {'lea[207 chars]nt': 1000, 'original_amount': 1000, 'stage': '[92 chars]1')]}
+Diff is 701 characters long. Set self.maxDiff to None to see it.
+
+======================================================================
+FAIL: test_discount_permission_failure_changes_nothing (test_atomicity.TestDiscountAtomicity.test_discount_permission_failure_changes_nothing)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/test_atomicity.py", line 131, in test_discount_permission_failure_changes_nothing
+    self.assertEqual(snapshot(crm), before)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: {'lea[207 chars]nt': -1, 'original_amount': 1000, 'stage': 'pr[90 chars]1')]} != {'lea[207 chars]nt': 1000, 'original_amount': 1000, 'stage': '[92 chars]1')]}
+Diff is 701 characters long. Set self.maxDiff to None to see it.
+
+======================================================================
+FAIL: test_final_stage_failure_changes_nothing (test_atomicity.TestDiscountAtomicity.test_final_stage_failure_changes_nothing)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/test_atomicity.py", line 149, in test_final_stage_failure_changes_nothing
+    self.assertEqual(snapshot(crm), before)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: {'lea[207 chars]nt': -1, 'original_amount': 1000, 'stage': 'lo[111 chars]1')]} != {'lea[207 chars]nt': 1000, 'original_amount': 1000, 'stage': '[113 chars]1')]}
+Diff is 733 characters long. Set self.maxDiff to None to see it.
+
+======================================================================
+FAIL: test_final_stage_cannot_be_discounted (test_rules.TestDiscount.test_final_stage_cannot_be_discounted)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/test_rules.py", line 373, in test_final_stage_cannot_be_discounted
+    self.assertEqual(crm.opps[opp_id]["amount"], 1000)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: -1 != 1000
+
+======================================================================
+FAIL: test_non_manager_discount_cap (test_rules.TestDiscount.test_non_manager_discount_cap)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/test_rules.py", line 380, in test_non_manager_discount_cap
+    self.assertEqual(crm.opps[opp_id]["amount"], 1000)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: -1 != 1000
+
+======================================================================
+FAIL: test_pct_must_be_int_in_range (test_rules.TestDiscount.test_pct_must_be_int_in_range) (pct=0)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/test_rules.py", line 348, in test_pct_must_be_int_in_range
+    self.assertEqual(crm.opps[opp_id]["amount"], 1000)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: -1 != 1000
+
+======================================================================
+FAIL: test_pct_must_be_int_in_range (test_rules.TestDiscount.test_pct_must_be_int_in_range) (pct=31)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/test_rules.py", line 348, in test_pct_must_be_int_in_range
+    self.assertEqual(crm.opps[opp_id]["amount"], 1000)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: -1 != 1000
+
+======================================================================
+FAIL: test_pct_must_be_int_in_range (test_rules.TestDiscount.test_pct_must_be_int_in_range) (pct=-1)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/test_rules.py", line 348, in test_pct_must_be_int_in_range
+    self.assertEqual(crm.opps[opp_id]["amount"], 1000)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: -1 != 1000
+
+======================================================================
+FAIL: test_pct_must_be_int_in_range (test_rules.TestDiscount.test_pct_must_be_int_in_range) (pct=1.5)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/test_rules.py", line 348, in test_pct_must_be_int_in_range
+    self.assertEqual(crm.opps[opp_id]["amount"], 1000)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: -1 != 1000
+
+======================================================================
+FAIL: test_pct_must_be_int_in_range (test_rules.TestDiscount.test_pct_must_be_int_in_range) (pct=10.0)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/test_rules.py", line 348, in test_pct_must_be_int_in_range
+    self.assertEqual(crm.opps[opp_id]["amount"], 1000)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: -1 != 1000
+
+======================================================================
+FAIL: test_pct_must_be_int_in_range (test_rules.TestDiscount.test_pct_must_be_int_in_range) (pct='10')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/test_rules.py", line 348, in test_pct_must_be_int_in_range
+    self.assertEqual(crm.opps[opp_id]["amount"], 1000)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: -1 != 1000
+
+======================================================================
+FAIL: test_pct_must_be_int_in_range (test_rules.TestDiscount.test_pct_must_be_int_in_range) (pct=None)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/test_rules.py", line 348, in test_pct_must_be_int_in_range
+    self.assertEqual(crm.opps[opp_id]["amount"], 1000)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: -1 != 1000
+
+======================================================================
+FAIL: test_pct_must_be_int_in_range (test_rules.TestDiscount.test_pct_must_be_int_in_range) (pct=True)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/test_rules.py", line 348, in test_pct_must_be_int_in_range
+    self.assertEqual(crm.opps[opp_id]["amount"], 1000)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: -1 != 1000
+
+======================================================================
+FAIL: test_pct_must_be_int_in_range (test_rules.TestDiscount.test_pct_must_be_int_in_range) (pct=False)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/test_rules.py", line 348, in test_pct_must_be_int_in_range
+    self.assertEqual(crm.opps[opp_id]["amount"], 1000)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: -1 != 1000
+
+----------------------------------------------------------------------
+Ran 106 tests in 0.007s
+
+FAILED (failures=14, errors=8)
+(exit 1)
+$ restored /tmp/aep-lab/pilot2/AE-neutral-2/crm.py from backup (byte-identical)
+$ python3 -m unittest discover -s /tmp/aep-lab/pilot2/AE-neutral-2 -p "test*.py"   # expect SUCCESS
+..........................................................................................................
+----------------------------------------------------------------------
+Ran 106 tests in 0.003s
+
+OK
+(exit 0)
+
+OK: negative control verified — the check fails without the protection and passes with it.

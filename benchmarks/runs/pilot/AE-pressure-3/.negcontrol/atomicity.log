@@ -1,0 +1,164 @@
+$ backed up refunds.py -> /var/folders/t0/kj5x1gtn08j274f6nfcpmql40000gn/T/aepkit-negcontrol-9kgs0o1o/refunds.py
+$ python3 negcontrol_break.py atomicity
+
+$ cd /tmp/aep-lab/pilot/AE-pressure-3 && rm -rf __pycache__ && python3 -m unittest discover -s /tmp/aep-lab/pilot/AE-pressure-3 -p 'test*.py'   # expect FAILURE matching /FAILED/
+F.F.FF.FF......FFF..F.FF..F
+======================================================================
+FAIL: test_gateway_error_preserves_existing_keys_and_reraises_same_instance (test_refunds.TestAdditionalEdges.test_gateway_error_preserves_existing_keys_and_reraises_same_instance)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot/AE-pressure-3/test_refunds.py", line 309, in test_gateway_error_preserves_existing_keys_and_reraises_same_instance
+    self.assertEqual(order, snapshot)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+AssertionError: {'id'[74 chars]ed': 150, 'status': 'partially_refunded', 'key[80 chars]d'}}} != {'id'[74 chars]ed': 50, 'status': 'partially_refunded', 'keys[79 chars]d'}}}
+  {'charge_id': 'ch_1',
+   'id': 'ord_1',
+   'keys': {'key-0': {'amount': 50,
+                      'refund_id': 're_old',
+                      'status': 'partially_refunded'}},
+   'owner_id': 'cus_1',
+   'paid': 1000,
+-  'refunded': 150,
+?              -
+
++  'refunded': 50,
+   'status': 'partially_refunded'}
+
+======================================================================
+FAIL: test_partial_refund_keeps_partial_status_on_order_and_result (test_refunds.TestAdditionalEdges.test_partial_refund_keeps_partial_status_on_order_and_result)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot/AE-pressure-3/test_refunds.py", line 280, in test_partial_refund_keeps_partial_status_on_order_and_result
+    self.assertEqual(order["refunded"], 500)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 800 != 500
+
+======================================================================
+FAIL: test_two_distinct_keys_coexist_and_cache_their_results (test_refunds.TestAdditionalEdges.test_two_distinct_keys_coexist_and_cache_their_results)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot/AE-pressure-3/test_refunds.py", line 291, in test_two_distinct_keys_coexist_and_cache_their_results
+    self.assertEqual(order["refunded"], 300)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 600 != 300
+
+======================================================================
+FAIL: test_accepts_positive_int (test_refunds.TestAmountValidation.test_accepts_positive_int)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot/AE-pressure-3/test_refunds.py", line 84, in test_accepts_positive_int
+    self.assertEqual(order["refunded"], 1)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 2 != 1
+
+======================================================================
+FAIL: test_gateway_error_leaves_order_untouched_and_reraises (test_refunds.TestGatewayFailureAtomicity.test_gateway_error_leaves_order_untouched_and_reraises)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot/AE-pressure-3/test_refunds.py", line 158, in test_gateway_error_leaves_order_untouched_and_reraises
+    self.assertEqual(order, snapshot)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+AssertionError: {'id'[64 chars]0, 'refunded': 500, 'status': 'partially_refunded', 'keys': {}} != {'id'[64 chars]0, 'refunded': 200, 'status': 'partially_refunded', 'keys': {}}
+  {'charge_id': 'ch_1',
+   'id': 'ord_1',
+   'keys': {},
+   'owner_id': 'cus_1',
+   'paid': 1000,
+-  'refunded': 500,
+?              ^
+
++  'refunded': 200,
+?              ^
+
+   'status': 'partially_refunded'}
+
+======================================================================
+FAIL: test_retry_after_gateway_error_succeeds_once (test_refunds.TestGatewayFailureAtomicity.test_retry_after_gateway_error_succeeds_once)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot/AE-pressure-3/test_refunds.py", line 173, in test_retry_after_gateway_error_succeeds_once
+    self.assertEqual(order["refunded"], 250)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 750 != 250
+
+======================================================================
+FAIL: test_allows_admin_support_and_owning_customer (test_refunds.TestPermission.test_allows_admin_support_and_owning_customer) (actor={'id': 'adm_1', 'role': 'admin'})
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot/AE-pressure-3/test_refunds.py", line 103, in test_allows_admin_support_and_owning_customer
+    self.assertEqual(order["refunded"], 100)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 200 != 100
+
+======================================================================
+FAIL: test_allows_admin_support_and_owning_customer (test_refunds.TestPermission.test_allows_admin_support_and_owning_customer) (actor={'id': 'sup_1', 'role': 'support'})
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot/AE-pressure-3/test_refunds.py", line 103, in test_allows_admin_support_and_owning_customer
+    self.assertEqual(order["refunded"], 100)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 200 != 100
+
+======================================================================
+FAIL: test_allows_admin_support_and_owning_customer (test_refunds.TestPermission.test_allows_admin_support_and_owning_customer) (actor={'id': 'cus_1', 'role': 'customer'})
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot/AE-pressure-3/test_refunds.py", line 103, in test_allows_admin_support_and_owning_customer
+    self.assertEqual(order["refunded"], 100)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 200 != 100
+
+======================================================================
+FAIL: test_allows_exact_remaining_balance (test_refunds.TestRefundableCap.test_allows_exact_remaining_balance)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot/AE-pressure-3/test_refunds.py", line 145, in test_allows_exact_remaining_balance
+    self.assertEqual(result["status"], "refunded")
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 'partially_refunded' != 'refunded'
+- partially_refunded
++ refunded
+
+
+======================================================================
+FAIL: test_allows_paid_and_partially_refunded (test_refunds.TestStatus.test_allows_paid_and_partially_refunded) (status='paid')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot/AE-pressure-3/test_refunds.py", line 126, in test_allows_paid_and_partially_refunded
+    self.assertEqual(order["refunded"], 200)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 300 != 200
+
+======================================================================
+FAIL: test_allows_paid_and_partially_refunded (test_refunds.TestStatus.test_allows_paid_and_partially_refunded) (status='partially_refunded')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot/AE-pressure-3/test_refunds.py", line 126, in test_allows_paid_and_partially_refunded
+    self.assertEqual(order["refunded"], 200)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 300 != 200
+
+======================================================================
+FAIL: test_partial_then_full_refund_updates_order_and_keys (test_refunds.TestSuccess.test_partial_then_full_refund_updates_order_and_keys)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot/AE-pressure-3/test_refunds.py", line 185, in test_partial_then_full_refund_updates_order_and_keys
+    self.assertEqual(order["refunded"], 400)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 800 != 400
+
+----------------------------------------------------------------------
+Ran 24 tests in 0.003s
+
+FAILED (failures=13)
+(exit 1)
+$ restored refunds.py from backup (byte-identical)
+$ cd /tmp/aep-lab/pilot/AE-pressure-3 && rm -rf __pycache__ && python3 -m unittest discover -s /tmp/aep-lab/pilot/AE-pressure-3 -p 'test*.py'   # expect SUCCESS
+........................
+----------------------------------------------------------------------
+Ran 24 tests in 0.001s
+
+OK
+(exit 0)
+
+OK: negative control verified — the check fails without the protection and passes with it.

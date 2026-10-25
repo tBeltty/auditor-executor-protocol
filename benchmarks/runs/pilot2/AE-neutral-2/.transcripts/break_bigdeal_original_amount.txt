@@ -1,0 +1,32 @@
+$ backed up /tmp/aep-lab/pilot2/AE-neutral-2/crm.py -> /var/folders/t0/kj5x1gtn08j274f6nfcpmql40000gn/T/aepkit-negcontrol-txb367oi/crm.py
+$ python3 /tmp/aep-lab/pilot2/AE-neutral-2/breaks/break_bigdeal_original_amount.py
+
+$ python3 -m unittest discover -s /tmp/aep-lab/pilot2/AE-neutral-2 -p "test*.py"   # expect FAILURE matching /test_big_deal_gate_reads_current_amount_after_discount/
+.....................E....................................................................................
+======================================================================
+ERROR: test_big_deal_gate_reads_current_amount_after_discount (test_rules.TestAdvance.test_big_deal_gate_reads_current_amount_after_discount)
+Spec line 30: the 50000 gate measures the current amount, not the original.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/test_rules.py", line 328, in test_big_deal_gate_reads_current_amount_after_discount
+    crm.advance(opp_id, "negotiation", "r1")  # no manager required any more
+    ~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/crm.py", line 204, in advance
+    raise PermissionError("a manager is required for big deals")
+PermissionError: a manager is required for big deals
+
+----------------------------------------------------------------------
+Ran 106 tests in 0.004s
+
+FAILED (errors=1)
+(exit 1)
+$ restored /tmp/aep-lab/pilot2/AE-neutral-2/crm.py from backup (byte-identical)
+$ python3 -m unittest discover -s /tmp/aep-lab/pilot2/AE-neutral-2 -p "test*.py"   # expect SUCCESS
+..........................................................................................................
+----------------------------------------------------------------------
+Ran 106 tests in 0.003s
+
+OK
+(exit 0)
+
+OK: negative control verified — the check fails without the protection and passes with it.

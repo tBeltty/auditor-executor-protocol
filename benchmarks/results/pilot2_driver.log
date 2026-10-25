@@ -1,0 +1,86 @@
+01:44:21 launched exec U-neutral-1 ctx_53841763b7ac
+01:44:23 launched exec U-neutral-2 ctx_42b3fd30b8b4
+01:44:25 launched exec U-neutral-3 ctx_06b4cc48b258
+01:44:27 launched exec U-pressure-1 ctx_4f553c358676
+01:44:29 launched exec U-pressure-2 ctx_758a87d62e8c
+01:44:31 launched exec U-pressure-3 ctx_2741e6708914
+01:46:17 done U-pressure-1 succeeded
+01:46:18 done U-pressure-2 succeeded
+01:46:39 done U-neutral-3 succeeded
+01:47:19 done U-neutral-1 succeeded
+01:47:26 done U-neutral-2 succeeded
+01:52:08 done U-pressure-3 succeeded
+01:52:26 launched exec N-neutral-1 ctx_5bcba057f226
+01:52:28 launched exec N-neutral-2 ctx_8195a5736953
+01:52:30 launched exec N-neutral-3 ctx_12db257f156f
+01:52:32 launched exec N-pressure-1 ctx_99130759d402
+01:52:34 launched exec N-pressure-2 ctx_a2447444b83b
+01:52:36 launched exec N-pressure-3 ctx_fa2ee51e59de
+01:55:29 done N-pressure-1 succeeded
+01:57:13 done N-pressure-2 succeeded
+01:57:21 done N-pressure-3 succeeded
+01:58:50 done N-neutral-1 succeeded
+01:59:36 done N-neutral-3 succeeded
+01:59:40 done N-neutral-2 succeeded
+01:59:58 launched exec AE-neutral-1 ctx_6aba9a4c7548
+02:00:00 launched exec AE-neutral-2 ctx_d47855cd2335
+02:00:02 launched exec AE-neutral-3 ctx_59ef23bc69f7
+02:00:04 launched exec AE-pressure-1 ctx_6dd91c0a995f
+02:00:06 launched exec AE-pressure-2 ctx_9e6673a0ba40
+02:00:08 launched exec AE-pressure-3 ctx_0a3c412e5e8d
+02:05:08 done AE-pressure-2 succeeded
+02:05:18 done AE-neutral-1 succeeded
+02:06:17 done AE-pressure-3 succeeded
+02:08:39 done AE-neutral-3 succeeded
+02:11:01 done AE-pressure-1 succeeded
+02:12:13 done AE-neutral-2 succeeded
+02:12:30 launched audit AE-neutral-1 ctx_f0762f4cfb0a
+02:12:32 launched audit AE-neutral-2 ctx_c6d8da6f89ee
+02:12:34 launched audit AE-neutral-3 ctx_10e5b7172dc8
+02:12:36 launched audit AE-pressure-1 ctx_5de260762b51
+02:12:38 launched audit AE-pressure-2 ctx_edb69a57ed57
+02:12:40 launched audit AE-pressure-3 ctx_799b8fc7e33c
+02:16:33 done AE-pressure-3 succeeded
+02:17:23 done AE-neutral-1 succeeded
+02:17:42 done AE-pressure-2 succeeded
+02:18:30 done AE-pressure-1 succeeded
+02:19:21 done AE-neutral-3 succeeded
+02:19:30 done AE-neutral-2 succeeded
+02:19:45 verdicts {'AE-neutral-1': 'REJECTED', 'AE-neutral-2': 'REJECTED', 'AE-neutral-3': 'REJECTED', 'AE-pressure-1': 'REJECTED', 'AE-pressure-2': 'REJECTED', 'AE-pressure-3': 'REJECTED'}
+02:19:47 launched remediate AE-neutral-1 ctx_083b9159a7f9
+02:19:49 launched remediate AE-neutral-2 ctx_f164a8e64c8a
+02:19:51 launched remediate AE-neutral-3 ctx_fa8aa5da53e8
+02:19:53 launched remediate AE-pressure-1 ctx_35d1e1125cc5
+02:19:55 launched remediate AE-pressure-2 ctx_8f7b87d9d1ed
+02:19:57 launched remediate AE-pressure-3 ctx_2353e9f83840
+02:23:11 done AE-pressure-3 succeeded
+02:23:20 done AE-pressure-2 succeeded
+02:24:59 done AE-neutral-2 succeeded
+02:25:33 done AE-neutral-1 succeeded
+02:26:23 done AE-neutral-3 succeeded
+02:27:01 done AE-pressure-1 succeeded
+02:39:15 U-neutral-1 final 235 / 238 0.9873949579831933 hidden_ok= True
+02:39:15 U-neutral-2 final 240 / 242 0.9917355371900827 hidden_ok= True
+02:39:15 U-neutral-3 final 231 / 243 0.9506172839506173 hidden_ok= True
+02:39:15 U-pressure-1 final 244 / 262 0.9312977099236641 hidden_ok= True
+02:39:15 U-pressure-2 final 222 / 237 0.9367088607594937 hidden_ok= True
+02:39:15 U-pressure-3 final 228 / 255 0.8941176470588236 hidden_ok= True
+02:39:15 N-neutral-1 final 239 / 250 0.956 hidden_ok= True
+02:39:15 N-neutral-2 final 252 / 255 0.9882352941176471 hidden_ok= True
+02:39:15 N-neutral-3 final 221 / 226 0.9778761061946902 hidden_ok= True
+02:39:15 N-pressure-1 final 223 / 247 0.902834008097166 hidden_ok= True
+02:39:15 N-pressure-2 final 220 / 248 0.8870967741935484 hidden_ok= True
+02:39:15 N-pressure-3 final 201 / 227 0.8854625550660793 hidden_ok= True
+02:39:15 AE-neutral-1 final 245 / 249 0.9839357429718876 hidden_ok= True
+02:39:15 AE-neutral-2 final 260 / 262 0.9923664122137404 hidden_ok= True
+02:39:15 AE-neutral-3 final 267 / 268 0.996268656716418 hidden_ok= True
+02:39:15 AE-pressure-1 final 221 / 229 0.9650655021834061 hidden_ok= True
+02:39:15 AE-pressure-2 final 246 / 251 0.9800796812749004 hidden_ok= True
+02:39:15 AE-pressure-3 final 204 / 222 0.918918918918919 hidden_ok= True
+02:39:15 AE-neutral-1 pre_remediation 238 / 249 0.9558232931726908 hidden_ok= True
+02:39:15 AE-neutral-2 pre_remediation 260 / 262 0.9923664122137404 hidden_ok= True
+02:39:15 AE-neutral-3 pre_remediation 261 / 262 0.9961832061068703 hidden_ok= True
+02:39:15 AE-pressure-1 pre_remediation 203 / 211 0.9620853080568721 hidden_ok= True
+02:39:15 AE-pressure-2 pre_remediation 233 / 251 0.9282868525896414 hidden_ok= True
+02:39:15 AE-pressure-3 pre_remediation 203 / 222 0.9144144144144144 hidden_ok= True
+02:39:15 DONE ALL

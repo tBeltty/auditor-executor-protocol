@@ -1,0 +1,98 @@
+$ backed up /tmp/aep-lab/pilot2/AE-neutral-2/crm.py -> /var/folders/t0/kj5x1gtn08j274f6nfcpmql40000gn/T/aepkit-negcontrol-u_hnidbw/crm.py
+$ python3 /tmp/aep-lab/pilot2/AE-neutral-2/breaks/break_transfer_manager_only.py
+
+$ python3 -m unittest discover -s /tmp/aep-lab/pilot2/AE-neutral-2 -p "test*.py"   # expect FAILURE matching /test_only_manager_may_transfer/
+..................FFFF.......................................F.........EEF...................................
+======================================================================
+ERROR: test_manager_permission_checked_before_final_stage (test_rules.TestTransfer.test_manager_permission_checked_before_final_stage)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/test_rules.py", line 448, in test_manager_permission_checked_before_final_stage
+    self.crm.transfer(self.opp_id, "r2", "r1")
+    ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/crm.py", line 242, in transfer
+    raise ValueError("opportunity is already final")
+ValueError: opportunity is already final
+
+======================================================================
+ERROR: test_manager_permission_checked_before_target (test_rules.TestTransfer.test_manager_permission_checked_before_target)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/test_rules.py", line 476, in test_manager_permission_checked_before_target
+    self.crm.transfer(self.opp_id, "ghost", "r1")
+    ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/crm.py", line 240, in transfer
+    raise ValueError("new owner must be a rep")
+ValueError: new owner must be a rep
+
+======================================================================
+FAIL: test_failing_transfers_change_nothing (test_atomicity.TestTransferAtomicity.test_failing_transfers_change_nothing) (target='r2', actor='r1')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/test_atomicity.py", line 164, in test_failing_transfers_change_nothing
+    with self.assertRaises((ValueError, PermissionError)):
+         ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: (<class 'ValueError'>, <class 'PermissionError'>) not raised
+
+======================================================================
+FAIL: test_failing_transfers_change_nothing (test_atomicity.TestTransferAtomicity.test_failing_transfers_change_nothing) (target='ghost', actor='m1')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/test_atomicity.py", line 166, in test_failing_transfers_change_nothing
+    self.assertEqual(snapshot(crm), before)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: {'lea[193 chars]': 'r2', 'amount': 1000, 'original_amount': 10[132 chars]1')]} != {'lea[193 chars]': 'r1', 'amount': 1000, 'original_amount': 10[106 chars]1')]}
+Diff is 812 characters long. Set self.maxDiff to None to see it.
+
+======================================================================
+FAIL: test_failing_transfers_change_nothing (test_atomicity.TestTransferAtomicity.test_failing_transfers_change_nothing) (target='m1', actor='m1')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/test_atomicity.py", line 166, in test_failing_transfers_change_nothing
+    self.assertEqual(snapshot(crm), before)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: {'lea[193 chars]': 'r2', 'amount': 1000, 'original_amount': 10[132 chars]1')]} != {'lea[193 chars]': 'r1', 'amount': 1000, 'original_amount': 10[106 chars]1')]}
+Diff is 812 characters long. Set self.maxDiff to None to see it.
+
+======================================================================
+FAIL: test_failing_transfers_change_nothing (test_atomicity.TestTransferAtomicity.test_failing_transfers_change_nothing) (target='r1', actor='m1')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/test_atomicity.py", line 164, in test_failing_transfers_change_nothing
+    with self.assertRaises((ValueError, PermissionError)):
+         ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: (<class 'ValueError'>, <class 'PermissionError'>) not raised
+
+======================================================================
+FAIL: test_non_owner_rep_cannot_act_on_someone_elses_work (test_rules.TestPermissionChecks.test_non_owner_rep_cannot_act_on_someone_elses_work)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/test_rules.py", line 56, in test_non_owner_rep_cannot_act_on_someone_elses_work
+    with self.assertRaises(PermissionError):
+         ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+AssertionError: PermissionError not raised
+
+======================================================================
+FAIL: test_only_manager_may_transfer (test_rules.TestTransfer.test_only_manager_may_transfer)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/test_rules.py", line 441, in test_only_manager_may_transfer
+    with self.assertRaises(PermissionError):
+         ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+AssertionError: PermissionError not raised
+
+----------------------------------------------------------------------
+Ran 106 tests in 0.006s
+
+FAILED (failures=6, errors=2)
+(exit 1)
+$ restored /tmp/aep-lab/pilot2/AE-neutral-2/crm.py from backup (byte-identical)
+$ python3 -m unittest discover -s /tmp/aep-lab/pilot2/AE-neutral-2 -p "test*.py"   # expect SUCCESS
+..........................................................................................................
+----------------------------------------------------------------------
+Ran 106 tests in 0.003s
+
+OK
+(exit 0)
+
+OK: negative control verified — the check fails without the protection and passes with it.
