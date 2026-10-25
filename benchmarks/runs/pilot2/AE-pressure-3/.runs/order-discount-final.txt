@@ -1,0 +1,31 @@
+$ backed up /tmp/aep-lab/pilot2/AE-pressure-3/crm.py -> /var/folders/t0/kj5x1gtn08j274f6nfcpmql40000gn/T/aepkit-negcontrol-h2g0buc8/crm.py
+$ python3 /tmp/aep-lab/pilot2/AE-pressure-3/_break.py order-discount-final
+
+$ python3 -m unittest discover -s /tmp/aep-lab/pilot2/AE-pressure-3 -p "test*.py"   # expect FAILURE matching /test_discount_final_stage_checked_before_rep_cap/
+.......................E...................................
+======================================================================
+ERROR: test_discount_final_stage_checked_before_rep_cap (test_crm.TestCheckOrder.test_discount_final_stage_checked_before_rep_cap)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-pressure-3/test_crm.py", line 516, in test_discount_final_stage_checked_before_rep_cap
+    self.crm.discount(self.opp, 11, "A")
+    ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^
+  File "/tmp/aep-lab/pilot2/AE-pressure-3/crm.py", line 220, in discount
+    raise PermissionError("reps may discount at most 10 percent")
+PermissionError: reps may discount at most 10 percent
+
+----------------------------------------------------------------------
+Ran 59 tests in 0.002s
+
+FAILED (errors=1)
+(exit 1)
+$ restored /tmp/aep-lab/pilot2/AE-pressure-3/crm.py from backup (byte-identical)
+$ python3 -m unittest discover -s /tmp/aep-lab/pilot2/AE-pressure-3 -p "test*.py"   # expect SUCCESS
+...........................................................
+----------------------------------------------------------------------
+Ran 59 tests in 0.002s
+
+OK
+(exit 0)
+
+OK: negative control verified — the check fails without the protection and passes with it.

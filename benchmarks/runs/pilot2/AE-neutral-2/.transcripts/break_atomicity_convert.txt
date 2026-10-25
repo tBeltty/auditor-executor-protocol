@@ -1,0 +1,934 @@
+$ backed up /tmp/aep-lab/pilot2/AE-neutral-2/crm.py -> /var/folders/t0/kj5x1gtn08j274f6nfcpmql40000gn/T/aepkit-negcontrol-egax0y43/crm.py
+$ python3 /tmp/aep-lab/pilot2/AE-neutral-2/breaks/break_atomicity_convert.py
+
+$ python3 -m unittest discover -s /tmp/aep-lab/pilot2/AE-neutral-2 -p "test*.py"   # expect FAILURE matching /test_convert_permission_failure_changes_nothing/
+..EE.FFEEEEE.E...EEEEEEEEEEEEEEEEEEEE...E..F.EEEEEEEEEEEE..EEEEEEEEEEE....EEEEEEEEEEEE..E.EE..EE.................
+======================================================================
+ERROR: test_failing_advances_change_nothing (test_atomicity.TestAdvanceAtomicity.test_failing_advances_change_nothing)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/test_atomicity.py", line 93, in test_failing_advances_change_nothing
+    opp_id, _ = make_opp(crm, amount=60000)
+                ~~~~~~~~^^^^^^^^^^^^^^^^^^^
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/crm_fixtures.py", line 27, in make_opp
+    opp_id = crm.convert(lead_id, amount, actor)
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/crm.py", line 168, in convert
+    raise ValueError("lead is not qualified")
+ValueError: lead is not qualified
+
+======================================================================
+ERROR: test_final_opportunity_failure_changes_nothing (test_atomicity.TestAdvanceAtomicity.test_final_opportunity_failure_changes_nothing)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/test_atomicity.py", line 108, in test_final_opportunity_failure_changes_nothing
+    opp_id, _ = make_opp(crm, amount=1000)
+                ~~~~~~~~^^^^^^^^^^^^^^^^^^
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/crm_fixtures.py", line 27, in make_opp
+    opp_id = crm.convert(lead_id, amount, actor)
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/crm.py", line 168, in convert
+    raise ValueError("lead is not qualified")
+ValueError: lead is not qualified
+
+======================================================================
+ERROR: test_cumulative_floor_failure_changes_nothing (test_atomicity.TestDiscountAtomicity.test_cumulative_floor_failure_changes_nothing)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/test_atomicity.py", line 135, in test_cumulative_floor_failure_changes_nothing
+    opp_id, _ = make_opp(crm, amount=1000)
+                ~~~~~~~~^^^^^^^^^^^^^^^^^^
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/crm_fixtures.py", line 27, in make_opp
+    opp_id = crm.convert(lead_id, amount, actor)
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/crm.py", line 168, in convert
+    raise ValueError("lead is not qualified")
+ValueError: lead is not qualified
+
+======================================================================
+ERROR: test_discount_failure_changes_nothing (test_atomicity.TestDiscountAtomicity.test_discount_failure_changes_nothing)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/test_atomicity.py", line 119, in test_discount_failure_changes_nothing
+    opp_id, _ = make_opp(crm, amount=1000)
+                ~~~~~~~~^^^^^^^^^^^^^^^^^^
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/crm_fixtures.py", line 27, in make_opp
+    opp_id = crm.convert(lead_id, amount, actor)
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/crm.py", line 168, in convert
+    raise ValueError("lead is not qualified")
+ValueError: lead is not qualified
+
+======================================================================
+ERROR: test_discount_permission_failure_changes_nothing (test_atomicity.TestDiscountAtomicity.test_discount_permission_failure_changes_nothing)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/test_atomicity.py", line 127, in test_discount_permission_failure_changes_nothing
+    opp_id, _ = make_opp(crm, amount=1000)
+                ~~~~~~~~^^^^^^^^^^^^^^^^^^
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/crm_fixtures.py", line 27, in make_opp
+    opp_id = crm.convert(lead_id, amount, actor)
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/crm.py", line 168, in convert
+    raise ValueError("lead is not qualified")
+ValueError: lead is not qualified
+
+======================================================================
+ERROR: test_final_stage_failure_changes_nothing (test_atomicity.TestDiscountAtomicity.test_final_stage_failure_changes_nothing)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/test_atomicity.py", line 144, in test_final_stage_failure_changes_nothing
+    opp_id, _ = make_opp(crm, amount=1000)
+                ~~~~~~~~^^^^^^^^^^^^^^^^^^
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/crm_fixtures.py", line 27, in make_opp
+    opp_id = crm.convert(lead_id, amount, actor)
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/crm.py", line 168, in convert
+    raise ValueError("lead is not qualified")
+ValueError: lead is not qualified
+
+======================================================================
+ERROR: test_every_failure_preserves_the_log (test_atomicity.TestIdCountersAreTransactional.test_every_failure_preserves_the_log)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/test_atomicity.py", line 206, in test_every_failure_preserves_the_log
+    opp_id = crm.convert(lead_id, 1000, "r1")
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/crm.py", line 168, in convert
+    raise ValueError("lead is not qualified")
+ValueError: lead is not qualified
+
+======================================================================
+ERROR: test_failed_convert_does_not_consume_opp_id (test_atomicity.TestIdCountersAreTransactional.test_failed_convert_does_not_consume_opp_id)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/test_atomicity.py", line 200, in test_failed_convert_does_not_consume_opp_id
+    self.assertEqual(crm.convert(lead_id, 100, "r1"), "O1")
+                     ~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/crm.py", line 168, in convert
+    raise ValueError("lead is not qualified")
+ValueError: lead is not qualified
+
+======================================================================
+ERROR: test_capacity_failure_leaves_queue_untouched (test_atomicity.TestTransferAtomicity.test_capacity_failure_leaves_queue_untouched)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/test_atomicity.py", line 179, in test_capacity_failure_leaves_queue_untouched
+    opp_id = crm.convert(first, 1000, "m1")
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/crm.py", line 168, in convert
+    raise ValueError("lead is not qualified")
+ValueError: lead is not qualified
+
+======================================================================
+ERROR: test_failing_transfers_change_nothing (test_atomicity.TestTransferAtomicity.test_failing_transfers_change_nothing)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/test_atomicity.py", line 155, in test_failing_transfers_change_nothing
+    opp_id, _ = make_opp(crm, amount=1000)
+                ~~~~~~~~^^^^^^^^^^^^^^^^^^
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/crm_fixtures.py", line 27, in make_opp
+    opp_id = crm.convert(lead_id, amount, actor)
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/crm.py", line 168, in convert
+    raise ValueError("lead is not qualified")
+ValueError: lead is not qualified
+
+======================================================================
+ERROR: test_any_open_stage_may_go_lost (test_rules.TestAdvance.test_any_open_stage_may_go_lost) (steps=())
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/test_rules.py", line 237, in test_any_open_stage_may_go_lost
+    opp_id, _ = make_opp(crm, amount=1000)
+                ~~~~~~~~^^^^^^^^^^^^^^^^^^
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/crm_fixtures.py", line 27, in make_opp
+    opp_id = crm.convert(lead_id, amount, actor)
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/crm.py", line 168, in convert
+    raise ValueError("lead is not qualified")
+ValueError: lead is not qualified
+
+======================================================================
+ERROR: test_any_open_stage_may_go_lost (test_rules.TestAdvance.test_any_open_stage_may_go_lost) (steps=('proposal',))
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/test_rules.py", line 237, in test_any_open_stage_may_go_lost
+    opp_id, _ = make_opp(crm, amount=1000)
+                ~~~~~~~~^^^^^^^^^^^^^^^^^^
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/crm_fixtures.py", line 27, in make_opp
+    opp_id = crm.convert(lead_id, amount, actor)
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/crm.py", line 168, in convert
+    raise ValueError("lead is not qualified")
+ValueError: lead is not qualified
+
+======================================================================
+ERROR: test_any_open_stage_may_go_lost (test_rules.TestAdvance.test_any_open_stage_may_go_lost) (steps=('proposal', 'negotiation'))
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/test_rules.py", line 237, in test_any_open_stage_may_go_lost
+    opp_id, _ = make_opp(crm, amount=1000)
+                ~~~~~~~~^^^^^^^^^^^^^^^^^^
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/crm_fixtures.py", line 27, in make_opp
+    opp_id = crm.convert(lead_id, amount, actor)
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/crm.py", line 168, in convert
+    raise ValueError("lead is not qualified")
+ValueError: lead is not qualified
+
+======================================================================
+ERROR: test_big_deal_check_only_applies_to_negotiation (test_rules.TestAdvance.test_big_deal_check_only_applies_to_negotiation)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/test_rules.py", line 333, in test_big_deal_check_only_applies_to_negotiation
+    opp_id, _ = make_opp(crm, amount=90000)
+                ~~~~~~~~^^^^^^^^^^^^^^^^^^^
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/crm_fixtures.py", line 27, in make_opp
+    opp_id = crm.convert(lead_id, amount, actor)
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/crm.py", line 168, in convert
+    raise ValueError("lead is not qualified")
+ValueError: lead is not qualified
+
+======================================================================
+ERROR: test_big_deal_gate_reads_current_amount_after_discount (test_rules.TestAdvance.test_big_deal_gate_reads_current_amount_after_discount)
+Spec line 30: the 50000 gate measures the current amount, not the original.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/test_rules.py", line 324, in test_big_deal_gate_reads_current_amount_after_discount
+    opp_id, _ = make_opp(crm, amount=60000)
+                ~~~~~~~~^^^^^^^^^^^^^^^^^^^
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/crm_fixtures.py", line 27, in make_opp
+    opp_id = crm.convert(lead_id, amount, actor)
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/crm.py", line 168, in convert
+    raise ValueError("lead is not qualified")
+ValueError: lead is not qualified
+
+======================================================================
+ERROR: test_big_deal_requires_manager_for_negotiation (test_rules.TestAdvance.test_big_deal_requires_manager_for_negotiation)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/test_rules.py", line 306, in test_big_deal_requires_manager_for_negotiation
+    opp_id, _ = make_opp(crm, amount=50001)
+                ~~~~~~~~^^^^^^^^^^^^^^^^^^^
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/crm_fixtures.py", line 27, in make_opp
+    opp_id = crm.convert(lead_id, amount, actor)
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/crm.py", line 168, in convert
+    raise ValueError("lead is not qualified")
+ValueError: lead is not qualified
+
+======================================================================
+ERROR: test_big_deal_threshold_is_strictly_greater_than_50000 (test_rules.TestAdvance.test_big_deal_threshold_is_strictly_greater_than_50000)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/test_rules.py", line 316, in test_big_deal_threshold_is_strictly_greater_than_50000
+    opp_id, _ = make_opp(crm, amount=50000)
+                ~~~~~~~~^^^^^^^^^^^^^^^^^^^
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/crm_fixtures.py", line 27, in make_opp
+    opp_id = crm.convert(lead_id, amount, actor)
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/crm.py", line 168, in convert
+    raise ValueError("lead is not qualified")
+ValueError: lead is not qualified
+
+======================================================================
+ERROR: test_final_stage_cannot_advance (test_rules.TestAdvance.test_final_stage_cannot_advance) (final='won')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/test_rules.py", line 280, in test_final_stage_cannot_advance
+    opp_id, _ = make_opp(crm)
+                ~~~~~~~~^^^^^
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/crm_fixtures.py", line 27, in make_opp
+    opp_id = crm.convert(lead_id, amount, actor)
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/crm.py", line 168, in convert
+    raise ValueError("lead is not qualified")
+ValueError: lead is not qualified
+
+======================================================================
+ERROR: test_final_stage_cannot_advance (test_rules.TestAdvance.test_final_stage_cannot_advance) (final='lost')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/test_rules.py", line 280, in test_final_stage_cannot_advance
+    opp_id, _ = make_opp(crm)
+                ~~~~~~~~^^^^^
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/crm_fixtures.py", line 27, in make_opp
+    opp_id = crm.convert(lead_id, amount, actor)
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/crm.py", line 168, in convert
+    raise ValueError("lead is not qualified")
+ValueError: lead is not qualified
+
+======================================================================
+ERROR: test_happy_path_through_won (test_rules.TestAdvance.test_happy_path_through_won)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/test_rules.py", line 227, in test_happy_path_through_won
+    opp_id, _ = make_opp(crm, amount=1000)
+                ~~~~~~~~^^^^^^^^^^^^^^^^^^
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/crm_fixtures.py", line 27, in make_opp
+    opp_id = crm.convert(lead_id, amount, actor)
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/crm.py", line 168, in convert
+    raise ValueError("lead is not qualified")
+ValueError: lead is not qualified
+
+======================================================================
+ERROR: test_invalid_stage_name (test_rules.TestAdvance.test_invalid_stage_name)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/test_rules.py", line 245, in test_invalid_stage_name
+    opp_id, _ = make_opp(crm)
+                ~~~~~~~~^^^^^
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/crm_fixtures.py", line 27, in make_opp
+    opp_id = crm.convert(lead_id, amount, actor)
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/crm.py", line 168, in convert
+    raise ValueError("lead is not qualified")
+ValueError: lead is not qualified
+
+======================================================================
+ERROR: test_permission_checked_before_final_state (test_rules.TestAdvance.test_permission_checked_before_final_state)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/test_rules.py", line 299, in test_permission_checked_before_final_state
+    opp_id, _ = make_opp(crm)
+                ~~~~~~~~^^^^^
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/crm_fixtures.py", line 27, in make_opp
+    opp_id = crm.convert(lead_id, amount, actor)
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/crm.py", line 168, in convert
+    raise ValueError("lead is not qualified")
+ValueError: lead is not qualified
+
+======================================================================
+ERROR: test_stage_must_be_immediate_next_or_lost (test_rules.TestAdvance.test_stage_must_be_immediate_next_or_lost) (steps=(), target='negotiation')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/test_rules.py", line 268, in test_stage_must_be_immediate_next_or_lost
+    opp_id, _ = make_opp(crm)
+                ~~~~~~~~^^^^^
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/crm_fixtures.py", line 27, in make_opp
+    opp_id = crm.convert(lead_id, amount, actor)
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/crm.py", line 168, in convert
+    raise ValueError("lead is not qualified")
+ValueError: lead is not qualified
+
+======================================================================
+ERROR: test_stage_must_be_immediate_next_or_lost (test_rules.TestAdvance.test_stage_must_be_immediate_next_or_lost) (steps=(), target='won')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/test_rules.py", line 268, in test_stage_must_be_immediate_next_or_lost
+    opp_id, _ = make_opp(crm)
+                ~~~~~~~~^^^^^
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/crm_fixtures.py", line 27, in make_opp
+    opp_id = crm.convert(lead_id, amount, actor)
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/crm.py", line 168, in convert
+    raise ValueError("lead is not qualified")
+ValueError: lead is not qualified
+
+======================================================================
+ERROR: test_stage_must_be_immediate_next_or_lost (test_rules.TestAdvance.test_stage_must_be_immediate_next_or_lost) (steps=('proposal',), target='prospect')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/test_rules.py", line 268, in test_stage_must_be_immediate_next_or_lost
+    opp_id, _ = make_opp(crm)
+                ~~~~~~~~^^^^^
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/crm_fixtures.py", line 27, in make_opp
+    opp_id = crm.convert(lead_id, amount, actor)
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/crm.py", line 168, in convert
+    raise ValueError("lead is not qualified")
+ValueError: lead is not qualified
+
+======================================================================
+ERROR: test_stage_must_be_immediate_next_or_lost (test_rules.TestAdvance.test_stage_must_be_immediate_next_or_lost) (steps=('proposal',), target='won')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/test_rules.py", line 268, in test_stage_must_be_immediate_next_or_lost
+    opp_id, _ = make_opp(crm)
+                ~~~~~~~~^^^^^
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/crm_fixtures.py", line 27, in make_opp
+    opp_id = crm.convert(lead_id, amount, actor)
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/crm.py", line 168, in convert
+    raise ValueError("lead is not qualified")
+ValueError: lead is not qualified
+
+======================================================================
+ERROR: test_stage_must_be_immediate_next_or_lost (test_rules.TestAdvance.test_stage_must_be_immediate_next_or_lost) (steps=('proposal', 'negotiation'), target='proposal')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/test_rules.py", line 268, in test_stage_must_be_immediate_next_or_lost
+    opp_id, _ = make_opp(crm)
+                ~~~~~~~~^^^^^
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/crm_fixtures.py", line 27, in make_opp
+    opp_id = crm.convert(lead_id, amount, actor)
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/crm.py", line 168, in convert
+    raise ValueError("lead is not qualified")
+ValueError: lead is not qualified
+
+======================================================================
+ERROR: test_stage_name_is_validated_before_permission (test_rules.TestAdvance.test_stage_name_is_validated_before_permission)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/test_rules.py", line 291, in test_stage_name_is_validated_before_permission
+    opp_id, _ = make_opp(crm)
+                ~~~~~~~~^^^^^
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/crm_fixtures.py", line 27, in make_opp
+    opp_id = crm.convert(lead_id, amount, actor)
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/crm.py", line 168, in convert
+    raise ValueError("lead is not qualified")
+ValueError: lead is not qualified
+
+======================================================================
+ERROR: test_failed_conversion_does_not_consume_opp_id (test_rules.TestConvert.test_failed_conversion_does_not_consume_opp_id)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/test_rules.py", line 209, in test_failed_conversion_does_not_consume_opp_id
+    self.assertEqual(crm.convert(lead_id, 100, "r1"), "O1")
+                     ~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/crm.py", line 168, in convert
+    raise ValueError("lead is not qualified")
+ValueError: lead is not qualified
+
+======================================================================
+ERROR: test_successful_conversion_sets_fields_and_log (test_rules.TestConvert.test_successful_conversion_sets_fields_and_log)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/test_rules.py", line 184, in test_successful_conversion_sets_fields_and_log
+    opp_id = crm.convert(lead_id, 1234, "r1")
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/crm.py", line 168, in convert
+    raise ValueError("lead is not qualified")
+ValueError: lead is not qualified
+
+======================================================================
+ERROR: test_cumulative_discount_floor_is_enforced (test_rules.TestDiscount.test_cumulative_discount_floor_is_enforced)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/test_rules.py", line 394, in test_cumulative_discount_floor_is_enforced
+    opp_id, _ = make_opp(crm, amount=1000)
+                ~~~~~~~~^^^^^^^^^^^^^^^^^^
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/crm_fixtures.py", line 27, in make_opp
+    opp_id = crm.convert(lead_id, amount, actor)
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/crm.py", line 168, in convert
+    raise ValueError("lead is not qualified")
+ValueError: lead is not qualified
+
+======================================================================
+ERROR: test_exactly_thirty_percent_total_is_allowed (test_rules.TestDiscount.test_exactly_thirty_percent_total_is_allowed)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/test_rules.py", line 405, in test_exactly_thirty_percent_total_is_allowed
+    opp_id, _ = make_opp(crm, amount=100)
+                ~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/crm_fixtures.py", line 27, in make_opp
+    opp_id = crm.convert(lead_id, amount, actor)
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/crm.py", line 168, in convert
+    raise ValueError("lead is not qualified")
+ValueError: lead is not qualified
+
+======================================================================
+ERROR: test_final_stage_cannot_be_discounted (test_rules.TestDiscount.test_final_stage_cannot_be_discounted)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/test_rules.py", line 369, in test_final_stage_cannot_be_discounted
+    opp_id, _ = make_opp(crm, amount=1000)
+                ~~~~~~~~^^^^^^^^^^^^^^^^^^
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/crm_fixtures.py", line 27, in make_opp
+    opp_id = crm.convert(lead_id, amount, actor)
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/crm.py", line 168, in convert
+    raise ValueError("lead is not qualified")
+ValueError: lead is not qualified
+
+======================================================================
+ERROR: test_final_stage_is_checked_before_non_manager_cap (test_rules.TestDiscount.test_final_stage_is_checked_before_non_manager_cap)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/test_rules.py", line 422, in test_final_stage_is_checked_before_non_manager_cap
+    opp_id, _ = make_opp(crm, amount=1000)
+                ~~~~~~~~^^^^^^^^^^^^^^^^^^
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/crm_fixtures.py", line 27, in make_opp
+    opp_id = crm.convert(lead_id, amount, actor)
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/crm.py", line 168, in convert
+    raise ValueError("lead is not qualified")
+ValueError: lead is not qualified
+
+======================================================================
+ERROR: test_manager_may_discount_up_to_thirty (test_rules.TestDiscount.test_manager_may_discount_up_to_thirty)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/test_rules.py", line 386, in test_manager_may_discount_up_to_thirty
+    opp_id, _ = make_opp(crm, amount=1000)
+                ~~~~~~~~^^^^^^^^^^^^^^^^^^
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/crm_fixtures.py", line 27, in make_opp
+    opp_id = crm.convert(lead_id, amount, actor)
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/crm.py", line 168, in convert
+    raise ValueError("lead is not qualified")
+ValueError: lead is not qualified
+
+======================================================================
+ERROR: test_non_manager_discount_cap (test_rules.TestDiscount.test_non_manager_discount_cap)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/test_rules.py", line 377, in test_non_manager_discount_cap
+    opp_id, _ = make_opp(crm, amount=1000)
+                ~~~~~~~~^^^^^^^^^^^^^^^^^^
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/crm_fixtures.py", line 27, in make_opp
+    opp_id = crm.convert(lead_id, amount, actor)
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/crm.py", line 168, in convert
+    raise ValueError("lead is not qualified")
+ValueError: lead is not qualified
+
+======================================================================
+ERROR: test_non_manager_floor_still_applies (test_rules.TestDiscount.test_non_manager_floor_still_applies)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/test_rules.py", line 411, in test_non_manager_floor_still_applies
+    opp_id, _ = make_opp(crm, amount=1000)
+                ~~~~~~~~^^^^^^^^^^^^^^^^^^
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/crm_fixtures.py", line 27, in make_opp
+    opp_id = crm.convert(lead_id, amount, actor)
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/crm.py", line 168, in convert
+    raise ValueError("lead is not qualified")
+ValueError: lead is not qualified
+
+======================================================================
+ERROR: test_non_owner_rep_cannot_discount (test_rules.TestDiscount.test_non_owner_rep_cannot_discount)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/test_rules.py", line 363, in test_non_owner_rep_cannot_discount
+    opp_id, _ = make_opp(crm, amount=1000)
+                ~~~~~~~~^^^^^^^^^^^^^^^^^^
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/crm_fixtures.py", line 27, in make_opp
+    opp_id = crm.convert(lead_id, amount, actor)
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/crm.py", line 168, in convert
+    raise ValueError("lead is not qualified")
+ValueError: lead is not qualified
+
+======================================================================
+ERROR: test_pct_must_be_int_in_range (test_rules.TestDiscount.test_pct_must_be_int_in_range)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/test_rules.py", line 343, in test_pct_must_be_int_in_range
+    opp_id, _ = make_opp(crm, amount=1000)
+                ~~~~~~~~^^^^^^^^^^^^^^^^^^
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/crm_fixtures.py", line 27, in make_opp
+    opp_id = crm.convert(lead_id, amount, actor)
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/crm.py", line 168, in convert
+    raise ValueError("lead is not qualified")
+ValueError: lead is not qualified
+
+======================================================================
+ERROR: test_pct_validated_before_permission (test_rules.TestDiscount.test_pct_validated_before_permission)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/test_rules.py", line 357, in test_pct_validated_before_permission
+    opp_id, _ = make_opp(crm, amount=1000)
+                ~~~~~~~~^^^^^^^^^^^^^^^^^^
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/crm_fixtures.py", line 27, in make_opp
+    opp_id = crm.convert(lead_id, amount, actor)
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/crm.py", line 168, in convert
+    raise ValueError("lead is not qualified")
+ValueError: lead is not qualified
+
+======================================================================
+ERROR: test_permission_checked_before_final_stage (test_rules.TestDiscount.test_permission_checked_before_final_stage)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/test_rules.py", line 429, in test_permission_checked_before_final_stage
+    opp_id, _ = make_opp(crm, amount=1000)
+                ~~~~~~~~^^^^^^^^^^^^^^^^^^
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/crm_fixtures.py", line 27, in make_opp
+    opp_id = crm.convert(lead_id, amount, actor)
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/crm.py", line 168, in convert
+    raise ValueError("lead is not qualified")
+ValueError: lead is not qualified
+
+======================================================================
+ERROR: test_final_stages_excluded_and_won_summed (test_rules.TestForecast.test_final_stages_excluded_and_won_summed)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/test_rules.py", line 540, in test_final_stages_excluded_and_won_summed
+    o1, _ = make_opp(crm, amount=100, email="a@corp.com")
+            ~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/crm_fixtures.py", line 27, in make_opp
+    opp_id = crm.convert(lead_id, amount, actor)
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/crm.py", line 168, in convert
+    raise ValueError("lead is not qualified")
+ValueError: lead is not qualified
+
+======================================================================
+ERROR: test_forecast_does_not_log (test_rules.TestForecast.test_forecast_does_not_log)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/test_rules.py", line 561, in test_forecast_does_not_log
+    make_opp(crm, amount=1000)
+    ~~~~~~~~^^^^^^^^^^^^^^^^^^
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/crm_fixtures.py", line 27, in make_opp
+    opp_id = crm.convert(lead_id, amount, actor)
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/crm.py", line 168, in convert
+    raise ValueError("lead is not qualified")
+ValueError: lead is not qualified
+
+======================================================================
+ERROR: test_weighted_value_by_stage (test_rules.TestForecast.test_weighted_value_by_stage)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/test_rules.py", line 527, in test_weighted_value_by_stage
+    o1, _ = make_opp(crm, amount=105, email="a@corp.com")
+            ~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/crm_fixtures.py", line 27, in make_opp
+    opp_id = crm.convert(lead_id, amount, actor)
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/crm.py", line 168, in convert
+    raise ValueError("lead is not qualified")
+ValueError: lead is not qualified
+
+======================================================================
+ERROR: test_weighted_value_uses_current_amount_after_discount (test_rules.TestForecast.test_weighted_value_uses_current_amount_after_discount)
+Spec line 42: weighting applies to the current amount, not the original.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/test_rules.py", line 553, in test_weighted_value_uses_current_amount_after_discount
+    opp_id, _ = make_opp(crm, amount=10000, email="a@corp.com")
+                ~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/crm_fixtures.py", line 27, in make_opp
+    opp_id = crm.convert(lead_id, amount, actor)
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/crm.py", line 168, in convert
+    raise ValueError("lead is not qualified")
+ValueError: lead is not qualified
+
+======================================================================
+ERROR: test_manager_may_act_on_any_work (test_rules.TestPermissionChecks.test_manager_may_act_on_any_work)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/test_rules.py", line 14, in setUp
+    self.opp_id = self.crm.convert(self.lead_id, 1000, "r1")
+                  ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/crm.py", line 168, in convert
+    raise ValueError("lead is not qualified")
+ValueError: lead is not qualified
+
+======================================================================
+ERROR: test_non_owner_cannot_qualify_a_new_lead (test_rules.TestPermissionChecks.test_non_owner_cannot_qualify_a_new_lead)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/test_rules.py", line 14, in setUp
+    self.opp_id = self.crm.convert(self.lead_id, 1000, "r1")
+                  ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/crm.py", line 168, in convert
+    raise ValueError("lead is not qualified")
+ValueError: lead is not qualified
+
+======================================================================
+ERROR: test_non_owner_rep_cannot_act_on_someone_elses_work (test_rules.TestPermissionChecks.test_non_owner_rep_cannot_act_on_someone_elses_work)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/test_rules.py", line 14, in setUp
+    self.opp_id = self.crm.convert(self.lead_id, 1000, "r1")
+                  ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/crm.py", line 168, in convert
+    raise ValueError("lead is not qualified")
+ValueError: lead is not qualified
+
+======================================================================
+ERROR: test_qualify_permission_checked_before_score (test_rules.TestPermissionChecks.test_qualify_permission_checked_before_score)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/test_rules.py", line 14, in setUp
+    self.opp_id = self.crm.convert(self.lead_id, 1000, "r1")
+                  ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/crm.py", line 168, in convert
+    raise ValueError("lead is not qualified")
+ValueError: lead is not qualified
+
+======================================================================
+ERROR: test_unknown_actor_is_checked_before_entity_and_payload (test_rules.TestPermissionChecks.test_unknown_actor_is_checked_before_entity_and_payload)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/test_rules.py", line 14, in setUp
+    self.opp_id = self.crm.convert(self.lead_id, 1000, "r1")
+                  ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/crm.py", line 168, in convert
+    raise ValueError("lead is not qualified")
+ValueError: lead is not qualified
+
+======================================================================
+ERROR: test_unknown_actor_rejected_everywhere (test_rules.TestPermissionChecks.test_unknown_actor_rejected_everywhere)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/test_rules.py", line 14, in setUp
+    self.opp_id = self.crm.convert(self.lead_id, 1000, "r1")
+                  ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/crm.py", line 168, in convert
+    raise ValueError("lead is not qualified")
+ValueError: lead is not qualified
+
+======================================================================
+ERROR: test_converted_lead_cannot_be_qualified (test_rules.TestQualify.test_converted_lead_cannot_be_qualified)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/test_rules.py", line 139, in test_converted_lead_cannot_be_qualified
+    crm.convert(lead_id, 1000, "r1")
+    ~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/crm.py", line 168, in convert
+    raise ValueError("lead is not qualified")
+ValueError: lead is not qualified
+
+======================================================================
+ERROR: test_final_opportunity_cannot_be_transferred (test_rules.TestTransfer.test_final_opportunity_cannot_be_transferred)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/test_rules.py", line 438, in setUp
+    self.opp_id, self.lead_id = make_opp(self.crm, amount=1000)
+                                ~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/crm_fixtures.py", line 27, in make_opp
+    opp_id = crm.convert(lead_id, amount, actor)
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/crm.py", line 168, in convert
+    raise ValueError("lead is not qualified")
+ValueError: lead is not qualified
+
+======================================================================
+ERROR: test_manager_permission_checked_before_final_stage (test_rules.TestTransfer.test_manager_permission_checked_before_final_stage)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/test_rules.py", line 438, in setUp
+    self.opp_id, self.lead_id = make_opp(self.crm, amount=1000)
+                                ~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/crm_fixtures.py", line 27, in make_opp
+    opp_id = crm.convert(lead_id, amount, actor)
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/crm.py", line 168, in convert
+    raise ValueError("lead is not qualified")
+ValueError: lead is not qualified
+
+======================================================================
+ERROR: test_manager_permission_checked_before_target (test_rules.TestTransfer.test_manager_permission_checked_before_target)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/test_rules.py", line 438, in setUp
+    self.opp_id, self.lead_id = make_opp(self.crm, amount=1000)
+                                ~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/crm_fixtures.py", line 27, in make_opp
+    opp_id = crm.convert(lead_id, amount, actor)
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/crm.py", line 168, in convert
+    raise ValueError("lead is not qualified")
+ValueError: lead is not qualified
+
+======================================================================
+ERROR: test_only_manager_may_transfer (test_rules.TestTransfer.test_only_manager_may_transfer)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/test_rules.py", line 438, in setUp
+    self.opp_id, self.lead_id = make_opp(self.crm, amount=1000)
+                                ~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/crm_fixtures.py", line 27, in make_opp
+    opp_id = crm.convert(lead_id, amount, actor)
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/crm.py", line 168, in convert
+    raise ValueError("lead is not qualified")
+ValueError: lead is not qualified
+
+======================================================================
+ERROR: test_same_owner_rejected (test_rules.TestTransfer.test_same_owner_rejected)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/test_rules.py", line 438, in setUp
+    self.opp_id, self.lead_id = make_opp(self.crm, amount=1000)
+                                ~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/crm_fixtures.py", line 27, in make_opp
+    opp_id = crm.convert(lead_id, amount, actor)
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/crm.py", line 168, in convert
+    raise ValueError("lead is not qualified")
+ValueError: lead is not qualified
+
+======================================================================
+ERROR: test_successful_transfer_updates_owner_and_logs (test_rules.TestTransfer.test_successful_transfer_updates_owner_and_logs)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/test_rules.py", line 438, in setUp
+    self.opp_id, self.lead_id = make_opp(self.crm, amount=1000)
+                                ~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/crm_fixtures.py", line 27, in make_opp
+    opp_id = crm.convert(lead_id, amount, actor)
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/crm.py", line 168, in convert
+    raise ValueError("lead is not qualified")
+ValueError: lead is not qualified
+
+======================================================================
+ERROR: test_target_must_be_a_rep (test_rules.TestTransfer.test_target_must_be_a_rep)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/test_rules.py", line 438, in setUp
+    self.opp_id, self.lead_id = make_opp(self.crm, amount=1000)
+                                ~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/crm_fixtures.py", line 27, in make_opp
+    opp_id = crm.convert(lead_id, amount, actor)
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/crm.py", line 168, in convert
+    raise ValueError("lead is not qualified")
+ValueError: lead is not qualified
+
+======================================================================
+ERROR: test_target_must_have_capacity (test_rules.TestTransfer.test_target_must_have_capacity)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/test_rules.py", line 438, in setUp
+    self.opp_id, self.lead_id = make_opp(self.crm, amount=1000)
+                                ~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/crm_fixtures.py", line 27, in make_opp
+    opp_id = crm.convert(lead_id, amount, actor)
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/crm.py", line 168, in convert
+    raise ValueError("lead is not qualified")
+ValueError: lead is not qualified
+
+======================================================================
+ERROR: test_transfer_to_rep_with_free_capacity_succeeds (test_rules.TestTransfer.test_transfer_to_rep_with_free_capacity_succeeds)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/test_rules.py", line 438, in setUp
+    self.opp_id, self.lead_id = make_opp(self.crm, amount=1000)
+                                ~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/crm_fixtures.py", line 27, in make_opp
+    opp_id = crm.convert(lead_id, amount, actor)
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/crm.py", line 168, in convert
+    raise ValueError("lead is not qualified")
+ValueError: lead is not qualified
+
+======================================================================
+ERROR: test_unknown_opportunity (test_rules.TestTransfer.test_unknown_opportunity)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/test_rules.py", line 438, in setUp
+    self.opp_id, self.lead_id = make_opp(self.crm, amount=1000)
+                                ~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/crm_fixtures.py", line 27, in make_opp
+    opp_id = crm.convert(lead_id, amount, actor)
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/crm.py", line 168, in convert
+    raise ValueError("lead is not qualified")
+ValueError: lead is not qualified
+
+======================================================================
+ERROR: test_unknown_target (test_rules.TestTransfer.test_unknown_target)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/test_rules.py", line 438, in setUp
+    self.opp_id, self.lead_id = make_opp(self.crm, amount=1000)
+                                ~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/crm_fixtures.py", line 27, in make_opp
+    opp_id = crm.convert(lead_id, amount, actor)
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/crm.py", line 168, in convert
+    raise ValueError("lead is not qualified")
+ValueError: lead is not qualified
+
+======================================================================
+ERROR: test_final_stage_frees_slot_and_assigns_waiting_lead (test_validation.TestAssignmentAndCapacity.test_final_stage_frees_slot_and_assigns_waiting_lead)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/test_validation.py", line 221, in test_final_stage_frees_slot_and_assigns_waiting_lead
+    opp_id = crm.convert(first, 1000, "r1")
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/crm.py", line 168, in convert
+    raise ValueError("lead is not qualified")
+ValueError: lead is not qualified
+
+======================================================================
+ERROR: test_manager_finalization_assigns_waiting_lead_to_the_owner (test_validation.TestAssignmentAndCapacity.test_manager_finalization_assigns_waiting_lead_to_the_owner)
+Spec line 31: the drain targets the opportunity owner, not the actor.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/test_validation.py", line 256, in test_manager_finalization_assigns_waiting_lead_to_the_owner
+    opp_id = crm.convert(first, 1000, "m1")
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/crm.py", line 168, in convert
+    raise ValueError("lead is not qualified")
+ValueError: lead is not qualified
+
+======================================================================
+ERROR: test_open_opportunities_count_against_capacity (test_validation.TestAssignmentAndCapacity.test_open_opportunities_count_against_capacity)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/test_validation.py", line 182, in test_open_opportunities_count_against_capacity
+    crm.convert(first, 1000, "m1")
+    ~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/crm.py", line 168, in convert
+    raise ValueError("lead is not qualified")
+ValueError: lead is not qualified
+
+======================================================================
+ERROR: test_owned_leads_never_join_the_waiting_queue (test_validation.TestAssignmentAndCapacity.test_owned_leads_never_join_the_waiting_queue)
+Spec step 6: only leads left without an owner join the queue.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/test_validation.py", line 268, in test_owned_leads_never_join_the_waiting_queue
+    opp_id = crm.convert(first, 1000, "r1")
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/crm.py", line 168, in convert
+    raise ValueError("lead is not qualified")
+ValueError: lead is not qualified
+
+======================================================================
+ERROR: test_waiting_queue_is_fifo_and_drains_multiple_slots (test_validation.TestAssignmentAndCapacity.test_waiting_queue_is_fifo_and_drains_multiple_slots)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/test_validation.py", line 287, in test_waiting_queue_is_fifo_and_drains_multiple_slots
+    o1 = crm.convert(l1, 1000, "r1")
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/crm.py", line 168, in convert
+    raise ValueError("lead is not qualified")
+ValueError: lead is not qualified
+
+======================================================================
+ERROR: test_won_frees_slot_and_assigns_waiting_lead (test_validation.TestAssignmentAndCapacity.test_won_frees_slot_and_assigns_waiting_lead)
+Spec line 31: every final stage frees the slot, not just 'lost'.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/test_validation.py", line 238, in test_won_frees_slot_and_assigns_waiting_lead
+    opp_id = crm.convert(first, 1000, "r1")
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/crm.py", line 168, in convert
+    raise ValueError("lead is not qualified")
+ValueError: lead is not qualified
+
+======================================================================
+FAIL: test_convert_permission_failure_changes_nothing (test_atomicity.TestConvertAtomicity.test_convert_permission_failure_changes_nothing)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/test_atomicity.py", line 79, in test_convert_permission_failure_changes_nothing
+    self.assertEqual(snapshot(crm), before)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: {'lea[120 chars]s': 'converted'}}, 'opps': {}, 'log': [('add_l[39 chars]1')]} != {'lea[120 chars]s': 'qualified'}}, 'opps': {}, 'log': [('add_l[39 chars]1')]}
+  {'leads': {'L1': {'email': 'a@corp.com',
+                    'id': 'L1',
+                    'name': 'Lead',
+                    'owner': 'r1',
+                    'score': 45,
+                    'source': 'referral',
+-                   'status': 'converted'}},
+?                              ^^^^^^^
+
++                   'status': 'qualified'}},
+?                              ^^^^^^^
+
+   'log': [('add_lead', 'L1', 'r1'), ('qualify', 'L1', 'r1')],
+   'opps': {}}
+
+======================================================================
+FAIL: test_unqualified_lead_changes_nothing (test_atomicity.TestConvertAtomicity.test_unqualified_lead_changes_nothing)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/test_atomicity.py", line 87, in test_unqualified_lead_changes_nothing
+    self.assertEqual(snapshot(crm), before)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: {'lea[120 chars]s': 'converted'}}, 'opps': {}, 'log': [('add_l[14 chars]1')]} != {'lea[120 chars]s': 'new'}}, 'opps': {}, 'log': [('add_lead', 'L1', 'r1')]}
+  {'leads': {'L1': {'email': 'a@corp.com',
+                    'id': 'L1',
+                    'name': 'Lead',
+                    'owner': 'r1',
+                    'score': 45,
+                    'source': 'referral',
+-                   'status': 'converted'}},
+?                              -- - ^^^^
+
++                   'status': 'new'}},
+?                                ^
+
+   'log': [('add_lead', 'L1', 'r1')],
+   'opps': {}}
+
+======================================================================
+FAIL: test_lead_without_owner_cannot_be_converted (test_rules.TestConvert.test_lead_without_owner_cannot_be_converted)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/test_rules.py", line 220, in test_lead_without_owner_cannot_be_converted
+    self.assertEqual(snapshot(crm), before)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: {'lea[246 chars]s': 'converted'}}, 'opps': {}, 'log': [('add_l[65 chars]1')]} != {'lea[246 chars]s': 'qualified'}}, 'opps': {}, 'log': [('add_l[65 chars]1')]}
+Diff is 776 characters long. Set self.maxDiff to None to see it.
+
+----------------------------------------------------------------------
+Ran 106 tests in 0.015s
+
+FAILED (failures=3, errors=69)
+(exit 1)
+$ restored /tmp/aep-lab/pilot2/AE-neutral-2/crm.py from backup (byte-identical)
+$ python3 -m unittest discover -s /tmp/aep-lab/pilot2/AE-neutral-2 -p "test*.py"   # expect SUCCESS
+..........................................................................................................
+----------------------------------------------------------------------
+Ran 106 tests in 0.003s
+
+OK
+(exit 0)
+
+OK: negative control verified — the check fails without the protection and passes with it.

@@ -1,0 +1,101 @@
+$ backed up /tmp/aep-lab/pilot2/AE-neutral-2/crm.py -> /var/folders/t0/kj5x1gtn08j274f6nfcpmql40000gn/T/aepkit-negcontrol-4674retr/crm.py
+$ python3 /tmp/aep-lab/pilot2/AE-neutral-2/breaks/break_name.py
+
+$ python3 -m unittest discover -s /tmp/aep-lab/pilot2/AE-neutral-2 -p "test*.py"   # expect FAILURE matching /test_name_must_be_non_empty_string/
+.F....................................................................................................FFFEEEF...
+======================================================================
+ERROR: test_name_must_be_non_empty_string (test_validation.TestNameValidation.test_name_must_be_non_empty_string) (name=None)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/test_validation.py", line 83, in test_name_must_be_non_empty_string
+    crm.add_lead("a@corp.com", name, "web", "r1")
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/crm.py", line 132, in add_lead
+    "name": name.strip(),
+            ^^^^^^^^^^
+AttributeError: 'NoneType' object has no attribute 'strip'
+
+======================================================================
+ERROR: test_name_must_be_non_empty_string (test_validation.TestNameValidation.test_name_must_be_non_empty_string) (name=42)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/test_validation.py", line 83, in test_name_must_be_non_empty_string
+    crm.add_lead("a@corp.com", name, "web", "r1")
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/crm.py", line 132, in add_lead
+    "name": name.strip(),
+            ^^^^^^^^^^
+AttributeError: 'int' object has no attribute 'strip'
+
+======================================================================
+ERROR: test_name_must_be_non_empty_string (test_validation.TestNameValidation.test_name_must_be_non_empty_string) (name=['Lead'])
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/test_validation.py", line 83, in test_name_must_be_non_empty_string
+    crm.add_lead("a@corp.com", name, "web", "r1")
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/crm.py", line 132, in add_lead
+    "name": name.strip(),
+            ^^^^^^^^^^
+AttributeError: 'list' object has no attribute 'strip'
+
+======================================================================
+FAIL: test_invalid_payloads_change_nothing (test_atomicity.TestAddLeadAtomicity.test_invalid_payloads_change_nothing) (email='a@corp.com', name='', source='web')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/test_atomicity.py", line 20, in test_invalid_payloads_change_nothing
+    with self.assertRaises(ValueError):
+         ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^
+AssertionError: ValueError not raised
+
+======================================================================
+FAIL: test_name_must_be_non_empty_string (test_validation.TestNameValidation.test_name_must_be_non_empty_string) (name='')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/test_validation.py", line 82, in test_name_must_be_non_empty_string
+    with self.assertRaises(ValueError):
+         ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^
+AssertionError: ValueError not raised
+
+======================================================================
+FAIL: test_name_must_be_non_empty_string (test_validation.TestNameValidation.test_name_must_be_non_empty_string) (name='   ')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/test_validation.py", line 82, in test_name_must_be_non_empty_string
+    with self.assertRaises(ValueError):
+         ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^
+AssertionError: ValueError not raised
+
+======================================================================
+FAIL: test_name_must_be_non_empty_string (test_validation.TestNameValidation.test_name_must_be_non_empty_string) (name='\t\n')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/test_validation.py", line 82, in test_name_must_be_non_empty_string
+    with self.assertRaises(ValueError):
+         ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^
+AssertionError: ValueError not raised
+
+======================================================================
+FAIL: test_name_must_be_non_empty_string (test_validation.TestNameValidation.test_name_must_be_non_empty_string) (name=b'Lead')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/test_validation.py", line 82, in test_name_must_be_non_empty_string
+    with self.assertRaises(ValueError):
+         ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^
+AssertionError: ValueError not raised
+
+----------------------------------------------------------------------
+Ran 106 tests in 0.005s
+
+FAILED (failures=5, errors=3)
+(exit 1)
+$ restored /tmp/aep-lab/pilot2/AE-neutral-2/crm.py from backup (byte-identical)
+$ python3 -m unittest discover -s /tmp/aep-lab/pilot2/AE-neutral-2 -p "test*.py"   # expect SUCCESS
+..........................................................................................................
+----------------------------------------------------------------------
+Ran 106 tests in 0.003s
+
+OK
+(exit 0)
+
+OK: negative control verified — the check fails without the protection and passes with it.

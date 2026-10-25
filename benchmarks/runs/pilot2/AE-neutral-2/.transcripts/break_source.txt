@@ -1,0 +1,127 @@
+$ backed up /tmp/aep-lab/pilot2/AE-neutral-2/crm.py -> /var/folders/t0/kj5x1gtn08j274f6nfcpmql40000gn/T/aepkit-negcontrol-xgsknxhc/crm.py
+$ python3 /tmp/aep-lab/pilot2/AE-neutral-2/breaks/break_source.py
+
+$ python3 -m unittest discover -s /tmp/aep-lab/pilot2/AE-neutral-2 -p "test*.py"   # expect FAILURE matching /test_source_must_be_allowed_value/
+.E..........................................................................................E............EEEEEEE
+======================================================================
+ERROR: test_invalid_payloads_change_nothing (test_atomicity.TestAddLeadAtomicity.test_invalid_payloads_change_nothing) (email='a@corp.com', name='Lead', source='fax')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/test_atomicity.py", line 21, in test_invalid_payloads_change_nothing
+    crm.add_lead(email, name, source, "r1")
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/crm.py", line 121, in add_lead
+    score = SOURCE_SCORES[source]
+            ~~~~~~~~~~~~~^^^^^^^^
+KeyError: 'fax'
+
+======================================================================
+ERROR: test_source_is_validated_before_duplicate (test_validation.TestDuplicateDetection.test_source_is_validated_before_duplicate)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/test_validation.py", line 142, in test_source_is_validated_before_duplicate
+    crm.add_lead("a@corp.com", "Other", "fax", "r1")
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/crm.py", line 119, in add_lead
+    raise DuplicateLeadError(lead["id"])
+crm.DuplicateLeadError: duplicate lead: L1
+
+======================================================================
+ERROR: test_source_must_be_allowed_value (test_validation.TestSourceValidation.test_source_must_be_allowed_value) (source='phone')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/test_validation.py", line 99, in test_source_must_be_allowed_value
+    crm.add_lead("a@corp.com", "Lead", source, "r1")
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/crm.py", line 121, in add_lead
+    score = SOURCE_SCORES[source]
+            ~~~~~~~~~~~~~^^^^^^^^
+KeyError: 'phone'
+
+======================================================================
+ERROR: test_source_must_be_allowed_value (test_validation.TestSourceValidation.test_source_must_be_allowed_value) (source='')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/test_validation.py", line 99, in test_source_must_be_allowed_value
+    crm.add_lead("a@corp.com", "Lead", source, "r1")
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/crm.py", line 121, in add_lead
+    score = SOURCE_SCORES[source]
+            ~~~~~~~~~~~~~^^^^^^^^
+KeyError: ''
+
+======================================================================
+ERROR: test_source_must_be_allowed_value (test_validation.TestSourceValidation.test_source_must_be_allowed_value) (source='WEB')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/test_validation.py", line 99, in test_source_must_be_allowed_value
+    crm.add_lead("a@corp.com", "Lead", source, "r1")
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/crm.py", line 121, in add_lead
+    score = SOURCE_SCORES[source]
+            ~~~~~~~~~~~~~^^^^^^^^
+KeyError: 'WEB'
+
+======================================================================
+ERROR: test_source_must_be_allowed_value (test_validation.TestSourceValidation.test_source_must_be_allowed_value) (source='web ')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/test_validation.py", line 99, in test_source_must_be_allowed_value
+    crm.add_lead("a@corp.com", "Lead", source, "r1")
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/crm.py", line 121, in add_lead
+    score = SOURCE_SCORES[source]
+            ~~~~~~~~~~~~~^^^^^^^^
+KeyError: 'web '
+
+======================================================================
+ERROR: test_source_must_be_allowed_value (test_validation.TestSourceValidation.test_source_must_be_allowed_value) (source=None)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/test_validation.py", line 99, in test_source_must_be_allowed_value
+    crm.add_lead("a@corp.com", "Lead", source, "r1")
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/crm.py", line 121, in add_lead
+    score = SOURCE_SCORES[source]
+            ~~~~~~~~~~~~~^^^^^^^^
+KeyError: None
+
+======================================================================
+ERROR: test_source_must_be_allowed_value (test_validation.TestSourceValidation.test_source_must_be_allowed_value) (source=1)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/test_validation.py", line 99, in test_source_must_be_allowed_value
+    crm.add_lead("a@corp.com", "Lead", source, "r1")
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/crm.py", line 121, in add_lead
+    score = SOURCE_SCORES[source]
+            ~~~~~~~~~~~~~^^^^^^^^
+KeyError: 1
+
+======================================================================
+ERROR: test_source_must_be_allowed_value (test_validation.TestSourceValidation.test_source_must_be_allowed_value) (source=['web'])
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/test_validation.py", line 99, in test_source_must_be_allowed_value
+    crm.add_lead("a@corp.com", "Lead", source, "r1")
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/crm.py", line 121, in add_lead
+    score = SOURCE_SCORES[source]
+            ~~~~~~~~~~~~~^^^^^^^^
+TypeError: cannot use 'list' as a dict key (unhashable type: 'list')
+
+----------------------------------------------------------------------
+Ran 106 tests in 0.005s
+
+FAILED (errors=9)
+(exit 1)
+$ restored /tmp/aep-lab/pilot2/AE-neutral-2/crm.py from backup (byte-identical)
+$ python3 -m unittest discover -s /tmp/aep-lab/pilot2/AE-neutral-2 -p "test*.py"   # expect SUCCESS
+..........................................................................................................
+----------------------------------------------------------------------
+Ran 106 tests in 0.003s
+
+OK
+(exit 0)
+
+OK: negative control verified — the check fails without the protection and passes with it.

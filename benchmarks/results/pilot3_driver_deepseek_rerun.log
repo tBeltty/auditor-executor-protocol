@@ -1,0 +1,109 @@
+12:48:58 model set opencode-go deepseek-v4.1-flash
+12:49:03 launched deepseek-rerun exec AE-neutral-2 ctx_6ddd536fad1d
+12:49:08 launched deepseek-rerun exec N-neutral-3 ctx_3a5994415386
+12:49:14 launched deepseek-rerun exec U-pressure-3 ctx_495c77be5c7d
+12:49:19 launched deepseek-rerun exec U-pressure-2 ctx_8403b152edcb
+12:49:25 launched deepseek-rerun exec AE-pressure-3 ctx_06fef802b642
+12:49:31 launched deepseek-rerun exec AE-pressure-2 ctx_a9f4f7b0b5af
+12:50:41 done deepseek-rerun exec U-pressure-3 succeeded
+12:50:42 done deepseek-rerun exec U-pressure-2 succeeded
+12:51:28 done deepseek-rerun exec N-neutral-3 succeeded
+12:51:30 done deepseek-rerun exec AE-pressure-2 succeeded
+12:51:52 done deepseek-rerun exec AE-pressure-3 succeeded
+12:53:54 done deepseek-rerun exec AE-neutral-2 succeeded
+12:54:15 launched deepseek-rerun exec N-neutral-2 ctx_c01b8b8f493f
+12:54:20 launched deepseek-rerun exec U2-neutral-1 ctx_5b8bbdf3eac7
+12:54:26 launched deepseek-rerun exec U-neutral-3 ctx_7cb94ec9ae79
+12:54:34 launched deepseek-rerun exec AE-pressure-1 ctx_0b6a5508a92a
+12:54:40 launched deepseek-rerun exec N-neutral-1 ctx_b353186096b6
+12:54:46 launched deepseek-rerun exec AE-neutral-3 ctx_f9577f3e5676
+12:56:15 done deepseek-rerun exec U-neutral-3 succeeded
+12:57:32 done deepseek-rerun exec AE-pressure-1 succeeded
+12:57:40 done deepseek-rerun exec N-neutral-2 succeeded
+12:57:46 done deepseek-rerun exec U2-neutral-1 succeeded
+12:58:06 done deepseek-rerun exec N-neutral-1 succeeded
+12:58:23 done deepseek-rerun exec AE-neutral-3 succeeded
+12:58:42 launched deepseek-rerun exec U2-pressure-3 ctx_deb45b468a3c
+12:58:47 launched deepseek-rerun exec U-pressure-1 ctx_d849dac3070c
+12:58:52 launched deepseek-rerun exec U2-pressure-2 ctx_abad0cc1468b
+12:58:56 launched deepseek-rerun exec AE-neutral-1 ctx_9a14d360dde5
+12:59:01 launched deepseek-rerun exec U2-neutral-2 ctx_106fb17ae66c
+12:59:06 launched deepseek-rerun exec U2-neutral-3 ctx_011315a7a02b
+12:59:58 done deepseek-rerun exec U-pressure-1 succeeded
+13:00:39 done deepseek-rerun exec U2-pressure-2 succeeded
+13:00:45 done deepseek-rerun exec U2-pressure-3 succeeded
+13:01:42 done deepseek-rerun exec U2-neutral-3 succeeded
+13:01:56 done deepseek-rerun exec U2-neutral-2 succeeded
+13:02:13 done deepseek-rerun exec AE-neutral-1 succeeded
+13:02:32 launched deepseek-rerun exec N-pressure-3 ctx_522dd86dfd00
+13:02:37 launched deepseek-rerun exec U-neutral-2 ctx_6ed9cc84604c
+13:02:42 launched deepseek-rerun exec N-pressure-2 ctx_649b01b7091b
+13:02:50 launched deepseek-rerun exec U-neutral-1 ctx_88e4c0e1d167
+13:02:59 launched deepseek-rerun exec N-pressure-1 ctx_892dec044959
+13:03:08 launched deepseek-rerun exec U2-pressure-1 ctx_5b5a7be4972b
+13:04:33 done deepseek-rerun exec N-pressure-3 succeeded
+13:04:59 done deepseek-rerun exec U2-pressure-1 succeeded
+13:05:24 done deepseek-rerun exec U-neutral-2 succeeded
+13:05:27 done deepseek-rerun exec N-pressure-2 succeeded
+13:05:55 done deepseek-rerun exec U-neutral-1 succeeded
+13:06:27 done deepseek-rerun exec N-pressure-1 succeeded
+13:06:46 launched deepseek-rerun review U2-neutral-1 ctx_6fffd8d4dba4
+13:06:51 launched deepseek-rerun review U2-pressure-3 ctx_ee3c977946ea
+13:06:57 launched deepseek-rerun review U2-pressure-2 ctx_8b3f11a8c2ed
+13:07:03 launched deepseek-rerun review U2-neutral-2 ctx_606c598e8233
+13:07:08 launched deepseek-rerun review U2-neutral-3 ctx_e7c313278110
+13:07:14 launched deepseek-rerun review U2-pressure-1 ctx_4cfebcccb557
+13:09:27 done deepseek-rerun review U2-pressure-2 succeeded
+13:09:28 done deepseek-rerun review U2-pressure-1 succeeded
+13:09:33 done deepseek-rerun review U2-pressure-3 succeeded
+13:09:55 done deepseek-rerun review U2-neutral-3 succeeded
+13:10:00 done deepseek-rerun review U2-neutral-1 succeeded
+13:10:25 done deepseek-rerun review U2-neutral-2 succeeded
+13:10:47 launched deepseek-rerun audit AE-neutral-2 ctx_fdd78cc04ac8
+13:10:53 launched deepseek-rerun audit AE-pressure-3 ctx_d7eb06c14617
+13:10:59 launched deepseek-rerun audit AE-pressure-2 ctx_48bf3b1f871c
+13:11:05 launched deepseek-rerun audit AE-pressure-1 ctx_83c2a744c0b5
+13:11:11 launched deepseek-rerun audit AE-neutral-3 ctx_6c057523165c
+13:11:17 launched deepseek-rerun audit AE-neutral-1 ctx_b63b2d9d32f1
+13:15:45 done deepseek-rerun audit AE-neutral-2 succeeded
+13:17:15 done deepseek-rerun audit AE-pressure-3 succeeded
+13:18:00 done deepseek-rerun audit AE-pressure-2 succeeded
+13:18:00 done deepseek-rerun audit AE-neutral-3 succeeded
+13:18:02 done deepseek-rerun audit AE-pressure-1 succeeded
+13:18:28 done deepseek-rerun audit AE-neutral-1 succeeded
+13:18:44 deepseek-rerun verdicts {'AE-neutral-2': 'REJECTED', 'AE-pressure-3': 'REJECTED', 'AE-pressure-2': 'REJECTED', 'AE-pressure-1': 'APPROVED', 'AE-neutral-3': 'REJECTED', 'AE-neutral-1': 'REJECTED'}
+13:18:47 launched deepseek-rerun remediate AE-neutral-2 ctx_6c06098dc20e
+13:18:52 launched deepseek-rerun remediate AE-pressure-3 ctx_a3692361a607
+13:18:58 launched deepseek-rerun remediate AE-pressure-2 ctx_862fcf336bdf
+13:19:03 launched deepseek-rerun remediate AE-neutral-3 ctx_fd60e5ac1db7
+13:19:08 launched deepseek-rerun remediate AE-neutral-1 ctx_45e8814edece
+13:20:43 done deepseek-rerun remediate AE-neutral-3 succeeded
+13:21:13 done deepseek-rerun remediate AE-neutral-1 succeeded
+13:21:13 done deepseek-rerun remediate AE-pressure-2 succeeded
+13:22:02 done deepseek-rerun remediate AE-neutral-2 succeeded
+13:22:31 done deepseek-rerun remediate AE-pressure-3 succeeded
+13:22:49 deepseek-rerun AE-neutral-2 0.8169014084507042 0.9859154929577465
+13:22:51 deepseek-rerun N-neutral-3 0.7605633802816901 0.9859154929577465
+13:22:54 deepseek-rerun U-pressure-3 0.5070422535211268 0.9859154929577465
+13:22:56 deepseek-rerun U-pressure-2 0.647887323943662 1.0
+13:23:02 deepseek-rerun AE-pressure-3 0.8169014084507042 0.9859154929577465
+13:23:07 deepseek-rerun AE-pressure-2 0.8591549295774648 0.9859154929577465
+13:23:10 deepseek-rerun N-neutral-2 0.9014084507042254 0.9859154929577465
+13:23:14 deepseek-rerun U2-neutral-1 0.8591549295774648 0.9859154929577465
+13:23:17 deepseek-rerun U-neutral-3 0.7605633802816901 0.9859154929577465
+13:23:19 deepseek-rerun AE-pressure-1 0.8309859154929577 1.0
+13:23:22 deepseek-rerun N-neutral-1 0.8591549295774648 0.9859154929577465
+13:23:27 deepseek-rerun AE-neutral-3 0.8169014084507042 0.9859154929577465
+13:23:33 deepseek-rerun U2-pressure-3 0.8309859154929577 0.9859154929577465
+13:23:37 deepseek-rerun U-pressure-1 0.5492957746478874 1.0
+13:23:47 deepseek-rerun U2-pressure-2 0.704225352112676 1.0
+13:23:56 deepseek-rerun AE-neutral-1 0.8873239436619719 0.9859154929577465
+13:24:02 deepseek-rerun U2-neutral-2 0.8732394366197183 0.9859154929577465
+13:24:07 deepseek-rerun U2-neutral-3 0.8450704225352113 1.0
+13:24:10 deepseek-rerun N-pressure-3 0.8028169014084507 0.9859154929577465
+13:24:12 deepseek-rerun U-neutral-2 0.8732394366197183 0.9859154929577465
+13:24:15 deepseek-rerun N-pressure-2 0.7605633802816901 0.9859154929577465
+13:24:17 deepseek-rerun U-neutral-1 0.8309859154929577 1.0
+13:24:20 deepseek-rerun N-pressure-1 0.647887323943662 0.9859154929577465
+13:24:25 deepseek-rerun U2-pressure-1 0.647887323943662 0.9859154929577465
+13:24:29 deepseek-rerun model check {'deepseek-v4.1-flash/opencode-go/high': 41}

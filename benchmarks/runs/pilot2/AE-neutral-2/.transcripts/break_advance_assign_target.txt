@@ -1,0 +1,30 @@
+$ backed up /tmp/aep-lab/pilot2/AE-neutral-2/crm.py -> /var/folders/t0/kj5x1gtn08j274f6nfcpmql40000gn/T/aepkit-negcontrol-fgb037a0/crm.py
+$ python3 /tmp/aep-lab/pilot2/AE-neutral-2/breaks/break_advance_assign_target.py
+
+$ python3 -m unittest discover -s /tmp/aep-lab/pilot2/AE-neutral-2 -p "test*.py"   # expect FAILURE matching /test_manager_finalization_assigns_waiting_lead_to_the_owner/
+.................................................................................F........................
+======================================================================
+FAIL: test_manager_finalization_assigns_waiting_lead_to_the_owner (test_validation.TestAssignmentAndCapacity.test_manager_finalization_assigns_waiting_lead_to_the_owner)
+Spec line 31: the drain targets the opportunity owner, not the actor.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/test_validation.py", line 259, in test_manager_finalization_assigns_waiting_lead_to_the_owner
+    self.assertEqual(crm.leads[waiting]["owner"], "r1")
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: None != 'r1'
+
+----------------------------------------------------------------------
+Ran 106 tests in 0.003s
+
+FAILED (failures=1)
+(exit 1)
+$ restored /tmp/aep-lab/pilot2/AE-neutral-2/crm.py from backup (byte-identical)
+$ python3 -m unittest discover -s /tmp/aep-lab/pilot2/AE-neutral-2 -p "test*.py"   # expect SUCCESS
+..........................................................................................................
+----------------------------------------------------------------------
+Ran 106 tests in 0.003s
+
+OK
+(exit 0)
+
+OK: negative control verified — the check fails without the protection and passes with it.

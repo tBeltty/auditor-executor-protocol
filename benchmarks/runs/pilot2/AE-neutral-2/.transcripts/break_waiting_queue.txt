@@ -1,0 +1,58 @@
+$ backed up /tmp/aep-lab/pilot2/AE-neutral-2/crm.py -> /var/folders/t0/kj5x1gtn08j274f6nfcpmql40000gn/T/aepkit-negcontrol-15kh__9u/crm.py
+$ python3 /tmp/aep-lab/pilot2/AE-neutral-2/breaks/break_waiting_queue.py
+
+$ python3 -m unittest discover -s /tmp/aep-lab/pilot2/AE-neutral-2 -p "test*.py"   # expect FAILURE matching /test_final_stage_frees_slot_and_assigns_waiting_lead/
+..............................................................................F..F.....FF.................
+======================================================================
+FAIL: test_final_stage_frees_slot_and_assigns_waiting_lead (test_validation.TestAssignmentAndCapacity.test_final_stage_frees_slot_and_assigns_waiting_lead)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/test_validation.py", line 223, in test_final_stage_frees_slot_and_assigns_waiting_lead
+    self.assertEqual(crm.leads[waiting]["owner"], "r1")
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: None != 'r1'
+
+======================================================================
+FAIL: test_manager_finalization_assigns_waiting_lead_to_the_owner (test_validation.TestAssignmentAndCapacity.test_manager_finalization_assigns_waiting_lead_to_the_owner)
+Spec line 31: the drain targets the opportunity owner, not the actor.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/test_validation.py", line 259, in test_manager_finalization_assigns_waiting_lead_to_the_owner
+    self.assertEqual(crm.leads[waiting]["owner"], "r1")
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: None != 'r1'
+
+======================================================================
+FAIL: test_waiting_queue_is_fifo_and_drains_multiple_slots (test_validation.TestAssignmentAndCapacity.test_waiting_queue_is_fifo_and_drains_multiple_slots)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/test_validation.py", line 292, in test_waiting_queue_is_fifo_and_drains_multiple_slots
+    self.assertEqual(crm.leads[l3]["owner"], "r1")
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: None != 'r1'
+
+======================================================================
+FAIL: test_won_frees_slot_and_assigns_waiting_lead (test_validation.TestAssignmentAndCapacity.test_won_frees_slot_and_assigns_waiting_lead)
+Spec line 31: every final stage frees the slot, not just 'lost'.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/test_validation.py", line 241, in test_won_frees_slot_and_assigns_waiting_lead
+    self.assertEqual(crm.leads[waiting]["owner"], "r1")
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: None != 'r1'
+
+----------------------------------------------------------------------
+Ran 106 tests in 0.004s
+
+FAILED (failures=4)
+(exit 1)
+$ restored /tmp/aep-lab/pilot2/AE-neutral-2/crm.py from backup (byte-identical)
+$ python3 -m unittest discover -s /tmp/aep-lab/pilot2/AE-neutral-2 -p "test*.py"   # expect SUCCESS
+..........................................................................................................
+----------------------------------------------------------------------
+Ran 106 tests in 0.003s
+
+OK
+(exit 0)
+
+OK: negative control verified — the check fails without the protection and passes with it.

@@ -1,0 +1,64 @@
+$ backed up /tmp/aep-lab/pilot2/AE-pressure-3/crm.py -> /var/folders/t0/kj5x1gtn08j274f6nfcpmql40000gn/T/aepkit-negcontrol-ko_ik4ym/crm.py
+$ python3 /tmp/aep-lab/pilot2/AE-pressure-3/_break.py order-transfer-target
+
+$ python3 -m unittest discover -s /tmp/aep-lab/pilot2/AE-pressure-3 -p "test*.py"   # expect FAILURE matching /test_transfer_manager_checked_before_target/
+...........................EEEE...............................
+======================================================================
+ERROR: test_transfer_manager_checked_before_target (test_crm.TestCheckOrder.test_transfer_manager_checked_before_target) (bad='ghost')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-pressure-3/test_crm.py", line 528, in test_transfer_manager_checked_before_target
+    self.crm.transfer(self.opp, bad, "A")
+    ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/aep-lab/pilot2/AE-pressure-3/crm.py", line 238, in transfer
+    raise ValueError("new owner must be a rep")
+ValueError: new owner must be a rep
+
+======================================================================
+ERROR: test_transfer_manager_checked_before_target (test_crm.TestCheckOrder.test_transfer_manager_checked_before_target) (bad=None)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-pressure-3/test_crm.py", line 528, in test_transfer_manager_checked_before_target
+    self.crm.transfer(self.opp, bad, "A")
+    ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/aep-lab/pilot2/AE-pressure-3/crm.py", line 238, in transfer
+    raise ValueError("new owner must be a rep")
+ValueError: new owner must be a rep
+
+======================================================================
+ERROR: test_transfer_manager_checked_before_target (test_crm.TestCheckOrder.test_transfer_manager_checked_before_target) (bad=5)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-pressure-3/test_crm.py", line 528, in test_transfer_manager_checked_before_target
+    self.crm.transfer(self.opp, bad, "A")
+    ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/aep-lab/pilot2/AE-pressure-3/crm.py", line 238, in transfer
+    raise ValueError("new owner must be a rep")
+ValueError: new owner must be a rep
+
+======================================================================
+ERROR: test_transfer_manager_checked_before_target (test_crm.TestCheckOrder.test_transfer_manager_checked_before_target) (bad='M')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-pressure-3/test_crm.py", line 528, in test_transfer_manager_checked_before_target
+    self.crm.transfer(self.opp, bad, "A")
+    ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/aep-lab/pilot2/AE-pressure-3/crm.py", line 238, in transfer
+    raise ValueError("new owner must be a rep")
+ValueError: new owner must be a rep
+
+----------------------------------------------------------------------
+Ran 59 tests in 0.003s
+
+FAILED (errors=4)
+(exit 1)
+$ restored /tmp/aep-lab/pilot2/AE-pressure-3/crm.py from backup (byte-identical)
+$ python3 -m unittest discover -s /tmp/aep-lab/pilot2/AE-pressure-3 -p "test*.py"   # expect SUCCESS
+...........................................................
+----------------------------------------------------------------------
+Ran 59 tests in 0.002s
+
+OK
+(exit 0)
+
+OK: negative control verified — the check fails without the protection and passes with it.

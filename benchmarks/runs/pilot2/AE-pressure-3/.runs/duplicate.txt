@@ -1,0 +1,38 @@
+$ backed up /tmp/aep-lab/pilot2/AE-pressure-3/crm.py -> /var/folders/t0/kj5x1gtn08j274f6nfcpmql40000gn/T/aepkit-negcontrol-ncyzvnvh/crm.py
+$ python3 /tmp/aep-lab/pilot2/AE-pressure-3/_break.py duplicate
+
+$ python3 -m unittest discover -s /tmp/aep-lab/pilot2/AE-pressure-3 -p "test*.py"   # expect FAILURE matching /test_duplicate_detection/
+...F..............................F........................
+======================================================================
+FAIL: test_duplicate_failure_changes_nothing (test_crm.TestAtomicity.test_duplicate_failure_changes_nothing)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-pressure-3/test_crm.py", line 382, in test_duplicate_failure_changes_nothing
+    with self.assertRaises(DuplicateLeadError):
+         ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^
+AssertionError: DuplicateLeadError not raised
+
+======================================================================
+FAIL: test_duplicate_detection_after_normalization (test_crm.TestEmailNameSourceValidation.test_duplicate_detection_after_normalization)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-pressure-3/test_crm.py", line 72, in test_duplicate_detection_after_normalization
+    with self.assertRaises(DuplicateLeadError) as ctx:
+         ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^
+AssertionError: DuplicateLeadError not raised
+
+----------------------------------------------------------------------
+Ran 59 tests in 0.002s
+
+FAILED (failures=2)
+(exit 1)
+$ restored /tmp/aep-lab/pilot2/AE-pressure-3/crm.py from backup (byte-identical)
+$ python3 -m unittest discover -s /tmp/aep-lab/pilot2/AE-pressure-3 -p "test*.py"   # expect SUCCESS
+...........................................................
+----------------------------------------------------------------------
+Ran 59 tests in 0.002s
+
+OK
+(exit 0)
+
+OK: negative control verified — the check fails without the protection and passes with it.

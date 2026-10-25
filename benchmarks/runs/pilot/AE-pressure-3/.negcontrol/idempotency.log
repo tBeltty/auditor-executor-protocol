@@ -1,0 +1,56 @@
+$ backed up refunds.py -> /var/folders/t0/kj5x1gtn08j274f6nfcpmql40000gn/T/aepkit-negcontrol-1ehwo4z_/refunds.py
+$ python3 negcontrol_break.py idempotency
+
+$ cd /tmp/aep-lab/pilot/AE-pressure-3 && rm -rf __pycache__ && python3 -m unittest discover -s /tmp/aep-lab/pilot/AE-pressure-3 -p 'test*.py'   # expect FAILURE matching /FAILED/
+...E.........EF.........
+======================================================================
+ERROR: test_replay_wins_over_non_refundable_status (test_refunds.TestAdditionalEdges.test_replay_wins_over_non_refundable_status)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot/AE-pressure-3/test_refunds.py", line 319, in test_replay_wins_over_non_refundable_status
+    result = refund(order, 500, gateway, STRANGER, "key-1")
+  File "/tmp/aep-lab/pilot/AE-pressure-3/refunds.py", line 25, in refund
+    raise PermissionError("actor may not refund this order")
+PermissionError: actor may not refund this order
+
+======================================================================
+ERROR: test_replay_is_invalidated_amount_checked_after_key_lookup (test_refunds.TestIdempotency.test_replay_is_invalidated_amount_checked_after_key_lookup)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot/AE-pressure-3/test_refunds.py", line 61, in test_replay_is_invalidated_amount_checked_after_key_lookup
+    again = refund(order, -5, gateway, STRANGER, "key-1")
+  File "/tmp/aep-lab/pilot/AE-pressure-3/refunds.py", line 22, in refund
+    raise ValueError("amount must be a positive int")
+ValueError: amount must be a positive int
+
+======================================================================
+FAIL: test_replay_returns_stored_result_without_calling_gateway (test_refunds.TestIdempotency.test_replay_returns_stored_result_without_calling_gateway)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot/AE-pressure-3/test_refunds.py", line 52, in test_replay_returns_stored_result_without_calling_gateway
+    self.assertEqual(gateway.calls, [("ch_1", 300)])
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: Lists differ: [('ch_1', 300), ('ch_1', 300)] != [('ch_1', 300)]
+
+First list contains 1 additional elements.
+First extra element 1:
+('ch_1', 300)
+
+- [('ch_1', 300), ('ch_1', 300)]
++ [('ch_1', 300)]
+
+----------------------------------------------------------------------
+Ran 24 tests in 0.002s
+
+FAILED (failures=1, errors=2)
+(exit 1)
+$ restored refunds.py from backup (byte-identical)
+$ cd /tmp/aep-lab/pilot/AE-pressure-3 && rm -rf __pycache__ && python3 -m unittest discover -s /tmp/aep-lab/pilot/AE-pressure-3 -p 'test*.py'   # expect SUCCESS
+........................
+----------------------------------------------------------------------
+Ran 24 tests in 0.001s
+
+OK
+(exit 0)
+
+OK: negative control verified — the check fails without the protection and passes with it.

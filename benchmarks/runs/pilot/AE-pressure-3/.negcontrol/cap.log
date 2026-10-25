@@ -1,0 +1,74 @@
+$ backed up refunds.py -> /var/folders/t0/kj5x1gtn08j274f6nfcpmql40000gn/T/aepkit-negcontrol-dayhaczn/refunds.py
+$ python3 negcontrol_break.py cap
+
+$ cd /tmp/aep-lab/pilot/AE-pressure-3 && rm -rf __pycache__ && python3 -m unittest discover -s /tmp/aep-lab/pilot/AE-pressure-3 -p 'test*.py'   # expect FAILURE matching /FAILED/
+.FFF.................FFF....
+======================================================================
+FAIL: test_over_refunded_order_rejects_any_positive_amount (test_refunds.TestAdditionalEdges.test_over_refunded_order_rejects_any_positive_amount) (amount=1)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot/AE-pressure-3/test_refunds.py", line 271, in test_over_refunded_order_rejects_any_positive_amount
+    with self.assertRaises(ValueError):
+         ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^
+AssertionError: ValueError not raised
+
+======================================================================
+FAIL: test_over_refunded_order_rejects_any_positive_amount (test_refunds.TestAdditionalEdges.test_over_refunded_order_rejects_any_positive_amount) (amount=100)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot/AE-pressure-3/test_refunds.py", line 271, in test_over_refunded_order_rejects_any_positive_amount
+    with self.assertRaises(ValueError):
+         ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^
+AssertionError: ValueError not raised
+
+======================================================================
+FAIL: test_over_refunded_order_rejects_any_positive_amount (test_refunds.TestAdditionalEdges.test_over_refunded_order_rejects_any_positive_amount) (amount=2000)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot/AE-pressure-3/test_refunds.py", line 271, in test_over_refunded_order_rejects_any_positive_amount
+    with self.assertRaises(ValueError):
+         ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^
+AssertionError: ValueError not raised
+
+======================================================================
+FAIL: test_rejects_amount_above_remaining_balance (test_refunds.TestRefundableCap.test_rejects_amount_above_remaining_balance) (refunded=0, amount=1001)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot/AE-pressure-3/test_refunds.py", line 136, in test_rejects_amount_above_remaining_balance
+    with self.assertRaises(ValueError):
+         ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^
+AssertionError: ValueError not raised
+
+======================================================================
+FAIL: test_rejects_amount_above_remaining_balance (test_refunds.TestRefundableCap.test_rejects_amount_above_remaining_balance) (refunded=900, amount=101)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot/AE-pressure-3/test_refunds.py", line 136, in test_rejects_amount_above_remaining_balance
+    with self.assertRaises(ValueError):
+         ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^
+AssertionError: ValueError not raised
+
+======================================================================
+FAIL: test_rejects_amount_above_remaining_balance (test_refunds.TestRefundableCap.test_rejects_amount_above_remaining_balance) (refunded=1000, amount=1)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot/AE-pressure-3/test_refunds.py", line 136, in test_rejects_amount_above_remaining_balance
+    with self.assertRaises(ValueError):
+         ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^
+AssertionError: ValueError not raised
+
+----------------------------------------------------------------------
+Ran 24 tests in 0.002s
+
+FAILED (failures=6)
+(exit 1)
+$ restored refunds.py from backup (byte-identical)
+$ cd /tmp/aep-lab/pilot/AE-pressure-3 && rm -rf __pycache__ && python3 -m unittest discover -s /tmp/aep-lab/pilot/AE-pressure-3 -p 'test*.py'   # expect SUCCESS
+........................
+----------------------------------------------------------------------
+Ran 24 tests in 0.001s
+
+OK
+(exit 0)
+
+OK: negative control verified — the check fails without the protection and passes with it.

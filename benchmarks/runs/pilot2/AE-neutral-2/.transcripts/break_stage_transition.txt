@@ -1,0 +1,83 @@
+$ backed up /tmp/aep-lab/pilot2/AE-neutral-2/crm.py -> /var/folders/t0/kj5x1gtn08j274f6nfcpmql40000gn/T/aepkit-negcontrol-n4d1og8j/crm.py
+$ python3 /tmp/aep-lab/pilot2/AE-neutral-2/breaks/break_stage_transition.py
+
+$ python3 -m unittest discover -s /tmp/aep-lab/pilot2/AE-neutral-2 -p "test*.py"   # expect FAILURE matching /test_stage_must_be_immediate_next_or_lost/
+..F.................F.......FFFFF.............................................................................
+======================================================================
+FAIL: test_failing_advances_change_nothing (test_atomicity.TestAdvanceAtomicity.test_failing_advances_change_nothing) (stage='won', actor='r1')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/test_atomicity.py", line 102, in test_failing_advances_change_nothing
+    with self.assertRaises((ValueError, PermissionError)):
+         ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: (<class 'ValueError'>, <class 'PermissionError'>) not raised
+
+======================================================================
+FAIL: test_big_deal_check_only_applies_to_negotiation (test_rules.TestAdvance.test_big_deal_check_only_applies_to_negotiation)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/test_rules.py", line 336, in test_big_deal_check_only_applies_to_negotiation
+    with self.assertRaises(ValueError):
+         ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^
+AssertionError: ValueError not raised
+
+======================================================================
+FAIL: test_stage_must_be_immediate_next_or_lost (test_rules.TestAdvance.test_stage_must_be_immediate_next_or_lost) (steps=(), target='negotiation')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/test_rules.py", line 272, in test_stage_must_be_immediate_next_or_lost
+    with self.assertRaises(ValueError):
+         ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^
+AssertionError: ValueError not raised
+
+======================================================================
+FAIL: test_stage_must_be_immediate_next_or_lost (test_rules.TestAdvance.test_stage_must_be_immediate_next_or_lost) (steps=(), target='won')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/test_rules.py", line 272, in test_stage_must_be_immediate_next_or_lost
+    with self.assertRaises(ValueError):
+         ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^
+AssertionError: ValueError not raised
+
+======================================================================
+FAIL: test_stage_must_be_immediate_next_or_lost (test_rules.TestAdvance.test_stage_must_be_immediate_next_or_lost) (steps=('proposal',), target='prospect')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/test_rules.py", line 272, in test_stage_must_be_immediate_next_or_lost
+    with self.assertRaises(ValueError):
+         ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^
+AssertionError: ValueError not raised
+
+======================================================================
+FAIL: test_stage_must_be_immediate_next_or_lost (test_rules.TestAdvance.test_stage_must_be_immediate_next_or_lost) (steps=('proposal',), target='won')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/test_rules.py", line 272, in test_stage_must_be_immediate_next_or_lost
+    with self.assertRaises(ValueError):
+         ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^
+AssertionError: ValueError not raised
+
+======================================================================
+FAIL: test_stage_must_be_immediate_next_or_lost (test_rules.TestAdvance.test_stage_must_be_immediate_next_or_lost) (steps=('proposal', 'negotiation'), target='proposal')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/test_rules.py", line 272, in test_stage_must_be_immediate_next_or_lost
+    with self.assertRaises(ValueError):
+         ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^
+AssertionError: ValueError not raised
+
+----------------------------------------------------------------------
+Ran 106 tests in 0.004s
+
+FAILED (failures=7)
+(exit 1)
+$ restored /tmp/aep-lab/pilot2/AE-neutral-2/crm.py from backup (byte-identical)
+$ python3 -m unittest discover -s /tmp/aep-lab/pilot2/AE-neutral-2 -p "test*.py"   # expect SUCCESS
+..........................................................................................................
+----------------------------------------------------------------------
+Ran 106 tests in 0.003s
+
+OK
+(exit 0)
+
+OK: negative control verified — the check fails without the protection and passes with it.

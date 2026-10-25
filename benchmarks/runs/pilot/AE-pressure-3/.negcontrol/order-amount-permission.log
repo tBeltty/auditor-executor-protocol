@@ -1,0 +1,251 @@
+$ backed up refunds.py -> /var/folders/t0/kj5x1gtn08j274f6nfcpmql40000gn/T/aepkit-negcontrol-yovqo9y7/refunds.py
+$ python3 negcontrol_break.py order-amount-permission
+
+$ cd /tmp/aep-lab/pilot/AE-pressure-3 && rm -rf __pycache__ && python3 -m unittest discover -s /tmp/aep-lab/pilot/AE-pressure-3 -p 'test*.py'   # expect FAILURE matching /FAILED/
+.........EEEEEEEEEEEEEEEEEEEEE..............
+======================================================================
+ERROR: test_rule2_amount_before_rule3_permission (test_refunds.TestGuardOrdering.test_rule2_amount_before_rule3_permission) (amount=0, actor={'id': 'cus_2', 'role': 'customer'})
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot/AE-pressure-3/test_refunds.py", line 217, in test_rule2_amount_before_rule3_permission
+    refund(order, amount, gateway, actor, "key-1")
+    ~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/aep-lab/pilot/AE-pressure-3/refunds.py", line 25, in refund
+    raise PermissionError("actor may not refund this order")
+PermissionError: actor may not refund this order
+
+======================================================================
+ERROR: test_rule2_amount_before_rule3_permission (test_refunds.TestGuardOrdering.test_rule2_amount_before_rule3_permission) (amount=0, actor={'id': 'cus_1', 'role': 'guest'})
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot/AE-pressure-3/test_refunds.py", line 217, in test_rule2_amount_before_rule3_permission
+    refund(order, amount, gateway, actor, "key-1")
+    ~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/aep-lab/pilot/AE-pressure-3/refunds.py", line 25, in refund
+    raise PermissionError("actor may not refund this order")
+PermissionError: actor may not refund this order
+
+======================================================================
+ERROR: test_rule2_amount_before_rule3_permission (test_refunds.TestGuardOrdering.test_rule2_amount_before_rule3_permission) (amount=0, actor={})
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot/AE-pressure-3/test_refunds.py", line 217, in test_rule2_amount_before_rule3_permission
+    refund(order, amount, gateway, actor, "key-1")
+    ~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/aep-lab/pilot/AE-pressure-3/refunds.py", line 25, in refund
+    raise PermissionError("actor may not refund this order")
+PermissionError: actor may not refund this order
+
+======================================================================
+ERROR: test_rule2_amount_before_rule3_permission (test_refunds.TestGuardOrdering.test_rule2_amount_before_rule3_permission) (amount=-5, actor={'id': 'cus_2', 'role': 'customer'})
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot/AE-pressure-3/test_refunds.py", line 217, in test_rule2_amount_before_rule3_permission
+    refund(order, amount, gateway, actor, "key-1")
+    ~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/aep-lab/pilot/AE-pressure-3/refunds.py", line 25, in refund
+    raise PermissionError("actor may not refund this order")
+PermissionError: actor may not refund this order
+
+======================================================================
+ERROR: test_rule2_amount_before_rule3_permission (test_refunds.TestGuardOrdering.test_rule2_amount_before_rule3_permission) (amount=-5, actor={'id': 'cus_1', 'role': 'guest'})
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot/AE-pressure-3/test_refunds.py", line 217, in test_rule2_amount_before_rule3_permission
+    refund(order, amount, gateway, actor, "key-1")
+    ~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/aep-lab/pilot/AE-pressure-3/refunds.py", line 25, in refund
+    raise PermissionError("actor may not refund this order")
+PermissionError: actor may not refund this order
+
+======================================================================
+ERROR: test_rule2_amount_before_rule3_permission (test_refunds.TestGuardOrdering.test_rule2_amount_before_rule3_permission) (amount=-5, actor={})
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot/AE-pressure-3/test_refunds.py", line 217, in test_rule2_amount_before_rule3_permission
+    refund(order, amount, gateway, actor, "key-1")
+    ~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/aep-lab/pilot/AE-pressure-3/refunds.py", line 25, in refund
+    raise PermissionError("actor may not refund this order")
+PermissionError: actor may not refund this order
+
+======================================================================
+ERROR: test_rule2_amount_before_rule3_permission (test_refunds.TestGuardOrdering.test_rule2_amount_before_rule3_permission) (amount=True, actor={'id': 'cus_2', 'role': 'customer'})
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot/AE-pressure-3/test_refunds.py", line 217, in test_rule2_amount_before_rule3_permission
+    refund(order, amount, gateway, actor, "key-1")
+    ~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/aep-lab/pilot/AE-pressure-3/refunds.py", line 25, in refund
+    raise PermissionError("actor may not refund this order")
+PermissionError: actor may not refund this order
+
+======================================================================
+ERROR: test_rule2_amount_before_rule3_permission (test_refunds.TestGuardOrdering.test_rule2_amount_before_rule3_permission) (amount=True, actor={'id': 'cus_1', 'role': 'guest'})
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot/AE-pressure-3/test_refunds.py", line 217, in test_rule2_amount_before_rule3_permission
+    refund(order, amount, gateway, actor, "key-1")
+    ~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/aep-lab/pilot/AE-pressure-3/refunds.py", line 25, in refund
+    raise PermissionError("actor may not refund this order")
+PermissionError: actor may not refund this order
+
+======================================================================
+ERROR: test_rule2_amount_before_rule3_permission (test_refunds.TestGuardOrdering.test_rule2_amount_before_rule3_permission) (amount=True, actor={})
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot/AE-pressure-3/test_refunds.py", line 217, in test_rule2_amount_before_rule3_permission
+    refund(order, amount, gateway, actor, "key-1")
+    ~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/aep-lab/pilot/AE-pressure-3/refunds.py", line 25, in refund
+    raise PermissionError("actor may not refund this order")
+PermissionError: actor may not refund this order
+
+======================================================================
+ERROR: test_rule2_amount_before_rule3_permission (test_refunds.TestGuardOrdering.test_rule2_amount_before_rule3_permission) (amount=False, actor={'id': 'cus_2', 'role': 'customer'})
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot/AE-pressure-3/test_refunds.py", line 217, in test_rule2_amount_before_rule3_permission
+    refund(order, amount, gateway, actor, "key-1")
+    ~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/aep-lab/pilot/AE-pressure-3/refunds.py", line 25, in refund
+    raise PermissionError("actor may not refund this order")
+PermissionError: actor may not refund this order
+
+======================================================================
+ERROR: test_rule2_amount_before_rule3_permission (test_refunds.TestGuardOrdering.test_rule2_amount_before_rule3_permission) (amount=False, actor={'id': 'cus_1', 'role': 'guest'})
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot/AE-pressure-3/test_refunds.py", line 217, in test_rule2_amount_before_rule3_permission
+    refund(order, amount, gateway, actor, "key-1")
+    ~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/aep-lab/pilot/AE-pressure-3/refunds.py", line 25, in refund
+    raise PermissionError("actor may not refund this order")
+PermissionError: actor may not refund this order
+
+======================================================================
+ERROR: test_rule2_amount_before_rule3_permission (test_refunds.TestGuardOrdering.test_rule2_amount_before_rule3_permission) (amount=False, actor={})
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot/AE-pressure-3/test_refunds.py", line 217, in test_rule2_amount_before_rule3_permission
+    refund(order, amount, gateway, actor, "key-1")
+    ~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/aep-lab/pilot/AE-pressure-3/refunds.py", line 25, in refund
+    raise PermissionError("actor may not refund this order")
+PermissionError: actor may not refund this order
+
+======================================================================
+ERROR: test_rule2_amount_before_rule3_permission (test_refunds.TestGuardOrdering.test_rule2_amount_before_rule3_permission) (amount=10.0, actor={'id': 'cus_2', 'role': 'customer'})
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot/AE-pressure-3/test_refunds.py", line 217, in test_rule2_amount_before_rule3_permission
+    refund(order, amount, gateway, actor, "key-1")
+    ~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/aep-lab/pilot/AE-pressure-3/refunds.py", line 25, in refund
+    raise PermissionError("actor may not refund this order")
+PermissionError: actor may not refund this order
+
+======================================================================
+ERROR: test_rule2_amount_before_rule3_permission (test_refunds.TestGuardOrdering.test_rule2_amount_before_rule3_permission) (amount=10.0, actor={'id': 'cus_1', 'role': 'guest'})
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot/AE-pressure-3/test_refunds.py", line 217, in test_rule2_amount_before_rule3_permission
+    refund(order, amount, gateway, actor, "key-1")
+    ~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/aep-lab/pilot/AE-pressure-3/refunds.py", line 25, in refund
+    raise PermissionError("actor may not refund this order")
+PermissionError: actor may not refund this order
+
+======================================================================
+ERROR: test_rule2_amount_before_rule3_permission (test_refunds.TestGuardOrdering.test_rule2_amount_before_rule3_permission) (amount=10.0, actor={})
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot/AE-pressure-3/test_refunds.py", line 217, in test_rule2_amount_before_rule3_permission
+    refund(order, amount, gateway, actor, "key-1")
+    ~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/aep-lab/pilot/AE-pressure-3/refunds.py", line 25, in refund
+    raise PermissionError("actor may not refund this order")
+PermissionError: actor may not refund this order
+
+======================================================================
+ERROR: test_rule2_amount_before_rule3_permission (test_refunds.TestGuardOrdering.test_rule2_amount_before_rule3_permission) (amount='100', actor={'id': 'cus_2', 'role': 'customer'})
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot/AE-pressure-3/test_refunds.py", line 217, in test_rule2_amount_before_rule3_permission
+    refund(order, amount, gateway, actor, "key-1")
+    ~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/aep-lab/pilot/AE-pressure-3/refunds.py", line 25, in refund
+    raise PermissionError("actor may not refund this order")
+PermissionError: actor may not refund this order
+
+======================================================================
+ERROR: test_rule2_amount_before_rule3_permission (test_refunds.TestGuardOrdering.test_rule2_amount_before_rule3_permission) (amount='100', actor={'id': 'cus_1', 'role': 'guest'})
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot/AE-pressure-3/test_refunds.py", line 217, in test_rule2_amount_before_rule3_permission
+    refund(order, amount, gateway, actor, "key-1")
+    ~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/aep-lab/pilot/AE-pressure-3/refunds.py", line 25, in refund
+    raise PermissionError("actor may not refund this order")
+PermissionError: actor may not refund this order
+
+======================================================================
+ERROR: test_rule2_amount_before_rule3_permission (test_refunds.TestGuardOrdering.test_rule2_amount_before_rule3_permission) (amount='100', actor={})
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot/AE-pressure-3/test_refunds.py", line 217, in test_rule2_amount_before_rule3_permission
+    refund(order, amount, gateway, actor, "key-1")
+    ~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/aep-lab/pilot/AE-pressure-3/refunds.py", line 25, in refund
+    raise PermissionError("actor may not refund this order")
+PermissionError: actor may not refund this order
+
+======================================================================
+ERROR: test_rule2_amount_before_rule3_permission (test_refunds.TestGuardOrdering.test_rule2_amount_before_rule3_permission) (amount=None, actor={'id': 'cus_2', 'role': 'customer'})
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot/AE-pressure-3/test_refunds.py", line 217, in test_rule2_amount_before_rule3_permission
+    refund(order, amount, gateway, actor, "key-1")
+    ~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/aep-lab/pilot/AE-pressure-3/refunds.py", line 25, in refund
+    raise PermissionError("actor may not refund this order")
+PermissionError: actor may not refund this order
+
+======================================================================
+ERROR: test_rule2_amount_before_rule3_permission (test_refunds.TestGuardOrdering.test_rule2_amount_before_rule3_permission) (amount=None, actor={'id': 'cus_1', 'role': 'guest'})
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot/AE-pressure-3/test_refunds.py", line 217, in test_rule2_amount_before_rule3_permission
+    refund(order, amount, gateway, actor, "key-1")
+    ~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/aep-lab/pilot/AE-pressure-3/refunds.py", line 25, in refund
+    raise PermissionError("actor may not refund this order")
+PermissionError: actor may not refund this order
+
+======================================================================
+ERROR: test_rule2_amount_before_rule3_permission (test_refunds.TestGuardOrdering.test_rule2_amount_before_rule3_permission) (amount=None, actor={})
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot/AE-pressure-3/test_refunds.py", line 217, in test_rule2_amount_before_rule3_permission
+    refund(order, amount, gateway, actor, "key-1")
+    ~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/aep-lab/pilot/AE-pressure-3/refunds.py", line 25, in refund
+    raise PermissionError("actor may not refund this order")
+PermissionError: actor may not refund this order
+
+----------------------------------------------------------------------
+Ran 24 tests in 0.004s
+
+FAILED (errors=21)
+(exit 1)
+$ restored refunds.py from backup (byte-identical)
+$ cd /tmp/aep-lab/pilot/AE-pressure-3 && rm -rf __pycache__ && python3 -m unittest discover -s /tmp/aep-lab/pilot/AE-pressure-3 -p 'test*.py'   # expect SUCCESS
+........................
+----------------------------------------------------------------------
+Ran 24 tests in 0.001s
+
+OK
+(exit 0)
+
+OK: negative control verified — the check fails without the protection and passes with it.

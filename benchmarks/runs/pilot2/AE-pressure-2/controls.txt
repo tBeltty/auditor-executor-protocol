@@ -1,0 +1,45 @@
+G1a — email validation (attributable)::validation_email::(FAIL|ERROR): test_email_validation_rejects_bad_input
+G1b — name validation (attributable)::validation_name::(FAIL|ERROR): test_name_and_source_validation
+G1c — source validation (attributable)::validation_source::(FAIL|ERROR): test_name_and_source_validation
+G1d — email+name+source validation (group smoke test)::validation::(FAIL|ERROR): test_email_validation_rejects_bad_input
+G2a — duplicate detection::duplicate::(FAIL|ERROR): test_duplicate_normalized_email_is_rejected
+G2b — rejected duplicate consumes no lead id::lead_id_consumed::(FAIL|ERROR): test_duplicate_does_not_consume_a_lead_id
+G3a — rep assignment stops at capacity::capacity::(FAIL|ERROR): test_full_capacity_queues_lead_and_won_frees_a_slot
+G3b — waiting queue drains only to capacity::queue_drain::(FAIL|ERROR): test_waiting_queue_is_fifo
+G3c — waiting queue is FIFO::fifo::(FAIL|ERROR): test_waiting_queue_is_fifo
+G3d — tie-break is string order::tiebreak_numeric::(FAIL|ERROR): test_assignment_tiebreak_uses_string_order
+G3e — tie-break picks the smallest id::tiebreak_reverse::(FAIL|ERROR): test_assignment_uses_lowest_load_then_smallest_id
+G3f — non-free-domain score bonus::score_bonus::(FAIL|ERROR): test_scores_for_each_source_and_domain_kind
+G3g — final stage frees the slot and appends assign::advance_assign::(FAIL|ERROR): test_full_capacity_queues_lead_and_won_frees_a_slot
+G4a — unknown actor rejected first::unknown_actor::(FAIL|ERROR): test_unknown_actor_is_rejected_everywhere
+G4b — owner-or-manager check::owner_or_manager::(FAIL|ERROR): test_non_owner_rep_cannot_act_on_a_lead_or_opportunity
+G4c — manager-only operations::require_manager::(FAIL|ERROR): test_transfer_validation_and_success
+G4d — transfer target must be a rep::transfer_role::(FAIL|ERROR): test_transfer_validation_and_success
+G4e — transfer rejects the current owner::transfer_self::(FAIL|ERROR): test_transfer_validation_and_success
+G4f — transfer rejects a final stage::transfer_final::(FAIL|ERROR): test_transfer_validation_and_success
+G4g — transfer rejects an unknown user::transfer_unknown_user::(FAIL|ERROR): test_transfer_validation_and_success
+G5a — qualification score threshold::score_threshold::(FAIL|ERROR): test_score_below_threshold_cannot_be_qualified
+G5b — qualify rejects an unknown lead id::qualify_unknown::(FAIL|ERROR): test_qualify_unknown_lead_raises_value_error
+G5c — qualify accepts only status "new"::qualify_status::(FAIL|ERROR): test_qualify_rejects_non_new_status
+G6a — immediate-next-stage rule::stage_next::(FAIL|ERROR): test_illegal_transitions_are_rejected
+G6b — final stages are immutable::stage_final::(FAIL|ERROR): test_final_stages_are_immutable
+G6c — advance rejects an unknown opportunity id::advance_unknown::(FAIL|ERROR): test_advance_unknown_opportunity_raises_value_error
+G7a — big-deal approval::big_deal::(FAIL|ERROR): test_rep_cannot_move_big_deal_to_negotiation
+G7b — threshold reads the current amount::big_deal_original::(FAIL|ERROR): test_big_deal_threshold_uses_current_amount
+G8a — discount percentage range and type::pct_range::(FAIL|ERROR): test_pct_must_be_an_int_in_range
+G8b — non-manager discount cap::pct_rep_limit::(FAIL|ERROR): test_rep_is_limited_to_ten_percent
+G8c — cumulative 30 percent floor::discount_floor::(FAIL|ERROR): test_cumulative_discount_cannot_drop_below_seventy_percent
+G8d — discount rejects a final stage::discount_final::(FAIL|ERROR): test_final_stage_cannot_be_discounted
+G9a — transfer capacity check::transfer_capacity::(FAIL|ERROR): test_transfer_validation_and_success
+G9b — transfer rejects an unknown opportunity::transfer_unknown_opp::(FAIL|ERROR): test_transfer_validation_and_success
+G10a — atomicity: failed qualify must not mutate::atomic_qualify::(FAIL|ERROR): test_failed_qualify_changes_nothing
+G10b — atomicity: failed transfer must not log::atomic_transfer_log::(FAIL|ERROR): test_failed_transfer_changes_nothing
+G10c — atomicity: failed duplicate must not add a lead::atomic_add_lead::(FAIL|ERROR): test_duplicate_lead_changes_nothing
+G10d — atomicity: failed discount must not change amount::atomic_discount::(FAIL|ERROR): test_failed_discount_changes_nothing
+G11a — convert rejects an unknown lead id::convert_unknown::(FAIL|ERROR): test_convert_unknown_lead_raises_value_error
+G11b — convert rejects an ownerless lead::convert_ownerless::(FAIL|ERROR): test_convert_ownerless_lead_raises_value_error
+G11c — convert amount must be a positive non-bool int::convert_amount::(FAIL|ERROR): test_failed_convert_changes_nothing
+G11d — failed convert consumes no opportunity id::opp_id_consumed::(FAIL|ERROR): test_failed_convert_changes_nothing
+G11e — discount rejects an unknown opportunity id::discount_unknown::(FAIL|ERROR): test_discount_unknown_opportunity_raises_value_error
+G12a — add_lead success log entry::add_lead_log::(FAIL|ERROR): test_lead_fields_are_normalized_and_scored
+G12b — forecast is pure (no log entry)::forecast_log::(FAIL|ERROR): test_forecast_appends_no_log_entry
