@@ -26,5 +26,5 @@ the outcome depends on our own fixed mutants; Arm N and AE prompts differ from U
 ## Exploratory inference (stratified by model; resampling over runs; not corrected for multiple comparisons)
 Difference vs U in fixed-mutant kill rate, mean over the three models, 95% bootstrap CI and permutation p (10,000 draws each):
 - Neutral: U2 -0.002 [-0.033, +0.030]; N +0.014 [-0.025, +0.053]; AE +0.008 [-0.020, +0.039]. No evidence of any difference.
-- Pressure: U2 +0.081 [+0.028, +0.133], p = 0.032; N +0.110 [+0.053, +0.163], p = 0.011; AE +0.174 [+0.135, +0.210], p < 0.001.
+- Pressure: U2 +0.081 [+0.028, +0.133], p = 0.031; N +0.110 [+0.053, +0.163], p = 0.010; AE +0.174 [+0.135, +0.210], p < 0.001.
 Caveat: n = 3 per model cell, so these intervals are optimistic; treat them as exploratory. The AE vs U2 contrast under pressure (0.800 vs 0.707) was not tested.
