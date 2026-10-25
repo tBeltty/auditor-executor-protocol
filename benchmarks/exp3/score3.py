@@ -53,7 +53,9 @@ def main():
         code = REF.replace(old, new)
         dh = with_code(agent, code, hidden=True)
         hh = run_tests(dh, ["test_crm"]); shutil.rmtree(dh, ignore_errors=True)
-        if hh is not None and all(hh.values()):
+        if not hh:
+            raise RuntimeError(f"hidden suite parsed zero tests for mutant {name}; the mutant is invalid or the harness failed")
+        if all(hh.values()):
             return name, None  # not behavioural w.r.t. hidden suite
         da = with_code(agent, code)
         a = run_tests(da, ["discover", "-s", ".", "-p", "test*.py"], timeout=60); shutil.rmtree(da, ignore_errors=True)

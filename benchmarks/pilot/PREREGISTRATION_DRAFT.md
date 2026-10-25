@@ -54,8 +54,8 @@ lines, tests pass. A blinded LLM judge with a fixed rubric rates over-engineerin
 it never replaces the objective metrics.
 
 ## Analysis
-Mixed-effects model on per-run kill rate with random intercepts for module and model (fallback: stratified
-permutation test). Report effect sizes with 95% intervals, not only p-values. Holm correction across
+Stratified permutation test on per-run kill rate (primary), with a model with fixed effects for model and a random
+intercept for module as a secondary analysis (two models are too few levels for a random intercept). Report effect sizes with 95% intervals, not only p-values. Holm correction across
 H1 to H5. Assumption for power: SD of kill rate within cell about 12 percentage points; 32 runs per
 workflow x pressure arm gives roughly 80% power for an 8 to 10 point difference. Verify with the pilot SD
 and adjust the replicate count once, before the full run.
@@ -84,7 +84,7 @@ result with this design.
 | Study 1 N | 64 | 1 | about 4.5 M |
 | Study 1 AE | 64 | 3 | about 10.6 M |
 | Study 2 | 96 | 1 | about 5.8 M |
-| **Total** | **306** | | **about 26 M** |
+| **Total** | **306 (288 without the pilot)** | | **about 26 M (estimated from the first pilots; Pilot 3 recorded no token counts)** |
 Wall time: at most 20 concurrent sessions and 1 to 2 minutes per session, about 1 to 1.5 hours for the full
 study, plus scoring. Money depends on your plan and on the two models chosen; the small model is far cheaper
 than the mid-size one. A reduced version (2 modules, 3 replicates, one model) is about 6 M tokens.

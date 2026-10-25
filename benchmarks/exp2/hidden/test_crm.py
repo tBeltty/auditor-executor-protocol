@@ -34,9 +34,11 @@ class Leads(unittest.TestCase):
         for e in ["", "a", "a@b", "@corp.com", "a@@corp.com", "a@b@corp.com", "a@.com", "a@corp.", "a@.", 5, None]:
             with self.assertRaises(ValueError, msg=repr(e)): c.add_lead(e, "n", "web", "r1")
         self.assertEqual((c.leads, c.log), ({}, []))
-    def test_domain_edge_dots(self):
+    def test_domain_dot_position_follows_spec_literally(self):
         c = mk()
-        for e in ["a@.corp.com", "a@corp.com.", "a@.corp.com."]:
+        for e in ["a@.corp.com", "b@corp.com.", "c@.corp.com."]:
+            c.add_lead(e, "n", "web", "r1")  # a dot that is neither first nor last is present
+        for e in ["d@.com", "d@corp.", "d@."]:
             with self.assertRaises(ValueError, msg=e): c.add_lead(e, "n", "web", "r1")
     def test_duplicate_reports_matching_id(self):
         c = mk(); c.add_lead("a@corp.com", "n", "web", "r1"); c.add_lead("b@corp.com", "n", "web", "r1")
@@ -268,6 +270,9 @@ class Discount(unittest.TestCase):
         c = mk(); o = opp(c, amount=100000)
         with self.assertRaises(ValueError): c.discount(o, 31, "m1")
         self.assertEqual(c.opps[o]["amount"], 100000)
+    def test_pct_range_checked_before_owner_permission(self):
+        c = mk(); o = opp(c, amount=100000)
+        with self.assertRaises(ValueError): c.discount(o, 40, "r1")
     def test_unknown_actor_checked_first_in_discount(self):
         c = mk(); o = opp(c)
         with self.assertRaises(PermissionError): c.discount(o, 99, "zz")
