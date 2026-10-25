@@ -1,0 +1,83 @@
+07:22:46 model set opencode-go deepseek-v4.1-flash
+07:22:48 launched calib gold-1 ctx_4dba5599223e
+07:22:53 launched calib gold-2 ctx_bc806de280b2
+07:22:57 launched calib gold-3 ctx_0f72be3f645e
+07:23:01 launched calib bad-1 ctx_233466389480
+07:23:05 launched calib bad-2 ctx_f64640e8581b
+07:23:10 launched calib bad-3 ctx_098ebba38430
+07:26:10 done calib bad-2 succeeded
+07:26:20 done calib bad-3 succeeded
+07:28:11 done calib gold-3 succeeded
+07:28:28 done calib gold-1 succeeded
+07:31:07 done calib gold-2 succeeded
+07:53:12 TIMEOUT stop calib bad-1
+07:53:13 calibration {'gold-1': 'APPROVED', 'gold-2': 'APPROVED', 'gold-3': 'APPROVED', 'bad-1': 'REJECTED', 'bad-2': 'REJECTED', 'bad-3': 'REJECTED'}
+07:53:15 model set opencode-go deepseek-v4.1-flash
+07:53:18 launched deepseek exec U-neutral-1 ctx_373a29d41585
+07:53:23 launched deepseek exec U-neutral-2 ctx_467064483453
+07:53:28 launched deepseek exec N-neutral-3 ctx_b683730046e6
+07:53:33 launched deepseek exec N-pressure-3 ctx_5f7c78eb7ab0
+07:53:39 launched deepseek exec U2-neutral-2 ctx_a79a6c87048f
+07:53:44 launched deepseek exec U2-pressure-2 ctx_ab579b4b5fcc
+07:55:09 done deepseek exec N-neutral-3 succeeded
+07:55:31 done deepseek exec N-pressure-3 succeeded
+07:55:49 done deepseek exec U-neutral-2 succeeded
+07:55:52 done deepseek exec U-neutral-1 succeeded
+07:55:56 done deepseek exec U2-pressure-2 succeeded
+07:56:18 done deepseek exec U2-neutral-2 succeeded
+07:56:35 launched deepseek exec N-pressure-1 ctx_d5868dd6016e
+07:56:39 launched deepseek exec AE-pressure-1 ctx_86cecd91a7a3
+07:56:44 launched deepseek exec U2-neutral-1 ctx_62642ed7ab35
+07:56:49 launched deepseek exec AE-neutral-1 ctx_075239fc5703
+07:56:54 launched deepseek exec U-neutral-3 ctx_379173c33223
+07:56:59 launched deepseek exec U-pressure-1 ctx_c835bfc0fa38
+07:58:12 done deepseek exec N-pressure-1 succeeded
+07:58:24 done deepseek exec AE-neutral-1 succeeded
+07:59:18 done deepseek exec U2-neutral-1 succeeded
+07:59:32 done deepseek exec U-pressure-1 succeeded
+08:00:03 done deepseek exec AE-pressure-1 succeeded
+08:00:04 done deepseek exec U-neutral-3 succeeded
+08:00:21 launched deepseek exec U-pressure-3 ctx_886342399eb5
+08:00:25 launched deepseek exec U2-pressure-1 ctx_8fbad2d56403
+08:00:30 launched deepseek exec AE-neutral-2 ctx_4903d96402fe
+08:00:36 launched deepseek exec U2-neutral-3 ctx_2373bb6a00c2
+08:00:40 launched deepseek exec AE-neutral-3 ctx_8ac36937565e
+08:00:45 launched deepseek exec AE-pressure-3 ctx_68567c97e251
+08:01:43 done deepseek exec U2-pressure-1 succeeded
+08:02:14 done deepseek exec U2-neutral-3 succeeded
+08:03:10 done deepseek exec AE-pressure-3 succeeded
+08:03:24 done deepseek exec U-pressure-3 succeeded
+08:04:51 done deepseek exec AE-neutral-3 succeeded
+08:05:39 done deepseek exec AE-neutral-2 succeeded
+08:05:56 launched deepseek exec AE-pressure-2 ctx_6fe7ed2fe5c1
+08:06:00 launched deepseek exec N-neutral-1 ctx_16d144a1c5cd
+08:06:05 launched deepseek exec U2-pressure-3 ctx_1f0fbce8f337
+08:06:09 launched deepseek exec N-pressure-2 ctx_19eb05be49b8
+08:06:14 launched deepseek exec N-neutral-2 ctx_0f92a4c5b09d
+08:06:18 launched deepseek exec U-pressure-2 ctx_4e9168977ba2
+08:07:40 done deepseek exec U2-pressure-3 succeeded
+08:07:53 done deepseek exec N-pressure-2 succeeded
+08:07:59 done deepseek exec U-pressure-2 succeeded
+08:08:44 done deepseek exec N-neutral-2 succeeded
+08:08:54 done deepseek exec AE-pressure-2 succeeded
+08:10:26 done deepseek exec N-neutral-1 succeeded
+08:10:43 launched deepseek review U2-neutral-2 ctx_46cd178a5419
+08:10:48 launched deepseek review U2-pressure-2 ctx_09df13e3e7eb
+08:10:53 launched deepseek review U2-neutral-1 ctx_067de1d21f33
+08:10:58 launched deepseek review U2-pressure-1 ctx_f278644ad7ac
+08:11:03 launched deepseek review U2-neutral-3 ctx_3f7706b2b152
+08:11:08 launched deepseek review U2-pressure-3 ctx_2c7ac6bf0cf1
+08:13:16 done deepseek review U2-pressure-3 succeeded
+08:13:18 done deepseek review U2-pressure-2 succeeded
+08:13:25 done deepseek review U2-pressure-1 succeeded
+08:14:02 done deepseek review U2-neutral-3 succeeded
+08:14:40 done deepseek review U2-neutral-2 succeeded
+08:15:55 done deepseek review U2-neutral-1 succeeded
+08:16:12 launched deepseek audit AE-pressure-1 ctx_8d6b38593005
+08:16:17 launched deepseek audit AE-neutral-1 ctx_408001b8a99d
+08:16:22 launched deepseek audit AE-neutral-2 ctx_a8ab20776b02
+08:16:28 launched deepseek audit AE-neutral-3 ctx_2b4f06a276c1
+08:16:33 launched deepseek audit AE-pressure-3 ctx_c9309708fee9
+08:16:39 launched deepseek audit AE-pressure-2 ctx_fe0d8d37be87
+08:22:28 done deepseek audit AE-pressure-1 succeeded
+08:23:16 done deepseek audit AE-pressure-2 succeeded

@@ -1,0 +1,77 @@
+$ backed up /tmp/aep-lab/pilot2/AE-neutral-2/crm.py -> /var/folders/t0/kj5x1gtn08j274f6nfcpmql40000gn/T/aepkit-negcontrol-pfa_ryid/crm.py
+$ python3 /tmp/aep-lab/pilot2/AE-neutral-2/breaks/break_normalization.py
+
+$ python3 -m unittest discover -s /tmp/aep-lab/pilot2/AE-neutral-2 -p "test*.py"   # expect FAILURE matching /test_email_normalized_before_storage/
+F........................................................................................FFF....F..F.......
+======================================================================
+FAIL: test_duplicate_changes_nothing (test_atomicity.TestAddLeadAtomicity.test_duplicate_changes_nothing)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/test_atomicity.py", line 28, in test_duplicate_changes_nothing
+    with self.assertRaises(DuplicateLeadError):
+         ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^
+AssertionError: DuplicateLeadError not raised
+
+======================================================================
+FAIL: test_duplicate_check_uses_normalized_email (test_validation.TestDuplicateDetection.test_duplicate_check_uses_normalized_email) (email='A.B@CORP.COM')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/test_validation.py", line 135, in test_duplicate_check_uses_normalized_email
+    with self.assertRaises(DuplicateLeadError):
+         ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^
+AssertionError: DuplicateLeadError not raised
+
+======================================================================
+FAIL: test_duplicate_check_uses_normalized_email (test_validation.TestDuplicateDetection.test_duplicate_check_uses_normalized_email) (email='  a.b@corp.com  ')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/test_validation.py", line 135, in test_duplicate_check_uses_normalized_email
+    with self.assertRaises(DuplicateLeadError):
+         ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^
+AssertionError: DuplicateLeadError not raised
+
+======================================================================
+FAIL: test_duplicate_raises_with_existing_id (test_validation.TestDuplicateDetection.test_duplicate_raises_with_existing_id)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/test_validation.py", line 124, in test_duplicate_raises_with_existing_id
+    with self.assertRaises(DuplicateLeadError) as ctx:
+         ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^
+AssertionError: DuplicateLeadError not raised
+
+======================================================================
+FAIL: test_email_normalized_before_storage (test_validation.TestEmailValidation.test_email_normalized_before_storage)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/test_validation.py", line 59, in test_email_normalized_before_storage
+    self.assertEqual(lead["email"], "alice@corp.com")
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: '  Alice@Corp.COM  ' != 'alice@corp.com'
+-   Alice@Corp.COM  
++ alice@corp.com
+
+
+======================================================================
+FAIL: test_email_requires_non_empty_local_part (test_validation.TestEmailValidation.test_email_requires_non_empty_local_part) (email='   @corp.com')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/test_validation.py", line 33, in test_email_requires_non_empty_local_part
+    with self.assertRaises(ValueError):
+         ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^
+AssertionError: ValueError not raised
+
+----------------------------------------------------------------------
+Ran 106 tests in 0.004s
+
+FAILED (failures=6)
+(exit 1)
+$ restored /tmp/aep-lab/pilot2/AE-neutral-2/crm.py from backup (byte-identical)
+$ python3 -m unittest discover -s /tmp/aep-lab/pilot2/AE-neutral-2 -p "test*.py"   # expect SUCCESS
+..........................................................................................................
+----------------------------------------------------------------------
+Ran 106 tests in 0.003s
+
+OK
+(exit 0)
+
+OK: negative control verified — the check fails without the protection and passes with it.

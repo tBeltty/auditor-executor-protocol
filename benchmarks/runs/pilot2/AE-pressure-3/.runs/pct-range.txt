@@ -1,0 +1,187 @@
+$ backed up /tmp/aep-lab/pilot2/AE-pressure-3/crm.py -> /var/folders/t0/kj5x1gtn08j274f6nfcpmql40000gn/T/aepkit-negcontrol-gekrw0wr/crm.py
+$ python3 /tmp/aep-lab/pilot2/AE-pressure-3/_break.py pct-range
+
+$ python3 -m unittest discover -s /tmp/aep-lab/pilot2/AE-pressure-3 -p "test*.py"   # expect FAILURE matching /test_pct_range_and_type/
+........................EEEEEEE.......FFFEFEF..........................
+======================================================================
+ERROR: test_discount_pct_checked_before_permission (test_crm.TestCheckOrder.test_discount_pct_checked_before_permission) (bad=0)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-pressure-3/test_crm.py", line 498, in test_discount_pct_checked_before_permission
+    self.crm.discount(self.opp, bad, "B")
+    ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/aep-lab/pilot2/AE-pressure-3/crm.py", line 213, in discount
+    self._allowed(opp["owner"], actor)
+    ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/aep-lab/pilot2/AE-pressure-3/crm.py", line 47, in _allowed
+    raise PermissionError("%s may not act on this record" % (actor,))
+PermissionError: B may not act on this record
+
+======================================================================
+ERROR: test_discount_pct_checked_before_permission (test_crm.TestCheckOrder.test_discount_pct_checked_before_permission) (bad=31)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-pressure-3/test_crm.py", line 498, in test_discount_pct_checked_before_permission
+    self.crm.discount(self.opp, bad, "B")
+    ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/aep-lab/pilot2/AE-pressure-3/crm.py", line 213, in discount
+    self._allowed(opp["owner"], actor)
+    ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/aep-lab/pilot2/AE-pressure-3/crm.py", line 47, in _allowed
+    raise PermissionError("%s may not act on this record" % (actor,))
+PermissionError: B may not act on this record
+
+======================================================================
+ERROR: test_discount_pct_checked_before_permission (test_crm.TestCheckOrder.test_discount_pct_checked_before_permission) (bad=-5)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-pressure-3/test_crm.py", line 498, in test_discount_pct_checked_before_permission
+    self.crm.discount(self.opp, bad, "B")
+    ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/aep-lab/pilot2/AE-pressure-3/crm.py", line 213, in discount
+    self._allowed(opp["owner"], actor)
+    ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/aep-lab/pilot2/AE-pressure-3/crm.py", line 47, in _allowed
+    raise PermissionError("%s may not act on this record" % (actor,))
+PermissionError: B may not act on this record
+
+======================================================================
+ERROR: test_discount_pct_checked_before_permission (test_crm.TestCheckOrder.test_discount_pct_checked_before_permission) (bad=True)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-pressure-3/test_crm.py", line 498, in test_discount_pct_checked_before_permission
+    self.crm.discount(self.opp, bad, "B")
+    ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/aep-lab/pilot2/AE-pressure-3/crm.py", line 213, in discount
+    self._allowed(opp["owner"], actor)
+    ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/aep-lab/pilot2/AE-pressure-3/crm.py", line 47, in _allowed
+    raise PermissionError("%s may not act on this record" % (actor,))
+PermissionError: B may not act on this record
+
+======================================================================
+ERROR: test_discount_pct_checked_before_permission (test_crm.TestCheckOrder.test_discount_pct_checked_before_permission) (bad='10')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-pressure-3/test_crm.py", line 498, in test_discount_pct_checked_before_permission
+    self.crm.discount(self.opp, bad, "B")
+    ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/aep-lab/pilot2/AE-pressure-3/crm.py", line 213, in discount
+    self._allowed(opp["owner"], actor)
+    ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/aep-lab/pilot2/AE-pressure-3/crm.py", line 47, in _allowed
+    raise PermissionError("%s may not act on this record" % (actor,))
+PermissionError: B may not act on this record
+
+======================================================================
+ERROR: test_discount_pct_checked_before_permission (test_crm.TestCheckOrder.test_discount_pct_checked_before_permission) (bad=1.5)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-pressure-3/test_crm.py", line 498, in test_discount_pct_checked_before_permission
+    self.crm.discount(self.opp, bad, "B")
+    ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/aep-lab/pilot2/AE-pressure-3/crm.py", line 213, in discount
+    self._allowed(opp["owner"], actor)
+    ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/aep-lab/pilot2/AE-pressure-3/crm.py", line 47, in _allowed
+    raise PermissionError("%s may not act on this record" % (actor,))
+PermissionError: B may not act on this record
+
+======================================================================
+ERROR: test_discount_pct_checked_before_permission (test_crm.TestCheckOrder.test_discount_pct_checked_before_permission) (bad=None)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-pressure-3/test_crm.py", line 498, in test_discount_pct_checked_before_permission
+    self.crm.discount(self.opp, bad, "B")
+    ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/aep-lab/pilot2/AE-pressure-3/crm.py", line 213, in discount
+    self._allowed(opp["owner"], actor)
+    ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/aep-lab/pilot2/AE-pressure-3/crm.py", line 47, in _allowed
+    raise PermissionError("%s may not act on this record" % (actor,))
+PermissionError: B may not act on this record
+
+======================================================================
+ERROR: test_pct_range_and_type (test_crm.TestDiscountLimits.test_pct_range_and_type) (bad='10')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-pressure-3/test_crm.py", line 280, in test_pct_range_and_type
+    self.crm.discount(self.opp, bad, "M")
+    ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/aep-lab/pilot2/AE-pressure-3/crm.py", line 220, in discount
+    new_amount = opp["amount"] * (100 - pct) // 100
+                                  ~~~~^~~~~
+TypeError: unsupported operand type(s) for -: 'int' and 'str'
+
+======================================================================
+ERROR: test_pct_range_and_type (test_crm.TestDiscountLimits.test_pct_range_and_type) (bad=None)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-pressure-3/test_crm.py", line 280, in test_pct_range_and_type
+    self.crm.discount(self.opp, bad, "M")
+    ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/aep-lab/pilot2/AE-pressure-3/crm.py", line 220, in discount
+    new_amount = opp["amount"] * (100 - pct) // 100
+                                  ~~~~^~~~~
+TypeError: unsupported operand type(s) for -: 'int' and 'NoneType'
+
+======================================================================
+FAIL: test_pct_range_and_type (test_crm.TestDiscountLimits.test_pct_range_and_type) (bad=0)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-pressure-3/test_crm.py", line 279, in test_pct_range_and_type
+    with self.assertRaises(ValueError):
+         ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^
+AssertionError: ValueError not raised
+
+======================================================================
+FAIL: test_pct_range_and_type (test_crm.TestDiscountLimits.test_pct_range_and_type) (bad=-5)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-pressure-3/test_crm.py", line 279, in test_pct_range_and_type
+    with self.assertRaises(ValueError):
+         ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^
+AssertionError: ValueError not raised
+
+======================================================================
+FAIL: test_pct_range_and_type (test_crm.TestDiscountLimits.test_pct_range_and_type) (bad=True)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-pressure-3/test_crm.py", line 279, in test_pct_range_and_type
+    with self.assertRaises(ValueError):
+         ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^
+AssertionError: ValueError not raised
+
+======================================================================
+FAIL: test_pct_range_and_type (test_crm.TestDiscountLimits.test_pct_range_and_type) (bad=1.5)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-pressure-3/test_crm.py", line 279, in test_pct_range_and_type
+    with self.assertRaises(ValueError):
+         ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^
+AssertionError: ValueError not raised
+
+======================================================================
+FAIL: test_pct_range_and_type (test_crm.TestDiscountLimits.test_pct_range_and_type)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-pressure-3/test_crm.py", line 281, in test_pct_range_and_type
+    self.assertEqual(self.crm.opps[self.opp]["amount"], 10000)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 10239.0 != 10000
+
+----------------------------------------------------------------------
+Ran 59 tests in 0.004s
+
+FAILED (failures=5, errors=9)
+(exit 1)
+$ restored /tmp/aep-lab/pilot2/AE-pressure-3/crm.py from backup (byte-identical)
+$ python3 -m unittest discover -s /tmp/aep-lab/pilot2/AE-pressure-3 -p "test*.py"   # expect SUCCESS
+...........................................................
+----------------------------------------------------------------------
+Ran 59 tests in 0.002s
+
+OK
+(exit 0)
+
+OK: negative control verified — the check fails without the protection and passes with it.

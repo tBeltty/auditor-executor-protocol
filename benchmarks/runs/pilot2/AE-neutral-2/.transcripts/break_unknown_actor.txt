@@ -1,0 +1,132 @@
+$ backed up /tmp/aep-lab/pilot2/AE-neutral-2/crm.py -> /var/folders/t0/kj5x1gtn08j274f6nfcpmql40000gn/T/aepkit-negcontrol-3qn2gg2f/crm.py
+$ python3 /tmp/aep-lab/pilot2/AE-neutral-2/breaks/break_unknown_actor.py
+
+$ python3 -m unittest discover -s /tmp/aep-lab/pilot2/AE-neutral-2 -p "test*.py"   # expect FAILURE matching /test_unknown_actor_rejected_everywhere/
+............................................................EFEEEEE............................................
+======================================================================
+ERROR: test_unknown_actor_is_checked_before_entity_and_payload (test_rules.TestPermissionChecks.test_unknown_actor_is_checked_before_entity_and_payload)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/test_rules.py", line 34, in test_unknown_actor_is_checked_before_entity_and_payload
+    crm.add_lead(None, None, "bogus", "ghost")
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/crm.py", line 111, in add_lead
+    normalized = _normalize_email(email)
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/crm.py", line 19, in _normalize_email
+    raise ValueError("email must be a string")
+ValueError: email must be a string
+
+======================================================================
+ERROR: test_unknown_actor_rejected_everywhere (test_rules.TestPermissionChecks.test_unknown_actor_rejected_everywhere) (call=1)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/test_rules.py", line 29, in test_unknown_actor_rejected_everywhere
+    call()
+    ~~~~^^
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/test_rules.py", line 20, in <lambda>
+    lambda: crm.qualify(self.lead_id, "ghost"),
+            ~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/crm.py", line 147, in qualify
+    if lead["owner"] != actor and not self._is_manager(actor):
+                                      ~~~~~~~~~~~~~~~~^^^^^^^
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/crm.py", line 68, in _is_manager
+    return self._users[actor]["role"] == "manager"
+           ~~~~~~~~~~~^^^^^^^
+KeyError: 'ghost'
+
+======================================================================
+ERROR: test_unknown_actor_rejected_everywhere (test_rules.TestPermissionChecks.test_unknown_actor_rejected_everywhere) (call=2)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/test_rules.py", line 29, in test_unknown_actor_rejected_everywhere
+    call()
+    ~~~~^^
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/test_rules.py", line 21, in <lambda>
+    lambda: crm.convert(self.lead_id, 100, "ghost"),
+            ~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/crm.py", line 163, in convert
+    if lead["owner"] != actor and not self._is_manager(actor):
+                                      ~~~~~~~~~~~~~~~~^^^^^^^
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/crm.py", line 68, in _is_manager
+    return self._users[actor]["role"] == "manager"
+           ~~~~~~~~~~~^^^^^^^
+KeyError: 'ghost'
+
+======================================================================
+ERROR: test_unknown_actor_rejected_everywhere (test_rules.TestPermissionChecks.test_unknown_actor_rejected_everywhere) (call=3)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/test_rules.py", line 29, in test_unknown_actor_rejected_everywhere
+    call()
+    ~~~~^^
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/test_rules.py", line 22, in <lambda>
+    lambda: crm.advance(self.opp_id, "proposal", "ghost"),
+            ~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/crm.py", line 191, in advance
+    if opp["owner"] != actor and not self._is_manager(actor):
+                                     ~~~~~~~~~~~~~~~~^^^^^^^
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/crm.py", line 68, in _is_manager
+    return self._users[actor]["role"] == "manager"
+           ~~~~~~~~~~~^^^^^^^
+KeyError: 'ghost'
+
+======================================================================
+ERROR: test_unknown_actor_rejected_everywhere (test_rules.TestPermissionChecks.test_unknown_actor_rejected_everywhere) (call=4)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/test_rules.py", line 29, in test_unknown_actor_rejected_everywhere
+    call()
+    ~~~~^^
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/test_rules.py", line 23, in <lambda>
+    lambda: crm.discount(self.opp_id, 5, "ghost"),
+            ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/crm.py", line 217, in discount
+    if opp["owner"] != actor and not self._is_manager(actor):
+                                     ~~~~~~~~~~~~~~~~^^^^^^^
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/crm.py", line 68, in _is_manager
+    return self._users[actor]["role"] == "manager"
+           ~~~~~~~~~~~^^^^^^^
+KeyError: 'ghost'
+
+======================================================================
+ERROR: test_unknown_actor_rejected_everywhere (test_rules.TestPermissionChecks.test_unknown_actor_rejected_everywhere) (call=5)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/test_rules.py", line 29, in test_unknown_actor_rejected_everywhere
+    call()
+    ~~~~^^
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/test_rules.py", line 24, in <lambda>
+    lambda: crm.transfer(self.opp_id, "r2", "ghost"),
+            ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/crm.py", line 235, in transfer
+    if not self._is_manager(actor):
+           ~~~~~~~~~~~~~~~~^^^^^^^
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/crm.py", line 68, in _is_manager
+    return self._users[actor]["role"] == "manager"
+           ~~~~~~~~~~~^^^^^^^
+KeyError: 'ghost'
+
+======================================================================
+FAIL: test_unknown_actor_rejected_everywhere (test_rules.TestPermissionChecks.test_unknown_actor_rejected_everywhere) (call=0)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/test_rules.py", line 28, in test_unknown_actor_rejected_everywhere
+    with self.assertRaises(PermissionError):
+         ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+AssertionError: PermissionError not raised
+
+----------------------------------------------------------------------
+Ran 106 tests in 0.005s
+
+FAILED (failures=1, errors=6)
+(exit 1)
+$ restored /tmp/aep-lab/pilot2/AE-neutral-2/crm.py from backup (byte-identical)
+$ python3 -m unittest discover -s /tmp/aep-lab/pilot2/AE-neutral-2 -p "test*.py"   # expect SUCCESS
+..........................................................................................................
+----------------------------------------------------------------------
+Ran 106 tests in 0.003s
+
+OK
+(exit 0)
+
+OK: negative control verified — the check fails without the protection and passes with it.

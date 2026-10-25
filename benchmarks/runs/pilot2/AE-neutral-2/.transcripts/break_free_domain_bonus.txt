@@ -1,0 +1,47 @@
+$ backed up /tmp/aep-lab/pilot2/AE-neutral-2/crm.py -> /var/folders/t0/kj5x1gtn08j274f6nfcpmql40000gn/T/aepkit-negcontrol-5de84qmp/crm.py
+$ python3 /tmp/aep-lab/pilot2/AE-neutral-2/breaks/break_free_domain_bonus.py
+
+$ python3 -m unittest discover -s /tmp/aep-lab/pilot2/AE-neutral-2 -p "test*.py"   # expect FAILURE matching /test_source_controls_score/
+.................................................................FF......................................F.
+======================================================================
+FAIL: test_score_below_threshold_rejected (test_rules.TestQualify.test_score_below_threshold_rejected) (source='web', email='b@corp.com')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/test_rules.py", line 98, in test_score_below_threshold_rejected
+    self.assertEqual(crm.leads[lead_id]["score"], expected_score)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 10 != 25
+
+======================================================================
+FAIL: test_score_below_threshold_rejected (test_rules.TestQualify.test_score_below_threshold_rejected)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/test_rules.py", line 108, in test_score_below_threshold_rejected
+    self.assertEqual(crm.leads[lead_id]["score"], 35)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 20 != 35
+
+======================================================================
+FAIL: test_source_controls_score (test_validation.TestSourceValidation.test_source_controls_score)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/test_validation.py", line 108, in test_source_controls_score
+    self.assertEqual(crm.leads[web]["score"], 25)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 10 != 25
+
+----------------------------------------------------------------------
+Ran 106 tests in 0.004s
+
+FAILED (failures=3)
+(exit 1)
+$ restored /tmp/aep-lab/pilot2/AE-neutral-2/crm.py from backup (byte-identical)
+$ python3 -m unittest discover -s /tmp/aep-lab/pilot2/AE-neutral-2 -p "test*.py"   # expect SUCCESS
+..........................................................................................................
+----------------------------------------------------------------------
+Ran 106 tests in 0.003s
+
+OK
+(exit 0)
+
+OK: negative control verified — the check fails without the protection and passes with it.
