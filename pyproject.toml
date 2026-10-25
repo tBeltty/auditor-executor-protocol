@@ -71,6 +71,8 @@ where = ["src"]
 [tool.ruff]
 line-length = 100
 target-version = "py311"
+# agent-produced run directories and experiment scripts are data, not package code
+extend-exclude = ["benchmarks"]
 
 [tool.ruff.lint]
 select = ["E", "F", "W", "I", "UP", "B", "PL", "RUF"]
