@@ -10,3 +10,7 @@
 2. Idle-done detection. Workers that finish their turn without sending `worker_done` are treated as finished after 120 s of reported activity "done".
 3. Effort mapping. DeepSeek and GLM run at `high`; Qwen exposes no `high` and runs at `xhigh`, the nearest level above.
 4. The hidden suite was strengthened from 66 to 71 tests before launch, so the `test_crm.py` hash recorded for Pilot 2 no longer matches the file (Pilot 2 used the 66-test version).
+5. Oracle correction after the runs: see `PILOT3_ORACLE_CORRECTION.md`.
+6. The design note carries the date 2026-10-26 while the run logs are dated 2026-10-25; the discrepancy comes from the local clock and has no other cause.
+7. No token counts or session durations were recorded for any run.
+8. The pre-second-session snapshots (U2 before the review, AE before the remediation) were copied into `runs/pilot3_pre/` after the runs so that those rows can be rescored.
