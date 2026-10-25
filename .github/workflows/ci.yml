@@ -79,20 +79,20 @@ jobs:
         run: pip install -e ".[test]"
 
       - name: Run test suite via pytest with coverage gate
-        run: pytest --cov=auditkit --cov-report=term-missing --cov-fail-under=90
+        run: pytest --cov=aepkit --cov-report=term-missing --cov-fail-under=90
 
       - name: Verify CLI commands
         shell: bash
         run: |
-          auditkit --version
-          python -m auditkit --version
-          auditkit --help
-          auditkit init docs/ci-test --name "CI Smoke Test"
-          auditkit lint docs/ci-test
-          auditkit status docs/ci-test
-          auditkit install-skill docs/ci-test --agent antigravity
-          auditkit install-skill docs/ci-test --agent claude
-          auditkit install-skill docs/ci-test --agent cursor
+          aepkit --version
+          python -m aepkit --version
+          aepkit --help
+          aepkit init docs/ci-test --name "CI Smoke Test"
+          aepkit lint docs/ci-test
+          aepkit status docs/ci-test
+          aepkit install-skill docs/ci-test --agent antigravity
+          aepkit install-skill docs/ci-test --agent claude
+          aepkit install-skill docs/ci-test --agent cursor
 
   build:
     name: Verify Distribution Package
@@ -126,8 +126,8 @@ jobs:
           python -m venv /tmp/wheel-env
           /tmp/wheel-env/bin/pip install dist/*.whl
           cd "$(mktemp -d)"
-          /tmp/wheel-env/bin/auditkit --version
-          /tmp/wheel-env/bin/auditkit init smoke
-          /tmp/wheel-env/bin/auditkit lint smoke
-          /tmp/wheel-env/bin/auditkit install-skill smoke --agent claude
+          /tmp/wheel-env/bin/aepkit --version
+          /tmp/wheel-env/bin/aepkit init smoke
+          /tmp/wheel-env/bin/aepkit lint smoke
+          /tmp/wheel-env/bin/aepkit install-skill smoke --agent claude
           test -f smoke/.claude/skills/auditor-executor-protocol/references/handoffs.md

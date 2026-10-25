@@ -1,10 +1,10 @@
 # Contributing to Auditor/Executor Protocol
 
-Thank you for your interest in improving the Auditor/Executor protocol and `auditkit`!
+Thank you for your interest in improving the Auditor/Executor protocol and `aepkit`!
 
 ## Principles
 
-1. **Zero Runtime Dependencies:** `auditkit` must remain executable using only the Python standard library (`sys`, `pathlib`, `re`, `subprocess`, `argparse`). Never add runtime dependencies to `pyproject.toml`.
+1. **Zero Runtime Dependencies:** `aepkit` must remain executable using only the Python standard library (`sys`, `pathlib`, `re`, `subprocess`, `argparse`). Never add runtime dependencies to `pyproject.toml`.
 2. **Deterministic Mechanical Checks:** The CLI handles checklist verifications, not subjective interpretation. Keep checks crisp, fast, and reproducible.
 3. **Strict Quality Gates:** All code must pass strict typing (`mypy --strict src`), formatting and linting (`ruff check .`, `ruff format --check .`), and maintain at least 90% test coverage.
 
@@ -35,7 +35,7 @@ python tests/run.py
 Or run the full test suite with coverage enforcement via pytest:
 
 ```bash
-pytest --cov=auditkit --cov-report=term-missing --cov-fail-under=90
+pytest --cov=aepkit --cov-report=term-missing --cov-fail-under=90
 ```
 
 ## Code Quality & Formatting
@@ -79,13 +79,13 @@ Before submitting a PR:
 - [ ] Commit messages follow Conventional Commits.
 - [ ] [`CHANGELOG.md`](CHANGELOG.md) is updated under `## [Unreleased]`.
 - [ ] Documentation is updated if relevant.
-- [ ] Edits to `SKILL.md` or `references/` are copied to `src/auditkit/skill/` (`tests/test_skill_sync.py` enforces it).
+- [ ] Edits to `SKILL.md` or `references/` are copied to `src/aepkit/skill/` (`tests/test_skill_sync.py` enforces it).
 
 
 ## Releasing
 
 Every change that reaches users ships as a release:
 
-1. In the PR, bump `auditkit.__version__` (Semantic Versioning) and move the `## [Unreleased]` entries of `CHANGELOG.md` into a new `## [X.Y.Z] - YYYY-MM-DD` section, with its compare link at the bottom.
+1. In the PR, bump `aepkit.__version__` (Semantic Versioning) and move the `## [Unreleased]` entries of `CHANGELOG.md` into a new `## [X.Y.Z] - YYYY-MM-DD` section, with its compare link at the bottom.
 2. For a new minor version, update the supported-versions table in [`SECURITY.md`](SECURITY.md).
 3. After the PR is merged, tag the merge commit `vX.Y.Z` and push the tag. The release workflow runs the full CI, checks the tag matches `__version__`, publishes to PyPI, and creates the GitHub release from the changelog section.

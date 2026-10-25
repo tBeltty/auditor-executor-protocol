@@ -4,7 +4,7 @@ import subprocess
 import sys
 from pathlib import Path
 
-from auditkit import __version__, cli
+from aepkit import __version__, cli
 
 SRC = Path(__file__).resolve().parent.parent / "src"
 
@@ -15,7 +15,7 @@ def test_cli_version(capsys):
     except SystemExit as exc:
         assert exc.code == 0
     out = capsys.readouterr().out
-    assert f"auditkit {__version__}" in out
+    assert f"aepkit {__version__}" in out
 
 
 def test_cli_help(capsys):
@@ -24,7 +24,7 @@ def test_cli_help(capsys):
     except SystemExit as exc:
         assert exc.code == 0
     out = capsys.readouterr().out
-    assert "usage: auditkit" in out
+    assert "usage: aepkit" in out
 
 
 def test_cli_init_command(tmp_path):
@@ -74,14 +74,14 @@ def test_cli_negcontrol_command(tmp_path):
 
 def test_python_dash_m_runs_the_cli():
     result = subprocess.run(
-        [sys.executable, "-m", "auditkit", "--version"],
+        [sys.executable, "-m", "aepkit", "--version"],
         capture_output=True,
         text=True,
         check=False,
         env={**os.environ, "PYTHONPATH": str(SRC)},
     )
     assert result.returncode == 0
-    assert result.stdout.strip() == f"auditkit {__version__}"
+    assert result.stdout.strip() == f"aepkit {__version__}"
 
 
 def test_every_option_has_help():
@@ -91,7 +91,7 @@ def test_every_option_has_help():
         for action in sub._actions:
             if isinstance(action, argparse._HelpAction):
                 continue
-            assert action.help, f"auditkit {name} {action.dest} has no help text"
+            assert action.help, f"aepkit {name} {action.dest} has no help text"
 
 
 def test_errors_go_to_stderr(tmp_path, capsys):

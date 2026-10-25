@@ -6,10 +6,10 @@ Provide a summary of the changes introduced by this pull request.
 
 - [ ] Zero runtime dependencies preserved (standard library only).
 - [ ] Tests pass via `python tests/run.py`.
-- [ ] Pytest coverage remains >= 90% (`pytest --cov=auditkit --cov-fail-under=90`).
+- [ ] Pytest coverage remains >= 90% (`pytest --cov=aepkit --cov-fail-under=90`).
 - [ ] Ruff checks pass (`ruff check .` and `ruff format --check .`).
 - [ ] Strict type checking passes (`mypy --strict src`).
 - [ ] Commit messages follow Conventional Commits.
 - [ ] `CHANGELOG.md` updated under `## [Unreleased]`.
 - [ ] Relevant documentation or SKILL.md sections updated.
-- [ ] Edits to `SKILL.md` or `references/` copied to `src/auditkit/skill/` (`tests/test_skill_sync.py` enforces it).
+- [ ] Edits to `SKILL.md` or `references/` copied to `src/aepkit/skill/` (`tests/test_skill_sync.py` enforces it).

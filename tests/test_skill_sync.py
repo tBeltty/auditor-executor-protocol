@@ -2,10 +2,10 @@ import re
 from pathlib import Path
 
 REPO = Path(__file__).resolve().parent.parent
-PACKAGED = REPO / "src" / "auditkit" / "skill"
+PACKAGED = REPO / "src" / "aepkit" / "skill"
 SYNC_HINT = (
     "packaged skill is out of sync with the repo root; run: "
-    "cp SKILL.md src/auditkit/skill/ && cp references/*.md src/auditkit/skill/references/"
+    "cp SKILL.md src/aepkit/skill/ && cp references/*.md src/aepkit/skill/references/"
 )
 
 

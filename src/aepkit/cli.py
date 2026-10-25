@@ -1,4 +1,4 @@
-"""auditkit — mechanical support for the Auditor/Executor protocol.
+"""aepkit — mechanical support for the Auditor/Executor protocol.
 
 The protocol itself is SKILL.md:
 https://github.com/tBeltty/auditor-executor-protocol/blob/main/SKILL.md
@@ -18,9 +18,9 @@ from . import __version__, install_skill, lint, negcontrol, scaffold, status
 
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
-        prog="auditkit", description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter
+        prog="aepkit", description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter
     )
-    parser.add_argument("--version", action="version", version=f"auditkit {__version__}")
+    parser.add_argument("--version", action="version", version=f"aepkit {__version__}")
     sub = parser.add_subparsers(dest="command", required=True)
 
     p_init = sub.add_parser(

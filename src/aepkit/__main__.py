@@ -1,4 +1,4 @@
-"""Allow ``python -m auditkit``."""
+"""Allow ``python -m aepkit``."""
 
 import sys
 

@@ -1,4 +1,4 @@
-from auditkit import lint, scaffold
+from aepkit import lint, scaffold
 
 
 def test_init_creates_all_four_documents(tmp_path):

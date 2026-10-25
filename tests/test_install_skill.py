@@ -2,7 +2,7 @@ import os
 from collections.abc import Iterator
 from contextlib import contextmanager
 
-from auditkit import install_skill
+from aepkit import install_skill
 
 # Every variable _detect_agent reads, so the caller's own agent cannot leak into a test.
 DETECTION_VARS = (

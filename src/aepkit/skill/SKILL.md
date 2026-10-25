@@ -13,7 +13,7 @@ someone makes it unambiguous, and a report that says "all green" is not verifica
 until someone re-runs it. Both failures are common and both are expensive once they
 compound across dozens of tasks.
 
-A companion CLI, `auditkit`, operationalizes the mechanical parts of this: scaffolding
+A companion CLI, `aepkit`, operationalizes the mechanical parts of this: scaffolding
 the document set, checking the task list and the log agree with each other, running a
 negative control end to end, and printing where a run stands. Use it if it's installed;
 follow this document either way.
@@ -88,8 +88,9 @@ process/code findings matter more when nobody is watching, not less.
 Four documents. Keep them separate; merging them is how the instructions turn back into
 a discussion.
 
-1. **Plan of record** — the *what* and the *why*. Phases, decisions, trade-offs. Nobody
-   implements from this. Carries the **deferred items ledger** (below).
+1. **Plan of record** — the *what* and the *why*. Opportunity framing, evaluated options,
+   phases, decisions, trade-offs, and explicit non-goals. Nobody implements from this.
+   Carries the **opportunity and shaping gate** and the **deferred items ledger** (below).
 2. **Execution guide** — the *how*. Numbered tasks (`P<phase>-T<n>`, or any scheme with a
    stable, greppable ID), each with files, steps, a verification command, and its
    expected output. Gates (`P<phase>-G<n>`) close each phase. Carries the
@@ -103,8 +104,37 @@ a discussion.
 **Annexes** supersede a document that is already open in the Executor's session. Never
 edit an order in flight — issue a new annex, and say at the top which item it replaces.
 
-`auditkit init <dir>` scaffolds the first three as empty templates plus an empty
+`aepkit init <dir>` scaffolds the first three as empty templates plus an empty
 `annexes/` directory for the fourth.
+
+### Opportunity framing and set-based shaping (in the plan of record)
+
+A tight execution protocol without an upstream opportunity check makes it easy to specify
+and build the wrong or over-engineered thing to perfection. Before expanding tasks in the
+execution guide, the Auditor fills in four blocks in `plan-of-record.md`:
+
+1. **Opportunity framing (`Target outcome`, `Problem / friction`, `Cost of doing nothing`):**
+   state the measurable state change, the verified gap in the current system (without
+   prescribing the feature yet), and what happens if the work is not done.
+2. **Set-based shaping (`Option A`, `Option B`, `Option C`, `Selected option & rationale`):**
+   for open-design or new-capability work, compare at least three distinct approaches (a
+   minimal/config/existing-tooling option, a balanced implementation, and a full
+   architectural option) and record why the chosen option won and why the other two were
+   rejected.
+3. **Riskiest assumption & first-phase validation:** name the primary value, usability,
+   feasibility, or viability assumption that could invalidate the plan. **Order the first
+   phase (`P0` or `P1`) of `execution-guide.md` to test that riskiest assumption first**,
+   rather than starting with secondary scaffolding or cosmetic work. If the first gate
+   falsifies the assumption, the run stops or pivots before `P2..Pn` are built (rule 7).
+4. **Explicit non-goals:** name what is deliberately out of scope so an Executor or future
+   Auditor does not rebuild what was cut on purpose.
+
+**Fast-track bypass for deterministic work:** when the run is a bugfix, security patch,
+known schema migration, or strict compliance requirement where the problem and fix are
+already fixed, mark the three options, `Selected option & rationale`, and `Riskiest
+assumption & first-phase validation` as `N/A (Deterministic Fix/Compliance)` and go
+straight to `D1`. Do not invent artificial options for deterministic work; a bare `n/a`
+without naming the deterministic bypass does not count.
 
 ### The deferred items ledger (in the plan of record)
 
@@ -365,14 +395,14 @@ easier to copy the last summary than to write a new one. That is a cost, not a
 neutral habit: it makes the current state of the run more expensive to find for
 whoever reads it next, human or agent. Compact the log periodically — collapse a
 condition that has appeared unchanged across several entries into one current
-statement with a pointer to when it opened. `auditkit lint` flags near-duplicate
+statement with a pointer to when it opened. `aepkit lint` flags near-duplicate
 paragraphs so this doesn't have to be caught by eye.
 
 **Annex count is a health signal, not just a history.** A phase that accumulates many
 corrections after work started is a phase whose plan was under-verified before work
 started, more often than it is a phase that hit genuine surprises. If one phase is
 generating annexes faster than the others, that is worth naming as a finding about the
-planning step, not only fixing task by task. `auditkit lint` warns past a configurable
+planning step, not only fixing task by task. `aepkit lint` warns past a configurable
 threshold.
 
 ## Repo conventions this rides on
@@ -384,21 +414,25 @@ out of sync from.
 
 ## The CLI
 
-If `auditkit` is installed, prefer it over doing these by hand:
+If `aepkit` is installed, prefer it over doing these by hand:
 
-- `auditkit init <dir>` — scaffold the plan of record, execution guide, and compliance
+- `aepkit init <dir>` — scaffold the plan of record, execution guide, and compliance
   log from templates, plus an empty `annexes/` directory.
-- `auditkit lint <dir>` — cross-check task IDs between the execution guide and the
+- `aepkit lint <dir>` — cross-check task IDs between the execution guide and the
   compliance log in both directions, flag `DONE` reports with no pasted verify output
   (output counts only inside a fenced code block; prose such as "all tests pass" or a lone
   "n/a" is not output), flag work reported in a phase before every earlier phase is
   `APPROVED`, flag near-duplicate paragraphs, warn on annex count (listed per phase), flag gates with no
   stated negative control (it must name the action that removes the protection and the
   failure that follows; a negated, deferred, hypothetical, or waived mention such as "n/a",
-  "TBD", or "we could remove it" does not count). Missing documents, an execution guide with no tasks, and tasks without a
+  "TBD", or "we could remove it" does not count), and—once work has started (`DONE` or a
+  verdict in the log) and `plan-of-record.md` is present—flag unfilled opportunity, shaping,
+  riskiest-assumption, or non-goal fields (unless the shaping/assumption fields state
+  `N/A (Deterministic Fix/Compliance)`) as well as open rows in the deferred items ledger for
+  a phase being closed. Missing documents, an execution guide with no tasks, and tasks without a
   `**Report:**` line are errors, not a clean result. Lint checks that evidence is
   present, not that it is authentic: re-running it is still the Auditor's job.
-- `auditkit negcontrol --file <path> --break-cmd "<cmd>" --test-cmd "<cmd>"` — backs the
+- `aepkit negcontrol --file <path> --break-cmd "<cmd>" --test-cmd "<cmd>"` — backs the
   file up, runs the break command, runs the test (expects failure), restores from the
   backup, runs the test again (expects success), and prints a paste-ready transcript.
   With `--restore-cmd`, the file must still end byte-identical to the backup or it is
@@ -408,7 +442,7 @@ If `auditkit` is installed, prefer it over doing these by hand:
   failure the break should cause (an assertion message, a 403): a test that fails for
   another reason, such as a syntax error or a missing import, then fails the control
   instead of passing it. Without `--expect`, such output is only flagged as a warning.
-- `auditkit status <dir>` — combines the status board verdicts with the latest report
+- `aepkit status <dir>` — combines the status board verdicts with the latest report
   per ID and prints what's still open. Only `APPROVED` closes an item; a `DONE` with no
   verdict is listed as awaiting audit.
 

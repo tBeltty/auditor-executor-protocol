@@ -4,7 +4,7 @@ import re
 import sys
 from pathlib import Path
 
-from auditkit import cli
+from aepkit import cli
 
 README = Path(__file__).resolve().parent.parent / "README.md"
 PY = f'"{sys.executable}"'
@@ -20,7 +20,7 @@ def _help(capsys, command):
 
 def test_cli_reference_options_exist(capsys):
     rows = re.findall(
-        r"^\| `auditkit ([a-z-]+)[^`]*` \|([^|]*)\|", README.read_text(encoding="utf-8"), re.M
+        r"^\| `aepkit ([a-z-]+)[^`]*` \|([^|]*)\|", README.read_text(encoding="utf-8"), re.M
     )
     assert len(rows) == 5
     for command, options in rows:

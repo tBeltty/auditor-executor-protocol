@@ -46,7 +46,7 @@ For each task, append to `compliance-log.md`:
 ````
 
 A `DONE` with no pasted output is recorded as `FAILED`. The output goes inside a fenced
-code block: `auditkit lint` counts nothing outside one as evidence.
+code block: `aepkit lint` counts nothing outside one as evidence.
 
 ---
 
