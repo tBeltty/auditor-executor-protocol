@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 """Pilot 3 analysis (descriptive). Reads results/pilot3_runs.jsonl and driver logs for timeouts."""
 import json, re, statistics as st, sys, collections
-BM = "/Users/jhonatan/Documents/auditor-executor-protocol/benchmarks"
+from pathlib import Path
+BM = str(Path(__file__).resolve().parent.parent)
 rows = [json.loads(l) for l in open(f"{BM}/results/pilot3_runs.jsonl")]
 # cells whose Executor was stopped by the wave time limit
 to = set()
