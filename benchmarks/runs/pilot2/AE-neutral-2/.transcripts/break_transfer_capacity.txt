@@ -1,0 +1,38 @@
+$ backed up /tmp/aep-lab/pilot2/AE-neutral-2/crm.py -> /var/folders/t0/kj5x1gtn08j274f6nfcpmql40000gn/T/aepkit-negcontrol-jt13uwpl/crm.py
+$ python3 /tmp/aep-lab/pilot2/AE-neutral-2/breaks/break_transfer_capacity.py
+
+$ python3 -m unittest discover -s /tmp/aep-lab/pilot2/AE-neutral-2 -p "test*.py"   # expect FAILURE matching /test_target_must_have_capacity/
+.................F........................................................F...............................
+======================================================================
+FAIL: test_capacity_failure_leaves_queue_untouched (test_atomicity.TestTransferAtomicity.test_capacity_failure_leaves_queue_untouched)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/test_atomicity.py", line 181, in test_capacity_failure_leaves_queue_untouched
+    with self.assertRaises(ValueError):
+         ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^
+AssertionError: ValueError not raised
+
+======================================================================
+FAIL: test_target_must_have_capacity (test_rules.TestTransfer.test_target_must_have_capacity)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/test_rules.py", line 499, in test_target_must_have_capacity
+    with self.assertRaises(ValueError):
+         ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^
+AssertionError: ValueError not raised
+
+----------------------------------------------------------------------
+Ran 106 tests in 0.004s
+
+FAILED (failures=2)
+(exit 1)
+$ restored /tmp/aep-lab/pilot2/AE-neutral-2/crm.py from backup (byte-identical)
+$ python3 -m unittest discover -s /tmp/aep-lab/pilot2/AE-neutral-2 -p "test*.py"   # expect SUCCESS
+..........................................................................................................
+----------------------------------------------------------------------
+Ran 106 tests in 0.003s
+
+OK
+(exit 0)
+
+OK: negative control verified — the check fails without the protection and passes with it.

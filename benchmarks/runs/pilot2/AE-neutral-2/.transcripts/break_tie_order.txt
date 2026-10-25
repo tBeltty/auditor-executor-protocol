@@ -1,0 +1,742 @@
+$ backed up /tmp/aep-lab/pilot2/AE-neutral-2/crm.py -> /var/folders/t0/kj5x1gtn08j274f6nfcpmql40000gn/T/aepkit-negcontrol-2ifsl6i3/crm.py
+$ python3 /tmp/aep-lab/pilot2/AE-neutral-2/breaks/break_tie_order.py
+
+$ python3 -m unittest discover -s /tmp/aep-lab/pilot2/AE-neutral-2 -p "test*.py"   # expect FAILURE matching /test_tie_broken_by_smallest_id/
+..FFEEEE...EE.EEEF.FEEEEEEEEEE.EEEEEEF..EEE..EE..EE.EEF..E......EEEEEEEEEEEEE.EE.FFE.FE...FF..FF.F...................
+======================================================================
+ERROR: test_final_opportunity_failure_changes_nothing (test_atomicity.TestAdvanceAtomicity.test_final_opportunity_failure_changes_nothing)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/test_atomicity.py", line 109, in test_final_opportunity_failure_changes_nothing
+    crm.advance(opp_id, "lost", "r1")
+    ~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/crm.py", line 193, in advance
+    raise PermissionError("actor may not advance this opportunity")
+PermissionError: actor may not advance this opportunity
+
+======================================================================
+ERROR: test_bad_amount_changes_nothing (test_atomicity.TestConvertAtomicity.test_bad_amount_changes_nothing)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/test_atomicity.py", line 64, in test_bad_amount_changes_nothing
+    crm.qualify(lead_id, "r1")
+    ~~~~~~~~~~~^^^^^^^^^^^^^^^
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/crm.py", line 149, in qualify
+    raise PermissionError("actor may not qualify this lead")
+PermissionError: actor may not qualify this lead
+
+======================================================================
+ERROR: test_convert_permission_failure_changes_nothing (test_atomicity.TestConvertAtomicity.test_convert_permission_failure_changes_nothing)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/test_atomicity.py", line 75, in test_convert_permission_failure_changes_nothing
+    crm.qualify(lead_id, "r1")
+    ~~~~~~~~~~~^^^^^^^^^^^^^^^
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/crm.py", line 149, in qualify
+    raise PermissionError("actor may not qualify this lead")
+PermissionError: actor may not qualify this lead
+
+======================================================================
+ERROR: test_unqualified_lead_changes_nothing (test_atomicity.TestConvertAtomicity.test_unqualified_lead_changes_nothing)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/test_atomicity.py", line 86, in test_unqualified_lead_changes_nothing
+    crm.convert(lead_id, 100, "r1")
+    ~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/crm.py", line 165, in convert
+    raise PermissionError("actor may not convert this lead")
+PermissionError: actor may not convert this lead
+
+======================================================================
+ERROR: test_final_stage_failure_changes_nothing (test_atomicity.TestDiscountAtomicity.test_final_stage_failure_changes_nothing)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/test_atomicity.py", line 145, in test_final_stage_failure_changes_nothing
+    crm.advance(opp_id, "lost", "r1")
+    ~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/crm.py", line 193, in advance
+    raise PermissionError("actor may not advance this opportunity")
+PermissionError: actor may not advance this opportunity
+
+======================================================================
+ERROR: test_every_failure_preserves_the_log (test_atomicity.TestIdCountersAreTransactional.test_every_failure_preserves_the_log)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/test_atomicity.py", line 205, in test_every_failure_preserves_the_log
+    crm.qualify(lead_id, "r1")
+    ~~~~~~~~~~~^^^^^^^^^^^^^^^
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/crm.py", line 149, in qualify
+    raise PermissionError("actor may not qualify this lead")
+PermissionError: actor may not qualify this lead
+
+======================================================================
+ERROR: test_failed_convert_does_not_consume_opp_id (test_atomicity.TestIdCountersAreTransactional.test_failed_convert_does_not_consume_opp_id)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/test_atomicity.py", line 197, in test_failed_convert_does_not_consume_opp_id
+    crm.qualify(lead_id, "r1")
+    ~~~~~~~~~~~^^^^^^^^^^^^^^^
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/crm.py", line 149, in qualify
+    raise PermissionError("actor may not qualify this lead")
+PermissionError: actor may not qualify this lead
+
+======================================================================
+ERROR: test_failed_qualify_changes_nothing (test_atomicity.TestQualifyAtomicity.test_failed_qualify_changes_nothing)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/test_atomicity.py", line 37, in test_failed_qualify_changes_nothing
+    crm.qualify(lead_id, "r1")
+    ~~~~~~~~~~~^^^^^^^^^^^^^^^
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/crm.py", line 149, in qualify
+    raise PermissionError("actor may not qualify this lead")
+PermissionError: actor may not qualify this lead
+
+======================================================================
+ERROR: test_low_score_failure_changes_nothing (test_atomicity.TestQualifyAtomicity.test_low_score_failure_changes_nothing)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/test_atomicity.py", line 56, in test_low_score_failure_changes_nothing
+    crm.qualify(lead_id, "r1")
+    ~~~~~~~~~~~^^^^^^^^^^^^^^^
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/crm.py", line 149, in qualify
+    raise PermissionError("actor may not qualify this lead")
+PermissionError: actor may not qualify this lead
+
+======================================================================
+ERROR: test_any_open_stage_may_go_lost (test_rules.TestAdvance.test_any_open_stage_may_go_lost) (steps=())
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/test_rules.py", line 240, in test_any_open_stage_may_go_lost
+    crm.advance(opp_id, "lost", "r1")
+    ~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/crm.py", line 193, in advance
+    raise PermissionError("actor may not advance this opportunity")
+PermissionError: actor may not advance this opportunity
+
+======================================================================
+ERROR: test_any_open_stage_may_go_lost (test_rules.TestAdvance.test_any_open_stage_may_go_lost) (steps=('proposal',))
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/test_rules.py", line 239, in test_any_open_stage_may_go_lost
+    crm.advance(opp_id, stage, "r1")
+    ~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/crm.py", line 193, in advance
+    raise PermissionError("actor may not advance this opportunity")
+PermissionError: actor may not advance this opportunity
+
+======================================================================
+ERROR: test_any_open_stage_may_go_lost (test_rules.TestAdvance.test_any_open_stage_may_go_lost) (steps=('proposal', 'negotiation'))
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/test_rules.py", line 239, in test_any_open_stage_may_go_lost
+    crm.advance(opp_id, stage, "r1")
+    ~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/crm.py", line 193, in advance
+    raise PermissionError("actor may not advance this opportunity")
+PermissionError: actor may not advance this opportunity
+
+======================================================================
+ERROR: test_big_deal_check_only_applies_to_negotiation (test_rules.TestAdvance.test_big_deal_check_only_applies_to_negotiation)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/test_rules.py", line 334, in test_big_deal_check_only_applies_to_negotiation
+    crm.advance(opp_id, "proposal", "r1")
+    ~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/crm.py", line 193, in advance
+    raise PermissionError("actor may not advance this opportunity")
+PermissionError: actor may not advance this opportunity
+
+======================================================================
+ERROR: test_big_deal_gate_reads_current_amount_after_discount (test_rules.TestAdvance.test_big_deal_gate_reads_current_amount_after_discount)
+Spec line 30: the 50000 gate measures the current amount, not the original.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/test_rules.py", line 325, in test_big_deal_gate_reads_current_amount_after_discount
+    crm.advance(opp_id, "proposal", "r1")
+    ~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/crm.py", line 193, in advance
+    raise PermissionError("actor may not advance this opportunity")
+PermissionError: actor may not advance this opportunity
+
+======================================================================
+ERROR: test_big_deal_requires_manager_for_negotiation (test_rules.TestAdvance.test_big_deal_requires_manager_for_negotiation)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/test_rules.py", line 307, in test_big_deal_requires_manager_for_negotiation
+    crm.advance(opp_id, "proposal", "r1")
+    ~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/crm.py", line 193, in advance
+    raise PermissionError("actor may not advance this opportunity")
+PermissionError: actor may not advance this opportunity
+
+======================================================================
+ERROR: test_big_deal_threshold_is_strictly_greater_than_50000 (test_rules.TestAdvance.test_big_deal_threshold_is_strictly_greater_than_50000)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/test_rules.py", line 317, in test_big_deal_threshold_is_strictly_greater_than_50000
+    crm.advance(opp_id, "proposal", "r1")
+    ~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/crm.py", line 193, in advance
+    raise PermissionError("actor may not advance this opportunity")
+PermissionError: actor may not advance this opportunity
+
+======================================================================
+ERROR: test_final_stage_cannot_advance (test_rules.TestAdvance.test_final_stage_cannot_advance) (final='won')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/test_rules.py", line 282, in test_final_stage_cannot_advance
+    crm.advance(opp_id, "proposal", "r1")
+    ~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/crm.py", line 193, in advance
+    raise PermissionError("actor may not advance this opportunity")
+PermissionError: actor may not advance this opportunity
+
+======================================================================
+ERROR: test_final_stage_cannot_advance (test_rules.TestAdvance.test_final_stage_cannot_advance) (final='lost')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/test_rules.py", line 284, in test_final_stage_cannot_advance
+    crm.advance(opp_id, final, "r1")
+    ~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/crm.py", line 193, in advance
+    raise PermissionError("actor may not advance this opportunity")
+PermissionError: actor may not advance this opportunity
+
+======================================================================
+ERROR: test_happy_path_through_won (test_rules.TestAdvance.test_happy_path_through_won)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/test_rules.py", line 229, in test_happy_path_through_won
+    crm.advance(opp_id, stage, "r1")
+    ~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/crm.py", line 193, in advance
+    raise PermissionError("actor may not advance this opportunity")
+PermissionError: actor may not advance this opportunity
+
+======================================================================
+ERROR: test_permission_checked_before_final_state (test_rules.TestAdvance.test_permission_checked_before_final_state)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/test_rules.py", line 300, in test_permission_checked_before_final_state
+    crm.advance(opp_id, "lost", "r1")
+    ~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/crm.py", line 193, in advance
+    raise PermissionError("actor may not advance this opportunity")
+PermissionError: actor may not advance this opportunity
+
+======================================================================
+ERROR: test_stage_must_be_immediate_next_or_lost (test_rules.TestAdvance.test_stage_must_be_immediate_next_or_lost) (steps=(), target='negotiation')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/test_rules.py", line 273, in test_stage_must_be_immediate_next_or_lost
+    crm.advance(opp_id, target, "r1")
+    ~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/crm.py", line 193, in advance
+    raise PermissionError("actor may not advance this opportunity")
+PermissionError: actor may not advance this opportunity
+
+======================================================================
+ERROR: test_stage_must_be_immediate_next_or_lost (test_rules.TestAdvance.test_stage_must_be_immediate_next_or_lost) (steps=(), target='won')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/test_rules.py", line 273, in test_stage_must_be_immediate_next_or_lost
+    crm.advance(opp_id, target, "r1")
+    ~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/crm.py", line 193, in advance
+    raise PermissionError("actor may not advance this opportunity")
+PermissionError: actor may not advance this opportunity
+
+======================================================================
+ERROR: test_stage_must_be_immediate_next_or_lost (test_rules.TestAdvance.test_stage_must_be_immediate_next_or_lost) (steps=('proposal',), target='prospect')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/test_rules.py", line 270, in test_stage_must_be_immediate_next_or_lost
+    crm.advance(opp_id, stage, "r1")
+    ~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/crm.py", line 193, in advance
+    raise PermissionError("actor may not advance this opportunity")
+PermissionError: actor may not advance this opportunity
+
+======================================================================
+ERROR: test_stage_must_be_immediate_next_or_lost (test_rules.TestAdvance.test_stage_must_be_immediate_next_or_lost) (steps=('proposal',), target='won')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/test_rules.py", line 270, in test_stage_must_be_immediate_next_or_lost
+    crm.advance(opp_id, stage, "r1")
+    ~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/crm.py", line 193, in advance
+    raise PermissionError("actor may not advance this opportunity")
+PermissionError: actor may not advance this opportunity
+
+======================================================================
+ERROR: test_stage_must_be_immediate_next_or_lost (test_rules.TestAdvance.test_stage_must_be_immediate_next_or_lost) (steps=('proposal', 'negotiation'), target='proposal')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/test_rules.py", line 270, in test_stage_must_be_immediate_next_or_lost
+    crm.advance(opp_id, stage, "r1")
+    ~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/crm.py", line 193, in advance
+    raise PermissionError("actor may not advance this opportunity")
+PermissionError: actor may not advance this opportunity
+
+======================================================================
+ERROR: test_amount_must_be_positive_int_not_bool (test_rules.TestConvert.test_amount_must_be_positive_int_not_bool)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/test_rules.py", line 148, in test_amount_must_be_positive_int_not_bool
+    crm.qualify(lead_id, "r1")
+    ~~~~~~~~~~~^^^^^^^^^^^^^^^
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/crm.py", line 149, in qualify
+    raise PermissionError("actor may not qualify this lead")
+PermissionError: actor may not qualify this lead
+
+======================================================================
+ERROR: test_failed_conversion_does_not_consume_opp_id (test_rules.TestConvert.test_failed_conversion_does_not_consume_opp_id)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/test_rules.py", line 206, in test_failed_conversion_does_not_consume_opp_id
+    crm.qualify(lead_id, "r1")
+    ~~~~~~~~~~~^^^^^^^^^^^^^^^
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/crm.py", line 149, in qualify
+    raise PermissionError("actor may not qualify this lead")
+PermissionError: actor may not qualify this lead
+
+======================================================================
+ERROR: test_lead_must_be_qualified (test_rules.TestConvert.test_lead_must_be_qualified)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/test_rules.py", line 165, in test_lead_must_be_qualified
+    crm.convert(lead_id, 100, "r1")
+    ~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/crm.py", line 165, in convert
+    raise PermissionError("actor may not convert this lead")
+PermissionError: actor may not convert this lead
+
+======================================================================
+ERROR: test_permission_is_checked_before_status (test_rules.TestConvert.test_permission_is_checked_before_status)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/test_rules.py", line 178, in test_permission_is_checked_before_status
+    crm.convert(lead_id, 100, "r2")
+    ~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/crm.py", line 167, in convert
+    raise ValueError("lead is not qualified")
+ValueError: lead is not qualified
+
+======================================================================
+ERROR: test_successful_conversion_sets_fields_and_log (test_rules.TestConvert.test_successful_conversion_sets_fields_and_log)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/test_rules.py", line 183, in test_successful_conversion_sets_fields_and_log
+    crm.qualify(lead_id, "r1")
+    ~~~~~~~~~~~^^^^^^^^^^^^^^^
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/crm.py", line 149, in qualify
+    raise PermissionError("actor may not qualify this lead")
+PermissionError: actor may not qualify this lead
+
+======================================================================
+ERROR: test_final_stage_cannot_be_discounted (test_rules.TestDiscount.test_final_stage_cannot_be_discounted)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/test_rules.py", line 370, in test_final_stage_cannot_be_discounted
+    crm.advance(opp_id, "lost", "r1")
+    ~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/crm.py", line 193, in advance
+    raise PermissionError("actor may not advance this opportunity")
+PermissionError: actor may not advance this opportunity
+
+======================================================================
+ERROR: test_final_stage_is_checked_before_non_manager_cap (test_rules.TestDiscount.test_final_stage_is_checked_before_non_manager_cap)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/test_rules.py", line 423, in test_final_stage_is_checked_before_non_manager_cap
+    crm.advance(opp_id, "lost", "r1")
+    ~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/crm.py", line 193, in advance
+    raise PermissionError("actor may not advance this opportunity")
+PermissionError: actor may not advance this opportunity
+
+======================================================================
+ERROR: test_non_manager_discount_cap (test_rules.TestDiscount.test_non_manager_discount_cap)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/test_rules.py", line 381, in test_non_manager_discount_cap
+    crm.discount(opp_id, 10, "r1")
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/crm.py", line 219, in discount
+    raise PermissionError("actor may not discount this opportunity")
+PermissionError: actor may not discount this opportunity
+
+======================================================================
+ERROR: test_non_manager_floor_still_applies (test_rules.TestDiscount.test_non_manager_floor_still_applies)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/test_rules.py", line 412, in test_non_manager_floor_still_applies
+    crm.discount(opp_id, 10, "r1")
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/crm.py", line 219, in discount
+    raise PermissionError("actor may not discount this opportunity")
+PermissionError: actor may not discount this opportunity
+
+======================================================================
+ERROR: test_permission_checked_before_final_stage (test_rules.TestDiscount.test_permission_checked_before_final_stage)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/test_rules.py", line 430, in test_permission_checked_before_final_stage
+    crm.advance(opp_id, "lost", "r1")
+    ~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/crm.py", line 193, in advance
+    raise PermissionError("actor may not advance this opportunity")
+PermissionError: actor may not advance this opportunity
+
+======================================================================
+ERROR: test_manager_may_act_on_any_work (test_rules.TestPermissionChecks.test_manager_may_act_on_any_work)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/test_rules.py", line 13, in setUp
+    self.crm.qualify(self.lead_id, "r1")
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/crm.py", line 149, in qualify
+    raise PermissionError("actor may not qualify this lead")
+PermissionError: actor may not qualify this lead
+
+======================================================================
+ERROR: test_non_owner_cannot_qualify_a_new_lead (test_rules.TestPermissionChecks.test_non_owner_cannot_qualify_a_new_lead)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/test_rules.py", line 13, in setUp
+    self.crm.qualify(self.lead_id, "r1")
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/crm.py", line 149, in qualify
+    raise PermissionError("actor may not qualify this lead")
+PermissionError: actor may not qualify this lead
+
+======================================================================
+ERROR: test_non_owner_rep_cannot_act_on_someone_elses_work (test_rules.TestPermissionChecks.test_non_owner_rep_cannot_act_on_someone_elses_work)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/test_rules.py", line 13, in setUp
+    self.crm.qualify(self.lead_id, "r1")
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/crm.py", line 149, in qualify
+    raise PermissionError("actor may not qualify this lead")
+PermissionError: actor may not qualify this lead
+
+======================================================================
+ERROR: test_qualify_permission_checked_before_score (test_rules.TestPermissionChecks.test_qualify_permission_checked_before_score)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/test_rules.py", line 13, in setUp
+    self.crm.qualify(self.lead_id, "r1")
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/crm.py", line 149, in qualify
+    raise PermissionError("actor may not qualify this lead")
+PermissionError: actor may not qualify this lead
+
+======================================================================
+ERROR: test_unknown_actor_is_checked_before_entity_and_payload (test_rules.TestPermissionChecks.test_unknown_actor_is_checked_before_entity_and_payload)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/test_rules.py", line 13, in setUp
+    self.crm.qualify(self.lead_id, "r1")
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/crm.py", line 149, in qualify
+    raise PermissionError("actor may not qualify this lead")
+PermissionError: actor may not qualify this lead
+
+======================================================================
+ERROR: test_unknown_actor_rejected_everywhere (test_rules.TestPermissionChecks.test_unknown_actor_rejected_everywhere)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/test_rules.py", line 13, in setUp
+    self.crm.qualify(self.lead_id, "r1")
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/crm.py", line 149, in qualify
+    raise PermissionError("actor may not qualify this lead")
+PermissionError: actor may not qualify this lead
+
+======================================================================
+ERROR: test_converted_lead_cannot_be_qualified (test_rules.TestQualify.test_converted_lead_cannot_be_qualified)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/test_rules.py", line 138, in test_converted_lead_cannot_be_qualified
+    crm.qualify(lead_id, "r1")
+    ~~~~~~~~~~~^^^^^^^^^^^^^^^
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/crm.py", line 149, in qualify
+    raise PermissionError("actor may not qualify this lead")
+PermissionError: actor may not qualify this lead
+
+======================================================================
+ERROR: test_lead_must_be_new (test_rules.TestQualify.test_lead_must_be_new)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/test_rules.py", line 128, in test_lead_must_be_new
+    crm.qualify(lead_id, "r1")
+    ~~~~~~~~~~~^^^^^^^^^^^^^^^
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/crm.py", line 149, in qualify
+    raise PermissionError("actor may not qualify this lead")
+PermissionError: actor may not qualify this lead
+
+======================================================================
+ERROR: test_referral_with_free_domain_meets_threshold (test_rules.TestQualify.test_referral_with_free_domain_meets_threshold)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/test_rules.py", line 116, in test_referral_with_free_domain_meets_threshold
+    crm.qualify(lead_id, "r1")
+    ~~~~~~~~~~~^^^^^^^^^^^^^^^
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/crm.py", line 149, in qualify
+    raise PermissionError("actor may not qualify this lead")
+PermissionError: actor may not qualify this lead
+
+======================================================================
+ERROR: test_score_below_threshold_rejected (test_rules.TestQualify.test_score_below_threshold_rejected) (source='web', email='a@gmail.com')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/test_rules.py", line 100, in test_score_below_threshold_rejected
+    crm.qualify(lead_id, "r1")
+    ~~~~~~~~~~~^^^^^^^^^^^^^^^
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/crm.py", line 149, in qualify
+    raise PermissionError("actor may not qualify this lead")
+PermissionError: actor may not qualify this lead
+
+======================================================================
+ERROR: test_score_below_threshold_rejected (test_rules.TestQualify.test_score_below_threshold_rejected) (source='web', email='b@corp.com')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/test_rules.py", line 100, in test_score_below_threshold_rejected
+    crm.qualify(lead_id, "r1")
+    ~~~~~~~~~~~^^^^^^^^^^^^^^^
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/crm.py", line 149, in qualify
+    raise PermissionError("actor may not qualify this lead")
+PermissionError: actor may not qualify this lead
+
+======================================================================
+ERROR: test_score_below_threshold_rejected (test_rules.TestQualify.test_score_below_threshold_rejected) (source='event', email='c@gmail.com')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/test_rules.py", line 100, in test_score_below_threshold_rejected
+    crm.qualify(lead_id, "r1")
+    ~~~~~~~~~~~^^^^^^^^^^^^^^^
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/crm.py", line 149, in qualify
+    raise PermissionError("actor may not qualify this lead")
+PermissionError: actor may not qualify this lead
+
+======================================================================
+ERROR: test_score_below_threshold_rejected (test_rules.TestQualify.test_score_below_threshold_rejected)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/test_rules.py", line 109, in test_score_below_threshold_rejected
+    crm.qualify(lead_id, "r1")
+    ~~~~~~~~~~~^^^^^^^^^^^^^^^
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/crm.py", line 149, in qualify
+    raise PermissionError("actor may not qualify this lead")
+PermissionError: actor may not qualify this lead
+
+======================================================================
+ERROR: test_final_opportunity_cannot_be_transferred (test_rules.TestTransfer.test_final_opportunity_cannot_be_transferred)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/test_rules.py", line 479, in test_final_opportunity_cannot_be_transferred
+    self.crm.advance(self.opp_id, "lost", "r1")
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/crm.py", line 193, in advance
+    raise PermissionError("actor may not advance this opportunity")
+PermissionError: actor may not advance this opportunity
+
+======================================================================
+ERROR: test_manager_permission_checked_before_final_stage (test_rules.TestTransfer.test_manager_permission_checked_before_final_stage)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/test_rules.py", line 446, in test_manager_permission_checked_before_final_stage
+    self.crm.advance(self.opp_id, "lost", "r1")
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/crm.py", line 193, in advance
+    raise PermissionError("actor may not advance this opportunity")
+PermissionError: actor may not advance this opportunity
+
+======================================================================
+ERROR: test_successful_transfer_updates_owner_and_logs (test_rules.TestTransfer.test_successful_transfer_updates_owner_and_logs)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/test_rules.py", line 505, in test_successful_transfer_updates_owner_and_logs
+    self.crm.transfer(self.opp_id, "r2", "m1")
+    ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/crm.py", line 244, in transfer
+    raise ValueError("new owner is already the owner")
+ValueError: new owner is already the owner
+
+======================================================================
+ERROR: test_transfer_to_rep_with_free_capacity_succeeds (test_rules.TestTransfer.test_transfer_to_rep_with_free_capacity_succeeds)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/test_rules.py", line 517, in test_transfer_to_rep_with_free_capacity_succeeds
+    crm.transfer(opp_id, "r2", "m1")
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/crm.py", line 244, in transfer
+    raise ValueError("new owner is already the owner")
+ValueError: new owner is already the owner
+
+======================================================================
+FAIL: test_failing_advances_change_nothing (test_atomicity.TestAdvanceAtomicity.test_failing_advances_change_nothing) (stage='proposal', actor='r2')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/test_atomicity.py", line 102, in test_failing_advances_change_nothing
+    with self.assertRaises((ValueError, PermissionError)):
+         ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: (<class 'ValueError'>, <class 'PermissionError'>) not raised
+
+======================================================================
+FAIL: test_failing_advances_change_nothing (test_atomicity.TestAdvanceAtomicity.test_failing_advances_change_nothing) (stage='won', actor='r1')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/test_atomicity.py", line 104, in test_failing_advances_change_nothing
+    self.assertEqual(snapshot(crm), before)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: {'lea[253 chars] 'proposal'}}, 'log': [('add_lead', 'L1', 'm1'[73 chars]2')]} != {'lea[253 chars] 'prospect'}}, 'log': [('add_lead', 'L1', 'm1'[48 chars]1')]}
+Diff is 833 characters long. Set self.maxDiff to None to see it.
+
+======================================================================
+FAIL: test_qualify_permission_failure_changes_nothing (test_atomicity.TestQualifyAtomicity.test_qualify_permission_failure_changes_nothing)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/test_atomicity.py", line 47, in test_qualify_permission_failure_changes_nothing
+    with self.assertRaises(PermissionError):
+         ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+AssertionError: PermissionError not raised
+
+======================================================================
+FAIL: test_failing_transfers_change_nothing (test_atomicity.TestTransferAtomicity.test_failing_transfers_change_nothing) (target='r1', actor='m1')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/test_atomicity.py", line 164, in test_failing_transfers_change_nothing
+    with self.assertRaises((ValueError, PermissionError)):
+         ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: (<class 'ValueError'>, <class 'PermissionError'>) not raised
+
+======================================================================
+FAIL: test_stage_name_is_validated_before_permission (test_rules.TestAdvance.test_stage_name_is_validated_before_permission)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/test_rules.py", line 294, in test_stage_name_is_validated_before_permission
+    with self.assertRaises(PermissionError):
+         ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+AssertionError: PermissionError not raised
+
+======================================================================
+FAIL: test_non_owner_rep_cannot_discount (test_rules.TestDiscount.test_non_owner_rep_cannot_discount)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/test_rules.py", line 364, in test_non_owner_rep_cannot_discount
+    with self.assertRaises(PermissionError):
+         ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+AssertionError: PermissionError not raised
+
+======================================================================
+FAIL: test_only_manager_may_transfer (test_rules.TestTransfer.test_only_manager_may_transfer)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/test_rules.py", line 443, in test_only_manager_may_transfer
+    self.assertEqual(self.crm.opps[self.opp_id]["owner"], "r1")
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 'r2' != 'r1'
+- r2
++ r1
+
+
+======================================================================
+FAIL: test_same_owner_rejected (test_rules.TestTransfer.test_same_owner_rejected)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/test_rules.py", line 484, in test_same_owner_rejected
+    with self.assertRaises(ValueError):
+         ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^
+AssertionError: ValueError not raised
+
+======================================================================
+FAIL: test_target_must_have_capacity (test_rules.TestTransfer.test_target_must_have_capacity)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/test_rules.py", line 501, in test_target_must_have_capacity
+    self.assertEqual(crm.opps[opp_id]["owner"], "r1")
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 'r2' != 'r1'
+- r2
++ r1
+
+
+======================================================================
+FAIL: test_full_capacity_queues_lead (test_validation.TestAssignmentAndCapacity.test_full_capacity_queues_lead)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/test_validation.py", line 199, in test_full_capacity_queues_lead
+    self.assertEqual(crm.leads[first]["owner"], "a")
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 'b' != 'a'
+- b
++ a
+
+
+======================================================================
+FAIL: test_lowest_load_wins (test_validation.TestAssignmentAndCapacity.test_lowest_load_wins)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/test_validation.py", line 169, in test_lowest_load_wins
+    self.assertEqual(crm.leads[first]["owner"], "r1")
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 'r2' != 'r1'
+- r2
++ r1
+
+
+======================================================================
+FAIL: test_open_opportunities_count_against_capacity (test_validation.TestAssignmentAndCapacity.test_open_opportunities_count_against_capacity)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/test_validation.py", line 185, in test_open_opportunities_count_against_capacity
+    self.assertEqual(crm.leads[second]["owner"], "r2")
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 'r1' != 'r2'
+- r1
++ r2
+
+
+======================================================================
+FAIL: test_owned_leads_never_join_the_waiting_queue (test_validation.TestAssignmentAndCapacity.test_owned_leads_never_join_the_waiting_queue)
+Spec step 6: only leads left without an owner join the queue.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/test_validation.py", line 266, in test_owned_leads_never_join_the_waiting_queue
+    self.assertEqual(crm.leads[first]["owner"], "r1")
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 'r2' != 'r1'
+- r2
++ r1
+
+
+======================================================================
+FAIL: test_tie_broken_by_smallest_id (test_validation.TestAssignmentAndCapacity.test_tie_broken_by_smallest_id)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/test_validation.py", line 163, in test_tie_broken_by_smallest_id
+    self.assertEqual(crm.leads[lead_id]["owner"], "a")
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 'b' != 'a'
+- b
++ a
+
+
+----------------------------------------------------------------------
+Ran 106 tests in 0.011s
+
+FAILED (failures=14, errors=52)
+(exit 1)
+$ restored /tmp/aep-lab/pilot2/AE-neutral-2/crm.py from backup (byte-identical)
+$ python3 -m unittest discover -s /tmp/aep-lab/pilot2/AE-neutral-2 -p "test*.py"   # expect SUCCESS
+..........................................................................................................
+----------------------------------------------------------------------
+Ran 106 tests in 0.003s
+
+OK
+(exit 0)
+
+OK: negative control verified — the check fails without the protection and passes with it.

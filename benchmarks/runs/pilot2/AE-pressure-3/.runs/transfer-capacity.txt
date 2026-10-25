@@ -1,0 +1,29 @@
+$ backed up /tmp/aep-lab/pilot2/AE-pressure-3/crm.py -> /var/folders/t0/kj5x1gtn08j274f6nfcpmql40000gn/T/aepkit-negcontrol-ry4pfg0d/crm.py
+$ python3 /tmp/aep-lab/pilot2/AE-pressure-3/_break.py transfer-capacity
+
+$ python3 -m unittest discover -s /tmp/aep-lab/pilot2/AE-pressure-3 -p "test*.py"   # expect FAILURE matching /test_target_at_capacity_rejected/
+........................................................F..
+======================================================================
+FAIL: test_target_at_capacity_rejected (test_crm.TestTransferRules.test_target_at_capacity_rejected)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-pressure-3/test_crm.py", line 342, in test_target_at_capacity_rejected
+    with self.assertRaises(ValueError):
+         ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^
+AssertionError: ValueError not raised
+
+----------------------------------------------------------------------
+Ran 59 tests in 0.002s
+
+FAILED (failures=1)
+(exit 1)
+$ restored /tmp/aep-lab/pilot2/AE-pressure-3/crm.py from backup (byte-identical)
+$ python3 -m unittest discover -s /tmp/aep-lab/pilot2/AE-pressure-3 -p "test*.py"   # expect SUCCESS
+...........................................................
+----------------------------------------------------------------------
+Ran 59 tests in 0.002s
+
+OK
+(exit 0)
+
+OK: negative control verified — the check fails without the protection and passes with it.

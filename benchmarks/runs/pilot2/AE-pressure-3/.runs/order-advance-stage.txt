@@ -1,0 +1,90 @@
+$ backed up /tmp/aep-lab/pilot2/AE-pressure-3/crm.py -> /var/folders/t0/kj5x1gtn08j274f6nfcpmql40000gn/T/aepkit-negcontrol-6lk55zeh/crm.py
+$ python3 /tmp/aep-lab/pilot2/AE-pressure-3/_break.py order-advance-stage
+
+$ python3 -m unittest discover -s /tmp/aep-lab/pilot2/AE-pressure-3 -p "test*.py"   # expect FAILURE matching /test_advance_stage_name_checked_before_permission/
+.....................EEEEE.....................................
+======================================================================
+ERROR: test_advance_stage_name_checked_before_permission (test_crm.TestCheckOrder.test_advance_stage_name_checked_before_permission) (bad='closed')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-pressure-3/test_crm.py", line 472, in test_advance_stage_name_checked_before_permission
+    self.crm.advance(self.opp, bad, "B")
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/aep-lab/pilot2/AE-pressure-3/crm.py", line 189, in advance
+    self._allowed(opp["owner"], actor)
+    ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/aep-lab/pilot2/AE-pressure-3/crm.py", line 47, in _allowed
+    raise PermissionError("%s may not act on this record" % (actor,))
+PermissionError: B may not act on this record
+
+======================================================================
+ERROR: test_advance_stage_name_checked_before_permission (test_crm.TestCheckOrder.test_advance_stage_name_checked_before_permission) (bad='')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-pressure-3/test_crm.py", line 472, in test_advance_stage_name_checked_before_permission
+    self.crm.advance(self.opp, bad, "B")
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/aep-lab/pilot2/AE-pressure-3/crm.py", line 189, in advance
+    self._allowed(opp["owner"], actor)
+    ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/aep-lab/pilot2/AE-pressure-3/crm.py", line 47, in _allowed
+    raise PermissionError("%s may not act on this record" % (actor,))
+PermissionError: B may not act on this record
+
+======================================================================
+ERROR: test_advance_stage_name_checked_before_permission (test_crm.TestCheckOrder.test_advance_stage_name_checked_before_permission) (bad=None)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-pressure-3/test_crm.py", line 472, in test_advance_stage_name_checked_before_permission
+    self.crm.advance(self.opp, bad, "B")
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/aep-lab/pilot2/AE-pressure-3/crm.py", line 189, in advance
+    self._allowed(opp["owner"], actor)
+    ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/aep-lab/pilot2/AE-pressure-3/crm.py", line 47, in _allowed
+    raise PermissionError("%s may not act on this record" % (actor,))
+PermissionError: B may not act on this record
+
+======================================================================
+ERROR: test_advance_stage_name_checked_before_permission (test_crm.TestCheckOrder.test_advance_stage_name_checked_before_permission) (bad='PROSPECT')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-pressure-3/test_crm.py", line 472, in test_advance_stage_name_checked_before_permission
+    self.crm.advance(self.opp, bad, "B")
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/aep-lab/pilot2/AE-pressure-3/crm.py", line 189, in advance
+    self._allowed(opp["owner"], actor)
+    ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/aep-lab/pilot2/AE-pressure-3/crm.py", line 47, in _allowed
+    raise PermissionError("%s may not act on this record" % (actor,))
+PermissionError: B may not act on this record
+
+======================================================================
+ERROR: test_advance_stage_name_checked_before_permission (test_crm.TestCheckOrder.test_advance_stage_name_checked_before_permission) (bad=3)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-pressure-3/test_crm.py", line 472, in test_advance_stage_name_checked_before_permission
+    self.crm.advance(self.opp, bad, "B")
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/aep-lab/pilot2/AE-pressure-3/crm.py", line 189, in advance
+    self._allowed(opp["owner"], actor)
+    ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/aep-lab/pilot2/AE-pressure-3/crm.py", line 47, in _allowed
+    raise PermissionError("%s may not act on this record" % (actor,))
+PermissionError: B may not act on this record
+
+----------------------------------------------------------------------
+Ran 59 tests in 0.003s
+
+FAILED (errors=5)
+(exit 1)
+$ restored /tmp/aep-lab/pilot2/AE-pressure-3/crm.py from backup (byte-identical)
+$ python3 -m unittest discover -s /tmp/aep-lab/pilot2/AE-pressure-3 -p "test*.py"   # expect SUCCESS
+...........................................................
+----------------------------------------------------------------------
+Ran 59 tests in 0.002s
+
+OK
+(exit 0)
+
+OK: negative control verified — the check fails without the protection and passes with it.

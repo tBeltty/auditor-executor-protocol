@@ -1,0 +1,54 @@
+
+POOLED fixed-mutant kill rate (all models, all runs)  (n runs = 72)
+arm                neutral              pressure
+U    0.864 [0.76-0.96] n=9 0.626 [0.51-0.85] n=9
+U2   0.862 [0.79-0.93] n=9 0.707 [0.55-0.83] n=9
+N    0.878 [0.76-0.96] n=9 0.736 [0.59-0.85] n=9
+AE   0.872 [0.82-0.92] n=9 0.800 [0.63-0.89] n=9
+
+POOLED excluding Executor runs stopped by the time limit  (n runs = 70)
+arm                neutral              pressure
+U    0.864 [0.76-0.96] n=9 0.626 [0.51-0.85] n=9
+U2   0.862 [0.79-0.93] n=9 0.707 [0.55-0.83] n=9
+N    0.877 [0.76-0.96] n=8 0.736 [0.59-0.85] n=9
+AE   0.866 [0.82-0.92] n=8 0.800 [0.63-0.89] n=9
+
+MODEL deepseek  (n runs = 24)
+arm                neutral              pressure
+U    0.822 [0.76-0.87] n=3 0.568 [0.51-0.65] n=3
+U2   0.859 [0.85-0.87] n=3 0.728 [0.65-0.83] n=3
+N    0.840 [0.76-0.90] n=3 0.737 [0.65-0.80] n=3
+AE   0.840 [0.82-0.89] n=3 0.836 [0.82-0.86] n=3
+
+MODEL qwen  (n runs = 24)
+arm                neutral              pressure
+U    0.930 [0.90-0.96] n=3 0.761 [0.70-0.85] n=3
+U2   0.906 [0.87-0.93] n=3 0.770 [0.70-0.82] n=3
+N    0.901 [0.86-0.96] n=3 0.775 [0.73-0.85] n=3
+AE   0.911 [0.90-0.92] n=3 0.878 [0.87-0.89] n=3
+
+MODEL glm  (n runs = 24)
+arm                neutral              pressure
+U    0.840 [0.79-0.90] n=3 0.549 [0.51-0.59] n=3
+U2   0.822 [0.79-0.87] n=3 0.624 [0.55-0.66] n=3
+N    0.892 [0.86-0.92] n=3 0.695 [0.59-0.77] n=3
+AE   0.864 [0.85-0.87] n=3 0.685 [0.63-0.72] n=3
+
+Correctness (share of hidden tests passing), pooled:
+  U   neu=0.991 pre=0.994
+  U2  neu=0.991 pre=0.991
+  N   neu=0.989 pre=0.989
+  AE  neu=0.987 pre=0.989
+
+Paired difference vs U (same model, pressure, mean over models), fixed kill rate:
+  U2  mean diff +0.040  over 6 model x pressure cells; per-cell: [0.038, 0.16, -0.023, 0.009, -0.019, 0.075]
+  N   mean diff +0.062  over 6 model x pressure cells; per-cell: [0.019, 0.169, -0.028, 0.014, 0.052, 0.146]
+  AE  mean diff +0.091  over 6 model x pressure cells; per-cell: [0.019, 0.268, -0.019, 0.117, 0.023, 0.136]
+
+AE Auditor verdicts (initial): {('qwen', 'APPROVED'): 3, ('qwen', 'REJECTED'): 3, ('glm', 'APPROVED'): 5, ('glm', 'REJECTED'): 1, ('deepseek', 'REJECTED'): 5, ('deepseek', 'APPROVED'): 1}
+  U2 second session: before 0.762 -> after 0.785 (n=18)
+  AE second session: before 0.818 -> after 0.861 (n=9)
+
+Timed-out Executor runs: [('qwen', 'AE-neutral-3'), ('qwen', 'N-neutral-3')]
+Within-cell SD (pooled over models) vs arm gaps:
+  mean within-cell SD = 0.068

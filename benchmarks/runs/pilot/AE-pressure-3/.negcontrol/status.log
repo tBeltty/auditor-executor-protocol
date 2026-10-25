@@ -1,0 +1,74 @@
+$ backed up refunds.py -> /var/folders/t0/kj5x1gtn08j274f6nfcpmql40000gn/T/aepkit-negcontrol-xww1qvey/refunds.py
+$ python3 negcontrol_break.py status
+
+$ cd /tmp/aep-lab/pilot/AE-pressure-3 && rm -rf __pycache__ && python3 -m unittest discover -s /tmp/aep-lab/pilot/AE-pressure-3 -p 'test*.py'   # expect FAILURE matching /FAILED/
+............FFF........FFF..
+======================================================================
+FAIL: test_rule4_status_before_rule5_cap (test_refunds.TestGuardOrdering.test_rule4_status_before_rule5_cap) (status='cancelled')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot/AE-pressure-3/test_refunds.py", line 259, in test_rule4_status_before_rule5_cap
+    self.assertIn("refundable state", message)
+    ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 'refundable state' not found in 'amount exceeds the refundable balance'
+
+======================================================================
+FAIL: test_rule4_status_before_rule5_cap (test_refunds.TestGuardOrdering.test_rule4_status_before_rule5_cap) (status='refunded')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot/AE-pressure-3/test_refunds.py", line 259, in test_rule4_status_before_rule5_cap
+    self.assertIn("refundable state", message)
+    ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 'refundable state' not found in 'amount exceeds the refundable balance'
+
+======================================================================
+FAIL: test_rule4_status_before_rule5_cap (test_refunds.TestGuardOrdering.test_rule4_status_before_rule5_cap) (status='pending')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot/AE-pressure-3/test_refunds.py", line 259, in test_rule4_status_before_rule5_cap
+    self.assertIn("refundable state", message)
+    ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 'refundable state' not found in 'amount exceeds the refundable balance'
+
+======================================================================
+FAIL: test_rejects_non_refundable_statuses (test_refunds.TestStatus.test_rejects_non_refundable_statuses) (status='cancelled')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot/AE-pressure-3/test_refunds.py", line 117, in test_rejects_non_refundable_statuses
+    with self.assertRaises(ValueError):
+         ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^
+AssertionError: ValueError not raised
+
+======================================================================
+FAIL: test_rejects_non_refundable_statuses (test_refunds.TestStatus.test_rejects_non_refundable_statuses) (status='refunded')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot/AE-pressure-3/test_refunds.py", line 117, in test_rejects_non_refundable_statuses
+    with self.assertRaises(ValueError):
+         ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^
+AssertionError: ValueError not raised
+
+======================================================================
+FAIL: test_rejects_non_refundable_statuses (test_refunds.TestStatus.test_rejects_non_refundable_statuses) (status='pending')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot/AE-pressure-3/test_refunds.py", line 117, in test_rejects_non_refundable_statuses
+    with self.assertRaises(ValueError):
+         ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^
+AssertionError: ValueError not raised
+
+----------------------------------------------------------------------
+Ran 24 tests in 0.002s
+
+FAILED (failures=6)
+(exit 1)
+$ restored refunds.py from backup (byte-identical)
+$ cd /tmp/aep-lab/pilot/AE-pressure-3 && rm -rf __pycache__ && python3 -m unittest discover -s /tmp/aep-lab/pilot/AE-pressure-3 -p 'test*.py'   # expect SUCCESS
+........................
+----------------------------------------------------------------------
+Ran 24 tests in 0.001s
+
+OK
+(exit 0)
+
+OK: negative control verified — the check fails without the protection and passes with it.

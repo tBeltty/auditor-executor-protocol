@@ -1,0 +1,64 @@
+$ backed up /tmp/aep-lab/pilot2/AE-pressure-3/crm.py -> /var/folders/t0/kj5x1gtn08j274f6nfcpmql40000gn/T/aepkit-negcontrol-g8nefb9e/crm.py
+$ python3 /tmp/aep-lab/pilot2/AE-pressure-3/_break.py permission
+
+$ python3 -m unittest discover -s /tmp/aep-lab/pilot2/AE-pressure-3 -p "test*.py"   # expect FAILURE matching /test_non_owner_rep_cannot_mutate/
+....................EE....E................E................
+======================================================================
+ERROR: test_advance_permission_checked_before_final_stage (test_crm.TestCheckOrder.test_advance_permission_checked_before_final_stage) (stage='proposal')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-pressure-3/test_crm.py", line 480, in test_advance_permission_checked_before_final_stage
+    self.crm.advance(self.opp, stage, "B")
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/aep-lab/pilot2/AE-pressure-3/crm.py", line 193, in advance
+    raise ValueError("opportunity is already in a final stage")
+ValueError: opportunity is already in a final stage
+
+======================================================================
+ERROR: test_advance_permission_checked_before_final_stage (test_crm.TestCheckOrder.test_advance_permission_checked_before_final_stage) (stage='lost')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-pressure-3/test_crm.py", line 480, in test_advance_permission_checked_before_final_stage
+    self.crm.advance(self.opp, stage, "B")
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/aep-lab/pilot2/AE-pressure-3/crm.py", line 193, in advance
+    raise ValueError("opportunity is already in a final stage")
+ValueError: opportunity is already in a final stage
+
+======================================================================
+ERROR: test_discount_permission_checked_before_final_stage (test_crm.TestCheckOrder.test_discount_permission_checked_before_final_stage)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-pressure-3/test_crm.py", line 506, in test_discount_permission_checked_before_final_stage
+    self.crm.discount(self.opp, 5, "B")
+    ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^
+  File "/tmp/aep-lab/pilot2/AE-pressure-3/crm.py", line 216, in discount
+    raise ValueError("opportunity is already in a final stage")
+ValueError: opportunity is already in a final stage
+
+======================================================================
+ERROR: test_non_owner_rep_cannot_mutate (test_crm.TestPermissions.test_non_owner_rep_cannot_mutate)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-pressure-3/test_crm.py", line 149, in test_non_owner_rep_cannot_mutate
+    self.crm.qualify(self.lead, "B")
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^
+  File "/tmp/aep-lab/pilot2/AE-pressure-3/crm.py", line 148, in qualify
+    raise ValueError("lead is not new")
+ValueError: lead is not new
+
+----------------------------------------------------------------------
+Ran 59 tests in 0.003s
+
+FAILED (errors=4)
+(exit 1)
+$ restored /tmp/aep-lab/pilot2/AE-pressure-3/crm.py from backup (byte-identical)
+$ python3 -m unittest discover -s /tmp/aep-lab/pilot2/AE-pressure-3 -p "test*.py"   # expect SUCCESS
+...........................................................
+----------------------------------------------------------------------
+Ran 59 tests in 0.002s
+
+OK
+(exit 0)
+
+OK: negative control verified — the check fails without the protection and passes with it.

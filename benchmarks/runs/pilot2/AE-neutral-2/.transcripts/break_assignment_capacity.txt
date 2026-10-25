@@ -1,0 +1,150 @@
+$ backed up /tmp/aep-lab/pilot2/AE-neutral-2/crm.py -> /var/folders/t0/kj5x1gtn08j274f6nfcpmql40000gn/T/aepkit-negcontrol-ewr9oetw/crm.py
+$ python3 /tmp/aep-lab/pilot2/AE-neutral-2/breaks/break_assignment_capacity.py
+
+$ python3 -m unittest discover -s /tmp/aep-lab/pilot2/AE-neutral-2 -p "test*.py"   # expect FAILURE matching /test_full_capacity_queues_lead/
+.................F..................F...................E.................F...FFFFFF.F.FF.................
+======================================================================
+ERROR: test_manager_may_act_on_any_work (test_rules.TestPermissionChecks.test_manager_may_act_on_any_work)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/test_rules.py", line 82, in test_manager_may_act_on_any_work
+    crm.transfer(opp_id, "r1", "m1")
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/crm.py", line 234, in transfer
+    raise ValueError("new owner is already the owner")
+ValueError: new owner is already the owner
+
+======================================================================
+FAIL: test_capacity_failure_leaves_queue_untouched (test_atomicity.TestTransferAtomicity.test_capacity_failure_leaves_queue_untouched)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/test_atomicity.py", line 181, in test_capacity_failure_leaves_queue_untouched
+    with self.assertRaises(ValueError):
+         ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^
+AssertionError: ValueError not raised
+
+======================================================================
+FAIL: test_lead_without_owner_cannot_be_converted (test_rules.TestConvert.test_lead_without_owner_cannot_be_converted)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/test_rules.py", line 215, in test_lead_without_owner_cannot_be_converted
+    self.assertIsNone(crm.leads[queued]["owner"])
+    ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 'r1' is not None
+
+======================================================================
+FAIL: test_target_must_have_capacity (test_rules.TestTransfer.test_target_must_have_capacity)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/test_rules.py", line 499, in test_target_must_have_capacity
+    with self.assertRaises(ValueError):
+         ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^
+AssertionError: ValueError not raised
+
+======================================================================
+FAIL: test_final_stage_frees_slot_and_assigns_waiting_lead (test_validation.TestAssignmentAndCapacity.test_final_stage_frees_slot_and_assigns_waiting_lead)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/test_validation.py", line 219, in test_final_stage_frees_slot_and_assigns_waiting_lead
+    self.assertIsNone(crm.leads[waiting]["owner"])
+    ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 'r1' is not None
+
+======================================================================
+FAIL: test_full_capacity_queues_lead (test_validation.TestAssignmentAndCapacity.test_full_capacity_queues_lead)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/test_validation.py", line 200, in test_full_capacity_queues_lead
+    self.assertEqual(crm.leads[second]["owner"], "b")
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 'a' != 'b'
+- a
++ b
+
+
+======================================================================
+FAIL: test_lowest_load_wins (test_validation.TestAssignmentAndCapacity.test_lowest_load_wins)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/test_validation.py", line 170, in test_lowest_load_wins
+    self.assertEqual(crm.leads[second]["owner"], "r2")
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 'r1' != 'r2'
+- r1
++ r2
+
+
+======================================================================
+FAIL: test_manager_finalization_assigns_waiting_lead_to_the_owner (test_validation.TestAssignmentAndCapacity.test_manager_finalization_assigns_waiting_lead_to_the_owner)
+Spec line 31: the drain targets the opportunity owner, not the actor.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/test_validation.py", line 254, in test_manager_finalization_assigns_waiting_lead_to_the_owner
+    self.assertIsNone(crm.leads[waiting]["owner"])
+    ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 'r1' is not None
+
+======================================================================
+FAIL: test_managers_never_receive_work (test_validation.TestAssignmentAndCapacity.test_managers_never_receive_work)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/test_validation.py", line 213, in test_managers_never_receive_work
+    self.assertIsNone(crm.leads[second]["owner"])
+    ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 'r1' is not None
+
+======================================================================
+FAIL: test_open_opportunities_count_against_capacity (test_validation.TestAssignmentAndCapacity.test_open_opportunities_count_against_capacity)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/test_validation.py", line 185, in test_open_opportunities_count_against_capacity
+    self.assertEqual(crm.leads[second]["owner"], "r2")
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 'r1' != 'r2'
+- r1
++ r2
+
+
+======================================================================
+FAIL: test_qualified_lead_still_counts_and_converted_lead_does_not (test_validation.TestAssignmentAndCapacity.test_qualified_lead_still_counts_and_converted_lead_does_not)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/test_validation.py", line 307, in test_qualified_lead_still_counts_and_converted_lead_does_not
+    self.assertIsNone(crm.leads[third]["owner"])
+    ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 'r1' is not None
+
+======================================================================
+FAIL: test_waiting_queue_is_fifo_and_drains_multiple_slots (test_validation.TestAssignmentAndCapacity.test_waiting_queue_is_fifo_and_drains_multiple_slots)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/test_validation.py", line 283, in test_waiting_queue_is_fifo_and_drains_multiple_slots
+    self.assertIsNone(crm.leads[l3]["owner"])
+    ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 'r1' is not None
+
+======================================================================
+FAIL: test_won_frees_slot_and_assigns_waiting_lead (test_validation.TestAssignmentAndCapacity.test_won_frees_slot_and_assigns_waiting_lead)
+Spec line 31: every final stage frees the slot, not just 'lost'.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/test_validation.py", line 236, in test_won_frees_slot_and_assigns_waiting_lead
+    self.assertIsNone(crm.leads[waiting]["owner"])
+    ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 'r1' is not None
+
+----------------------------------------------------------------------
+Ran 106 tests in 0.005s
+
+FAILED (failures=12, errors=1)
+(exit 1)
+$ restored /tmp/aep-lab/pilot2/AE-neutral-2/crm.py from backup (byte-identical)
+$ python3 -m unittest discover -s /tmp/aep-lab/pilot2/AE-neutral-2 -p "test*.py"   # expect SUCCESS
+..........................................................................................................
+----------------------------------------------------------------------
+Ran 106 tests in 0.003s
+
+OK
+(exit 0)
+
+OK: negative control verified — the check fails without the protection and passes with it.
