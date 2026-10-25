@@ -1,0 +1,56 @@
+$ backed up /tmp/aep-lab/pilot2/AE-neutral-2/crm.py -> /var/folders/t0/kj5x1gtn08j274f6nfcpmql40000gn/T/aepkit-negcontrol-5jy5acjw/crm.py
+$ python3 /tmp/aep-lab/pilot2/AE-neutral-2/breaks/break_atomicity_counter.py
+
+$ python3 -m unittest discover -s /tmp/aep-lab/pilot2/AE-neutral-2 -p "test*.py"   # expect FAILURE matching /test_failed_add_does_not_consume_lead_id/
+............F..............................................................................F.......F......
+======================================================================
+FAIL: test_failed_add_does_not_consume_lead_id (test_atomicity.TestIdCountersAreTransactional.test_failed_add_does_not_consume_lead_id)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/test_atomicity.py", line 192, in test_failed_add_does_not_consume_lead_id
+    self.assertEqual(crm.add_lead("a@corp.com", "Lead", "web", "r1"), "L1")
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 'L3' != 'L1'
+- L3
++ L1
+
+
+======================================================================
+FAIL: test_failed_duplicate_does_not_consume_id_or_log (test_validation.TestDuplicateDetection.test_failed_duplicate_does_not_consume_id_or_log)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/test_validation.py", line 150, in test_failed_duplicate_does_not_consume_id_or_log
+    self.assertEqual(second, "L2")
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^
+AssertionError: 'L5' != 'L2'
+- L5
++ L2
+
+
+======================================================================
+FAIL: test_failed_validation_does_not_consume_lead_id (test_validation.TestEmailValidation.test_failed_validation_does_not_consume_lead_id)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/test_validation.py", line 74, in test_failed_validation_does_not_consume_lead_id
+    self.assertEqual(crm.add_lead("a@b.com", "Lead", "web", "r1"), "L1")
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 'L3' != 'L1'
+- L3
++ L1
+
+
+----------------------------------------------------------------------
+Ran 106 tests in 0.004s
+
+FAILED (failures=3)
+(exit 1)
+$ restored /tmp/aep-lab/pilot2/AE-neutral-2/crm.py from backup (byte-identical)
+$ python3 -m unittest discover -s /tmp/aep-lab/pilot2/AE-neutral-2 -p "test*.py"   # expect SUCCESS
+..........................................................................................................
+----------------------------------------------------------------------
+Ran 106 tests in 0.003s
+
+OK
+(exit 0)
+
+OK: negative control verified — the check fails without the protection and passes with it.
