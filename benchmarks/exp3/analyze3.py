@@ -48,6 +48,6 @@ for a in ("U2", "AE"):
     x = [(b, c) for b, c in x if c is not None]
     if x: print(f"  {a} second session: before {mean([b for b,_ in x]):.3f} -> after {mean([c for _,c in x]):.3f} (n={len(x)})")
 print("\nTimed-out Executor runs:", sorted(to))
-print("Within-cell SD (pooled over models) vs arm gaps:")
+print("Spread within each arm x condition (nine runs, pooled over models; includes model differences):")
 sds = [st.pstdev([r["fixed_kill_rate"] for r in fin if r["arm"] == a and r["pressure"] == p]) for a in ("U", "U2", "N", "AE") for p in ("neutral", "pressure") if len([r for r in fin if r["arm"] == a and r["pressure"] == p]) > 1]
-print(f"  mean within-cell SD = {mean(sds):.3f}")
+print(f"  mean population SD of the pooled cells = {mean(sds):.3f}")

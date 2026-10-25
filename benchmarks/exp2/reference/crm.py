@@ -39,7 +39,7 @@ class CRM:
         if e.count("@") != 1:
             raise ValueError("email")
         local, dom = e.split("@")
-        if not local or "." not in dom.strip(".") or dom.startswith(".") or dom.endswith("."):
+        if not local or "." not in dom[1:-1]:
             raise ValueError("email")
         if not isinstance(name, str) or not name.strip():
             raise ValueError("name")
