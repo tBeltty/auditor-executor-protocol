@@ -1,0 +1,6 @@
+# SHA-256 of the protocol documents shipped in aepkit 0.6.0 (aepkit/skill/) that the Pilot 3 AE agents read
+4afe54cb5974a0bb84677a8e9a02cd796ec8a830a5cb8e8820ff0aa33649e4fb  SKILL.md
+e0ac54a0b98955e27cd347896a85fde400b6976e02a3f6f06a7f48f5d144137a  references/autonomous-mode.md
+88ada36038c175a27c13e1c320aac214089380c440655c07e4d528c1583af2cf  references/failure-modes-and-example.md
+bcca244a245786c7ffc1ef43a2d6f58ed2e086be4b468958e0031eb097dffde9  references/handoffs.md
+dd5896b7a04fc5db420f6b4f6a924c3a6825d16b44a94a71c904b01944aa2299  references/tasks-and-gates.md
