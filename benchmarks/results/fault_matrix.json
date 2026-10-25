@@ -1,0 +1,260 @@
+{
+  "summary": {
+    "C1": {
+      "document_faults_caught": 0,
+      "document_faults_total": 12,
+      "code_faults_caught": null,
+      "code_faults_total": 4
+    },
+    "C2": {
+      "document_faults_caught": 1,
+      "document_faults_total": 12,
+      "code_faults_caught": null,
+      "code_faults_total": 4
+    },
+    "C3": {
+      "document_faults_caught": 9,
+      "document_faults_total": 12,
+      "code_faults_caught": 2,
+      "code_faults_total": 4
+    },
+    "C3b": {
+      "document_faults_caught": 9,
+      "document_faults_total": 12,
+      "code_faults_caught": 4,
+      "code_faults_total": 4
+    },
+    "C4": {
+      "document_faults_caught": 12,
+      "document_faults_total": 12,
+      "code_faults_caught": 4,
+      "code_faults_total": 4
+    }
+  },
+  "false_positives_on_clean": {
+    "clean_full": {
+      "C1": 0,
+      "C2": 0,
+      "C3": 0,
+      "C3b": 0,
+      "C4": 0
+    },
+    "clean_bypass": {
+      "C1": 0,
+      "C2": 0,
+      "C3": 0,
+      "C3b": 0,
+      "C4": 0
+    }
+  },
+  "positive_control_exit_codes": {
+    "C3": 0,
+    "C3b": 0,
+    "C4": 0
+  },
+  "latency_ms_clean_fixture": {
+    "lint": {
+      "mean_ms": 51.7,
+      "sd_ms": 0.6
+    },
+    "status": {
+      "mean_ms": 51.1,
+      "sd_ms": 0.5
+    }
+  },
+  "faults": [
+    {
+      "id": "F01",
+      "category": "Evidence",
+      "description": "DONE claimed with prose instead of terminal output",
+      "kind": "document",
+      "C1": false,
+      "C2": false,
+      "C3": true,
+      "C3b": true,
+      "C4": true
+    },
+    {
+      "id": "F02",
+      "category": "Evidence",
+      "description": "Deferred placeholder (TBD) inside the evidence block",
+      "kind": "document",
+      "C1": false,
+      "C2": false,
+      "C3": true,
+      "C3b": true,
+      "C4": true
+    },
+    {
+      "id": "F03",
+      "category": "Gate",
+      "description": "Phase gate omits the negative control",
+      "kind": "document",
+      "C1": false,
+      "C2": false,
+      "C3": true,
+      "C3b": true,
+      "C4": true
+    },
+    {
+      "id": "F04",
+      "category": "Gate",
+      "description": "Phase gate waives the negative control",
+      "kind": "document",
+      "C1": false,
+      "C2": false,
+      "C3": true,
+      "C3b": true,
+      "C4": true
+    },
+    {
+      "id": "F05",
+      "category": "Gate",
+      "description": "Negative control is a hedge (would probably fail)",
+      "kind": "document",
+      "C1": false,
+      "C2": false,
+      "C3": true,
+      "C3b": true,
+      "C4": true
+    },
+    {
+      "id": "F06",
+      "category": "Gate",
+      "description": "Negative control states an action without a failure oracle",
+      "kind": "document",
+      "C1": false,
+      "C2": false,
+      "C3": true,
+      "C3b": true,
+      "C4": true
+    },
+    {
+      "id": "F07",
+      "category": "Scope",
+      "description": "Task in the guide has no report in the log",
+      "kind": "document",
+      "C1": false,
+      "C2": true,
+      "C3": true,
+      "C3b": true,
+      "C4": true
+    },
+    {
+      "id": "F08",
+      "category": "Scope",
+      "description": "Orphan report in the log (unauthorized scope)",
+      "kind": "document",
+      "C1": false,
+      "C2": false,
+      "C3": true,
+      "C3b": true,
+      "C4": true
+    },
+    {
+      "id": "F09",
+      "category": "Order",
+      "description": "Phase 1 work reported while the Phase 0 gate is CONDITIONAL",
+      "kind": "document",
+      "C1": false,
+      "C2": false,
+      "C3": true,
+      "C3b": true,
+      "C4": true
+    },
+    {
+      "id": "F10",
+      "category": "Deferred debt",
+      "description": "Phase closed while a deferred-ledger row is still TBD",
+      "kind": "document",
+      "C1": false,
+      "C2": false,
+      "C3": false,
+      "C3b": false,
+      "C4": true
+    },
+    {
+      "id": "F11",
+      "category": "ODD",
+      "description": "No opportunity framing or cost of doing nothing",
+      "kind": "document",
+      "C1": false,
+      "C2": false,
+      "C3": false,
+      "C3b": false,
+      "C4": true
+    },
+    {
+      "id": "F12",
+      "category": "ODD",
+      "description": "Single-option bias: Option B left TBD without the bypass token",
+      "kind": "document",
+      "C1": false,
+      "C2": false,
+      "C3": false,
+      "C3b": false,
+      "C4": true
+    },
+    {
+      "id": "F13",
+      "category": "Test oracle",
+      "description": "Hollow test: passes with the tenant guard removed",
+      "kind": "code",
+      "C1": null,
+      "C2": null,
+      "C3": true,
+      "C3_output": "FAIL: the test did not fail when the protection was removed. Either the break command didn't do what you meant, or the protection isn't real.",
+      "C3b": true,
+      "C3b_output": "FAIL: the test did not fail when the protection was removed. Either the break command didn't do what you meant, or the protection isn't real.",
+      "C4": true,
+      "C4_output": "FAIL: the test did not fail when the protection was removed. Either the break command didn't do what you meant, or the protection isn't real."
+    },
+    {
+      "id": "F14",
+      "category": "Test oracle",
+      "description": "Mutation is a SyntaxError that mimics a caught failure",
+      "kind": "code",
+      "C1": null,
+      "C2": null,
+      "C3": false,
+      "C3_output": "OK: negative control verified — the check fails without the protection and passes with it.",
+      "C3b": true,
+      "C3b_output": "FAIL: the test failed, but its output does not match --expect /AssertionError|PermissionError not raised/. It may have failed for an unrelated reason (a syntax error, a missing import, a wrong command); read the output above.",
+      "C4": true,
+      "C4_output": "FAIL: the test failed, but its output does not match --expect /AssertionError|PermissionError not raised/. It may have failed for an unrelated reason (a syntax error, a missing import, a wrong command); read the output above."
+    },
+    {
+      "id": "F15",
+      "category": "Test oracle",
+      "description": "Buggy restore command leaves the guard disabled",
+      "kind": "code",
+      "C1": null,
+      "C2": null,
+      "C3": true,
+      "C3_output": "FAIL: the test did not return to passing after restore. The tree may be dirty.",
+      "C3b": true,
+      "C3b_output": "FAIL: the test did not return to passing after restore. The tree may be dirty.",
+      "C4": true,
+      "C4_output": "FAIL: the test did not return to passing after restore. The tree may be dirty."
+    },
+    {
+      "id": "F16",
+      "category": "Test oracle",
+      "description": "Mutation causes a hang (infinite loop)",
+      "kind": "code",
+      "C1": null,
+      "C2": null,
+      "C3": false,
+      "C3_output": "OK: negative control verified — the check fails without the protection and passes with it.",
+      "C3b": true,
+      "C3b_output": "FAIL: the test timed out when the protection was removed. A hang is not a caught break; make the test fail fast, or raise --timeout.",
+      "C4": true,
+      "C4_output": "FAIL: the test failed, but its output does not match --expect /PermissionError/. It may have failed for an unrelated reason (a syntax error, a missing import, a wrong command); read the output above."
+    }
+  ],
+  "versions": {
+    "C3": "auditor-executor-protocol==0.4.0",
+    "C3b": "auditor-executor-protocol==0.5.2",
+    "C4": "aepkit==0.6.0"
+  }
+}

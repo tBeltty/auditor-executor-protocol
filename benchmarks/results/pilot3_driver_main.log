@@ -1,0 +1,293 @@
+07:39:15 model set opencode-go deepseek-v4.1-flash
+07:39:18 launched deepseek exec U-neutral-1 ctx_21594e1e4ea7
+07:39:22 launched deepseek exec U-neutral-2 ctx_17f2b23eb33a
+07:39:26 launched deepseek exec N-neutral-3 ctx_51238ccc81b1
+07:39:30 launched deepseek exec N-pressure-3 ctx_d5a782c02a57
+07:39:35 launched deepseek exec U2-neutral-2 ctx_4804a07ec4a2
+07:39:39 launched deepseek exec U2-pressure-2 ctx_8f66dab38270
+07:41:19 done deepseek exec U2-pressure-2 succeeded
+07:41:51 done deepseek exec U-neutral-2 succeeded
+07:42:03 done deepseek exec U2-neutral-2 succeeded
+07:42:34 done deepseek exec N-pressure-3 succeeded
+07:43:00 done deepseek exec N-neutral-3 succeeded
+07:43:25 done deepseek exec U-neutral-1 succeeded
+07:43:43 launched deepseek exec N-pressure-1 ctx_1f7e9a9dc68b
+07:43:48 launched deepseek exec AE-pressure-1 ctx_19a835c543b3
+07:43:52 launched deepseek exec U2-neutral-1 ctx_6ca028e5a0da
+07:43:56 launched deepseek exec AE-neutral-1 ctx_69483ea29517
+07:44:00 launched deepseek exec U-neutral-3 ctx_ab58f822b155
+07:44:05 launched deepseek exec U-pressure-1 ctx_9a62e654c2aa
+07:45:27 done deepseek exec N-pressure-1 succeeded
+07:45:34 done deepseek exec U-pressure-1 succeeded
+07:45:57 done deepseek exec U-neutral-3 succeeded
+07:46:01 done deepseek exec AE-pressure-1 succeeded
+07:47:19 done deepseek exec U2-neutral-1 succeeded
+07:51:15 done deepseek exec AE-neutral-1 succeeded
+07:51:33 launched deepseek exec U-pressure-3 ctx_d2561f18e7db
+07:51:37 launched deepseek exec U2-pressure-1 ctx_bff40cd04bf7
+07:51:41 launched deepseek exec AE-neutral-2 ctx_c20ed0f25375
+07:51:45 launched deepseek exec U2-neutral-3 ctx_583c69e6a330
+07:51:50 launched deepseek exec AE-neutral-3 ctx_1711b691ed17
+07:51:54 launched deepseek exec AE-pressure-3 ctx_61faee06ed00
+07:53:05 done deepseek exec U-pressure-3 succeeded
+08:21:56 TIMEOUT stop deepseek exec AE-neutral-3
+08:21:56 TIMEOUT stop deepseek exec U2-neutral-3
+08:21:56 TIMEOUT stop deepseek exec U2-pressure-1
+08:21:57 TIMEOUT stop deepseek exec AE-pressure-3
+08:21:57 TIMEOUT stop deepseek exec AE-neutral-2
+08:22:12 LAUNCH FAIL deepseek exec AE-pressure-2 worker-start requires the coordinator terminal currently bound to the Task Run. Orchestration mutation request ID: 62e54
+08:22:14 LAUNCH FAIL deepseek exec N-neutral-1 worker-start requires the coordinator terminal currently bound to the Task Run. Orchestration mutation request ID: f84b0
+08:22:16 LAUNCH FAIL deepseek exec U2-pressure-3 worker-start requires the coordinator terminal currently bound to the Task Run. Orchestration mutation request ID: a6290
+08:22:18 LAUNCH FAIL deepseek exec N-pressure-2 worker-start requires the coordinator terminal currently bound to the Task Run. Orchestration mutation request ID: 3b3bc
+08:22:21 LAUNCH FAIL deepseek exec N-neutral-2 worker-start requires the coordinator terminal currently bound to the Task Run. Orchestration mutation request ID: eb516
+08:22:23 LAUNCH FAIL deepseek exec U-pressure-2 worker-start requires the coordinator terminal currently bound to the Task Run. Orchestration mutation request ID: 3ad04
+08:22:25 LAUNCH FAIL deepseek review U2-neutral-2 worker-start requires the coordinator terminal currently bound to the Task Run. Orchestration mutation request ID: 1ce7c
+08:22:27 LAUNCH FAIL deepseek review U2-pressure-2 worker-start requires the coordinator terminal currently bound to the Task Run. Orchestration mutation request ID: a8dd1
+08:22:29 LAUNCH FAIL deepseek review U2-neutral-1 worker-start requires the coordinator terminal currently bound to the Task Run. Orchestration mutation request ID: ab2fb
+08:22:32 LAUNCH FAIL deepseek review U2-pressure-1 worker-start requires the coordinator terminal currently bound to the Task Run. Orchestration mutation request ID: ac8d3
+08:22:34 LAUNCH FAIL deepseek review U2-neutral-3 worker-start requires the coordinator terminal currently bound to the Task Run. Orchestration mutation request ID: c74e9
+08:22:36 LAUNCH FAIL deepseek review U2-pressure-3 worker-start requires the coordinator terminal currently bound to the Task Run. Orchestration mutation request ID: 5e87c
+08:22:38 LAUNCH FAIL deepseek audit AE-pressure-1 worker-start requires the coordinator terminal currently bound to the Task Run. Orchestration mutation request ID: fd331
+08:22:40 LAUNCH FAIL deepseek audit AE-neutral-1 worker-start requires the coordinator terminal currently bound to the Task Run. Orchestration mutation request ID: d8a08
+08:22:43 LAUNCH FAIL deepseek audit AE-neutral-2 worker-start requires the coordinator terminal currently bound to the Task Run. Orchestration mutation request ID: 4980b
+08:22:45 LAUNCH FAIL deepseek audit AE-neutral-3 worker-start requires the coordinator terminal currently bound to the Task Run. Orchestration mutation request ID: 3b36b
+08:22:47 LAUNCH FAIL deepseek audit AE-pressure-3 worker-start requires the coordinator terminal currently bound to the Task Run. Orchestration mutation request ID: 1c734
+08:22:49 LAUNCH FAIL deepseek audit AE-pressure-2 worker-start requires the coordinator terminal currently bound to the Task Run. Orchestration mutation request ID: c75ad
+08:22:51 deepseek verdicts {'AE-pressure-1': 'REJECTED', 'AE-neutral-1': 'MISSING', 'AE-neutral-2': 'MISSING', 'AE-neutral-3': 'MISSING', 'AE-pressure-3': 'MISSING', 'AE-pressure-2': 'REJECTED'}
+08:22:51 LAUNCH FAIL deepseek remediate AE-pressure-1 worker-start requires the coordinator terminal currently bound to the Task Run. Orchestration mutation request ID: b2062
+08:22:54 LAUNCH FAIL deepseek remediate AE-neutral-1 worker-start requires the coordinator terminal currently bound to the Task Run. Orchestration mutation request ID: 74d3c
+08:22:56 LAUNCH FAIL deepseek remediate AE-neutral-2 worker-start requires the coordinator terminal currently bound to the Task Run. Orchestration mutation request ID: c2cc4
+08:22:58 LAUNCH FAIL deepseek remediate AE-neutral-3 worker-start requires the coordinator terminal currently bound to the Task Run. Orchestration mutation request ID: 8a885
+08:23:00 LAUNCH FAIL deepseek remediate AE-pressure-3 worker-start requires the coordinator terminal currently bound to the Task Run. Orchestration mutation request ID: 836f6
+08:23:02 LAUNCH FAIL deepseek remediate AE-pressure-2 worker-start requires the coordinator terminal currently bound to the Task Run. Orchestration mutation request ID: 63c0d
+08:23:08 deepseek U-neutral-1 0.8169014084507042 0.9859154929577465
+08:23:11 deepseek U-neutral-2 0.8732394366197183 1.0
+08:23:14 deepseek N-neutral-3 0.8732394366197183 0.9859154929577465
+08:23:18 deepseek N-pressure-3 0.8591549295774648 0.9859154929577465
+08:23:26 deepseek U2-neutral-2 0.9295774647887324 0.9859154929577465
+08:23:33 deepseek U2-pressure-2 0.7605633802816901 1.0
+08:23:36 deepseek N-pressure-1 0.7605633802816901 1.0
+08:23:42 deepseek AE-pressure-1 0.8732394366197183 0.9859154929577465
+08:23:49 deepseek U2-neutral-1 0.8873239436619719 0.9859154929577465
+08:23:56 deepseek AE-neutral-1 0.9436619718309859 0.9859154929577465
+08:23:59 deepseek U-neutral-3 0.8169014084507042 0.9859154929577465
+08:24:04 deepseek U-pressure-1 0.8169014084507042 0.9859154929577465
+08:24:08 deepseek U-pressure-3 0.7323943661971831 0.9859154929577465
+08:24:22 deepseek U2-pressure-1 0.7464788732394366 0.9859154929577465
+08:24:30 deepseek AE-neutral-2 0.8450704225352113 0.9859154929577465
+08:24:37 deepseek U2-neutral-3 0.8591549295774648 0.9859154929577465
+08:24:44 deepseek AE-neutral-3 0.9014084507042254 0.9859154929577465
+08:24:50 deepseek AE-pressure-3 0.7746478873239436 0.9859154929577465
+08:24:56 deepseek AE-pressure-2 0.8873239436619719 1.0
+08:25:00 deepseek N-neutral-1 0.8309859154929577 0.9859154929577465
+08:25:07 deepseek U2-pressure-3 0.6619718309859155 1.0
+08:25:11 deepseek N-pressure-2 0.647887323943662 0.9859154929577465
+08:25:15 deepseek N-neutral-2 0.5774647887323944 0.9859154929577465
+08:25:19 deepseek U-pressure-2 0.676056338028169 0.9859154929577465
+08:25:25 deepseek model check {'deepseek-v4.1-flash/opencode-go/high': 54}
+08:25:27 model set opencode-go qwen3.8-flash
+08:25:30 launched qwen exec N-pressure-2 ctx_6de77968ee14
+08:25:35 launched qwen exec N-neutral-1 ctx_bc7fc78d1d7e
+08:25:41 launched qwen exec N-pressure-1 ctx_9c325b5da88c
+08:25:46 launched qwen exec AE-neutral-3 ctx_86650000bd0c
+08:25:55 launched qwen exec U2-pressure-1 ctx_98e388ad6da6
+08:26:01 launched qwen exec U2-neutral-2 ctx_0d017e6db2a2
+08:31:16 done qwen exec U2-pressure-1 succeeded
+08:31:49 done qwen exec N-pressure-2 succeeded
+08:32:10 done qwen exec N-pressure-1 succeeded
+08:43:35 done qwen exec U2-neutral-2 succeeded
+08:50:42 done qwen exec N-neutral-1 succeeded
+08:56:44 TIMEOUT stop qwen exec AE-neutral-3
+08:57:04 launched qwen exec U-neutral-1 ctx_2e3bc1131766
+08:57:09 launched qwen exec U2-pressure-3 ctx_ab22fcd0ba10
+08:57:13 launched qwen exec U-neutral-3 ctx_19d733b34f8f
+08:57:17 launched qwen exec AE-neutral-2 ctx_f1da5d8b0a1f
+08:57:21 launched qwen exec AE-pressure-2 ctx_19830f24c513
+08:57:25 launched qwen exec U-pressure-1 ctx_5d0fe200a092
+09:03:17 done qwen exec U-pressure-1 succeeded
+09:05:54 done qwen exec U2-pressure-3 succeeded
+09:07:53 done qwen exec U-neutral-1 succeeded
+09:13:12 done qwen exec AE-pressure-2 succeeded
+09:18:19 done qwen exec AE-neutral-2 succeeded
+09:19:57 done qwen exec U-neutral-3 succeeded
+09:20:15 launched qwen exec U-pressure-2 ctx_d065c6716cb6
+09:20:20 launched qwen exec N-neutral-3 ctx_cd4eb28fad3b
+09:20:24 launched qwen exec AE-neutral-1 ctx_41a34b61b72f
+09:20:28 launched qwen exec N-pressure-3 ctx_869c5339cf92
+09:20:33 launched qwen exec U2-neutral-1 ctx_4cab42c8c7fd
+09:20:37 launched qwen exec AE-pressure-3 ctx_b166a1633308
+09:26:02 done qwen exec U-pressure-2 succeeded
+09:28:22 done qwen exec AE-neutral-1 succeeded
+09:30:03 done qwen exec N-pressure-3 succeeded
+09:30:09 done qwen exec AE-pressure-3 succeeded
+09:31:22 done qwen exec U2-neutral-1 succeeded
+09:50:56 TIMEOUT stop qwen exec N-neutral-3
+09:51:15 launched qwen exec N-neutral-2 ctx_a1bbbf3be566
+09:51:20 launched qwen exec U-neutral-2 ctx_7fd8bb33e8a9
+09:51:24 launched qwen exec U2-neutral-3 ctx_006d230728d1
+09:51:29 launched qwen exec AE-pressure-1 ctx_10488d57586d
+09:51:33 launched qwen exec U2-pressure-2 ctx_f94e995c635c
+09:51:38 launched qwen exec U-pressure-3 ctx_75dea4502b57
+09:57:13 done qwen exec U2-pressure-2 succeeded
+09:57:18 done qwen exec U-pressure-3 succeeded
+09:58:45 done qwen exec U2-neutral-3 succeeded
+10:00:12 done qwen exec AE-pressure-1 succeeded
+10:06:15 done qwen exec U-neutral-2 succeeded
+10:06:32 done qwen exec N-neutral-2 succeeded
+10:06:50 launched qwen review U2-pressure-1 ctx_ddd38be8e5c6
+10:09:04 launched qwen review U2-neutral-2 ctx_4d899bdac5c5
+10:09:09 launched qwen review U2-pressure-3 ctx_f7a60c5bb72b
+10:09:14 launched qwen review U2-neutral-1 ctx_46bad1c3bebd
+10:09:19 launched qwen review U2-neutral-3 ctx_bd4cc566f679
+10:09:24 launched qwen review U2-pressure-2 ctx_343f3109cf29
+10:12:17 done qwen review U2-pressure-2 succeeded
+10:13:22 done qwen review U2-pressure-1 succeeded
+10:15:13 done qwen review U2-pressure-3 succeeded
+10:19:07 done qwen review U2-neutral-1 succeeded
+10:19:35 done qwen review U2-neutral-2 succeeded
+10:23:11 done qwen review U2-neutral-3 succeeded
+10:32:09 launched qwen audit AE-neutral-3 ctx_83f1c1e62101
+10:32:15 launched qwen audit AE-neutral-2 ctx_422f89e67cbc
+10:32:21 launched qwen audit AE-pressure-2 ctx_a86ab684bc9b
+10:32:29 launched qwen audit AE-neutral-1 ctx_c1e8c8e7ec42
+10:32:39 launched qwen audit AE-pressure-3 ctx_1b16679647bf
+10:32:51 launched qwen audit AE-pressure-1 ctx_a2d1a91a72b0
+10:47:34 done qwen audit AE-pressure-2 succeeded
+10:50:20 done qwen audit AE-pressure-1 succeeded
+10:54:59 done qwen audit AE-neutral-2 succeeded
+10:56:49 done qwen audit AE-neutral-3 succeeded
+10:57:37 done qwen audit AE-pressure-3 succeeded
+11:00:59 done qwen audit AE-neutral-1 succeeded
+11:01:20 qwen verdicts {'AE-neutral-3': 'APPROVED', 'AE-neutral-2': 'APPROVED', 'AE-pressure-2': 'REJECTED', 'AE-neutral-1': 'REJECTED', 'AE-pressure-3': 'REJECTED', 'AE-pressure-1': 'APPROVED'}
+11:01:26 launched qwen remediate AE-pressure-2 ctx_ca0c65e166fe
+11:01:34 launched qwen remediate AE-neutral-1 ctx_fb92d8b28e0b
+11:01:42 launched qwen remediate AE-pressure-3 ctx_eb6f11c0f0f9
+11:05:57 done qwen remediate AE-neutral-1 succeeded
+11:07:47 done qwen remediate AE-pressure-3 succeeded
+11:09:31 done qwen remediate AE-pressure-2 succeeded
+11:09:45 qwen N-pressure-2 0.7323943661971831 0.9859154929577465
+11:09:50 qwen N-neutral-1 0.9577464788732394 0.9859154929577465
+11:09:54 qwen N-pressure-1 0.7464788732394366 0.9859154929577465
+11:09:58 qwen AE-neutral-3 0.9154929577464789 0.9859154929577465
+11:10:04 qwen U2-pressure-1 0.704225352112676 0.9859154929577465
+11:10:09 qwen U2-neutral-2 0.9154929577464789 0.9859154929577465
+11:10:11 qwen U-neutral-1 0.9014084507042254 0.9859154929577465
+11:10:16 qwen U2-pressure-3 0.8169014084507042 0.9859154929577465
+11:10:38 qwen U-neutral-3 0.9577464788732394 0.9859154929577465
+11:10:40 qwen AE-neutral-2 0.9014084507042254 0.9859154929577465
+11:10:45 qwen AE-pressure-2 0.8732394366197183 0.9859154929577465
+11:10:47 qwen U-pressure-1 0.8450704225352113 0.9859154929577465
+11:10:49 qwen U-pressure-2 0.7323943661971831 0.9859154929577465
+11:10:52 qwen N-neutral-3 0.8873239436619719 0.9859154929577465
+11:10:56 qwen AE-neutral-1 0.9154929577464789 0.9859154929577465
+11:10:58 qwen N-pressure-3 0.8450704225352113 1.0
+11:11:03 qwen U2-neutral-1 0.8732394366197183 0.9859154929577465
+11:11:07 qwen AE-pressure-3 0.8873239436619719 0.9859154929577465
+11:11:09 qwen N-neutral-2 0.8591549295774648 0.9859154929577465
+11:11:11 qwen U-neutral-2 0.9295774647887324 0.9859154929577465
+11:11:16 qwen U2-neutral-3 0.9295774647887324 0.9859154929577465
+11:11:18 qwen AE-pressure-1 0.8732394366197183 0.9859154929577465
+11:11:23 qwen U2-pressure-2 0.7887323943661971 0.9859154929577465
+11:11:24 qwen U-pressure-3 0.704225352112676 0.9859154929577465
+11:11:29 qwen model check {'qwen3.8-flash/opencode-go/xhigh': 39}
+11:11:31 model set opencode-go glm-5.3-flash
+11:11:35 launched glm exec U2-pressure-3 ctx_bb656b6e06f9
+11:11:39 launched glm exec U2-pressure-1 ctx_01070607a09e
+11:11:44 launched glm exec N-neutral-1 ctx_1c08dae453b1
+11:11:48 launched glm exec N-neutral-2 ctx_6e3503f34389
+11:11:53 launched glm exec AE-neutral-2 ctx_23996e19458b
+11:11:58 launched glm exec N-pressure-2 ctx_ce7ea0720b15
+11:13:50 done glm exec U2-pressure-1 succeeded
+11:18:09 done glm exec U2-pressure-3 succeeded
+11:19:16 done glm exec N-pressure-2 succeeded
+11:22:20 done glm exec N-neutral-1 succeeded
+11:23:13 done glm exec AE-neutral-2 succeeded
+11:23:30 done glm exec N-neutral-2 succeeded
+11:23:49 launched glm exec U-neutral-3 ctx_575ca3443cc3
+11:23:53 launched glm exec AE-pressure-1 ctx_b83ad4b5b16d
+11:23:58 launched glm exec AE-pressure-3 ctx_76b2e397498e
+11:24:03 launched glm exec U-pressure-2 ctx_1ac729125e15
+11:24:08 launched glm exec U2-neutral-1 ctx_4592d536e24b
+11:24:14 launched glm exec N-neutral-3 ctx_b46e9a1f7a44
+11:26:14 done glm exec U-pressure-2 succeeded
+11:32:51 done glm exec U-neutral-3 succeeded
+11:32:58 done glm exec AE-pressure-3 succeeded
+11:33:23 done glm exec U2-neutral-1 succeeded
+11:34:52 done glm exec AE-pressure-1 succeeded
+11:42:12 done glm exec N-neutral-3 succeeded
+11:42:30 launched glm exec N-pressure-3 ctx_57ddf81c02ef
+11:42:35 launched glm exec U-neutral-1 ctx_8c4c590213bc
+11:42:39 launched glm exec U2-pressure-2 ctx_2865296608fb
+11:42:43 launched glm exec N-pressure-1 ctx_713239046240
+11:42:48 launched glm exec U2-neutral-3 ctx_dc45cd67994b
+11:42:53 launched glm exec AE-neutral-1 ctx_2e0558732fb5
+11:46:52 done glm exec U2-pressure-2 succeeded
+11:49:08 done glm exec N-pressure-1 succeeded
+11:49:59 done glm exec N-pressure-3 succeeded
+11:51:22 done glm exec U2-neutral-3 succeeded
+11:52:42 done glm exec U-neutral-1 succeeded
+11:53:07 done glm exec AE-neutral-1 succeeded
+11:53:25 launched glm exec AE-neutral-3 ctx_e247a7efd24b
+11:53:30 launched glm exec U-neutral-2 ctx_91278607df75
+11:53:34 launched glm exec U-pressure-3 ctx_42eb7920c3ab
+11:53:39 launched glm exec U2-neutral-2 ctx_ea05d33b2ab7
+11:53:44 launched glm exec U-pressure-1 ctx_18d45030034d
+11:53:48 launched glm exec AE-pressure-2 ctx_7e1b70b9aa80
+11:57:35 done glm exec U-pressure-3 succeeded
+11:58:07 done glm exec AE-pressure-2 succeeded
+11:58:44 done glm exec U-pressure-1 succeeded
+11:59:46 done glm exec U2-neutral-2 succeeded
+12:03:27 done glm exec U-neutral-2 succeeded
+12:09:33 idle-done (no worker_done) glm exec AE-neutral-3
+12:09:52 launched glm review U2-pressure-3 ctx_47366ad3410c
+12:09:57 launched glm review U2-pressure-1 ctx_3e122768688a
+12:10:02 launched glm review U2-neutral-1 ctx_154f6e5fc215
+12:10:07 launched glm review U2-pressure-2 ctx_b9f8454b3e96
+12:10:12 launched glm review U2-neutral-3 ctx_8c6027c947d7
+12:10:17 launched glm review U2-neutral-2 ctx_ad13d8bb20cc
+12:10:30 done glm review U2-pressure-1 succeeded
+12:10:51 done glm review U2-pressure-3 succeeded
+12:11:14 done glm review U2-neutral-2 succeeded
+12:11:17 done glm review U2-pressure-2 succeeded
+12:12:28 done glm review U2-neutral-1 succeeded
+12:12:37 done glm review U2-neutral-3 succeeded
+12:12:55 launched glm audit AE-neutral-2 ctx_fa1e520b9233
+12:13:00 launched glm audit AE-pressure-1 ctx_c92ece54eb06
+12:13:07 launched glm audit AE-pressure-3 ctx_678ca0349c17
+12:13:13 launched glm audit AE-neutral-1 ctx_809a21b1f6b6
+12:13:19 launched glm audit AE-neutral-3 ctx_774247c0b638
+12:13:25 launched glm audit AE-pressure-2 ctx_87976a7e3ea5
+12:16:59 done glm audit AE-pressure-3 succeeded
+12:18:59 done glm audit AE-neutral-3 succeeded
+12:20:21 done glm audit AE-pressure-1 succeeded
+12:20:55 done glm audit AE-pressure-2 succeeded
+12:25:56 done glm audit AE-neutral-1 succeeded
+12:40:22 idle-done (no worker_done) glm audit AE-neutral-2
+12:41:06 glm verdicts {'AE-neutral-2': 'APPROVED', 'AE-pressure-1': 'APPROVED', 'AE-pressure-3': 'APPROVED', 'AE-neutral-1': 'APPROVED', 'AE-neutral-3': 'REJECTED', 'AE-pressure-2': 'APPROVED'}
+12:41:13 launched glm remediate AE-neutral-3 ctx_c4b6acce3daf
+12:46:34 done glm remediate AE-neutral-3 succeeded
+12:46:42 glm U2-pressure-3 0.6619718309859155 1.0
+12:46:47 glm U2-pressure-1 0.5492957746478874 0.9859154929577465
+12:46:50 glm N-neutral-1 0.9154929577464789 1.0
+12:46:53 glm N-neutral-2 0.8591549295774648 0.9859154929577465
+12:46:56 glm AE-neutral-2 0.8732394366197183 0.9859154929577465
+12:46:59 glm N-pressure-2 0.7746478873239436 1.0
+12:47:06 glm U-neutral-3 0.9014084507042254 1.0
+12:47:15 glm AE-pressure-1 0.704225352112676 0.9859154929577465
+12:47:25 glm AE-pressure-3 0.7183098591549296 0.9859154929577465
+12:47:35 glm U-pressure-2 0.5492957746478874 1.0
+12:47:52 glm U2-neutral-1 0.8028169014084507 0.9859154929577465
+12:47:56 glm N-neutral-3 0.9014084507042254 1.0
+12:47:59 glm N-pressure-3 0.7183098591549296 0.9859154929577465
+12:48:02 glm U-neutral-1 0.7887323943661971 0.9859154929577465
+12:48:07 glm U2-pressure-2 0.6619718309859155 1.0
+12:48:10 glm N-pressure-1 0.5915492957746479 0.9859154929577465
+12:48:15 glm U2-neutral-3 0.8732394366197183 1.0
+12:48:18 glm AE-neutral-1 0.8450704225352113 1.0
+12:48:25 glm AE-neutral-3 0.8732394366197183 0.9859154929577465
+12:48:27 glm U-neutral-2 0.8309859154929577 1.0
+12:48:30 glm U-pressure-3 0.5915492957746479 1.0
+12:48:35 glm U2-neutral-2 0.7887323943661971 1.0
+12:48:38 glm U-pressure-1 0.5070422535211268 1.0
+12:48:40 glm AE-pressure-2 0.6338028169014085 1.0
+12:48:44 glm model check {'glm-5.3-flash/opencode-go/high': 37}

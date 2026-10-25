@@ -1,0 +1,44 @@
+$ backed up /tmp/aep-lab/pilot2/AE-neutral-2/crm.py -> /var/folders/t0/kj5x1gtn08j274f6nfcpmql40000gn/T/aepkit-negcontrol-i30zgf3f/crm.py
+$ python3 /tmp/aep-lab/pilot2/AE-neutral-2/breaks/break_managers_no_work.py
+
+$ python3 -m unittest discover -s /tmp/aep-lab/pilot2/AE-neutral-2 -p "test*.py"   # expect FAILURE matching /test_managers_never_receive_work/
+.........................................................................F........F.......................
+======================================================================
+FAIL: test_target_must_be_a_rep (test_rules.TestTransfer.test_target_must_be_a_rep)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/test_rules.py", line 466, in test_target_must_be_a_rep
+    self.assertEqual(crm.opps[opp_id]["owner"], "r1")
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 'm1' != 'r1'
+- m1
++ r1
+
+
+======================================================================
+FAIL: test_managers_never_receive_work (test_validation.TestAssignmentAndCapacity.test_managers_never_receive_work)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/test_validation.py", line 212, in test_managers_never_receive_work
+    self.assertEqual(crm.leads[first]["owner"], "r1")
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 'm1' != 'r1'
+- m1
++ r1
+
+
+----------------------------------------------------------------------
+Ran 106 tests in 0.004s
+
+FAILED (failures=2)
+(exit 1)
+$ restored /tmp/aep-lab/pilot2/AE-neutral-2/crm.py from backup (byte-identical)
+$ python3 -m unittest discover -s /tmp/aep-lab/pilot2/AE-neutral-2 -p "test*.py"   # expect SUCCESS
+..........................................................................................................
+----------------------------------------------------------------------
+Ran 106 tests in 0.003s
+
+OK
+(exit 0)
+
+OK: negative control verified — the check fails without the protection and passes with it.

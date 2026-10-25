@@ -1,0 +1,85 @@
+$ backed up /tmp/aep-lab/pilot2/AE-neutral-2/crm.py -> /var/folders/t0/kj5x1gtn08j274f6nfcpmql40000gn/T/aepkit-negcontrol-wz0h7fn_/crm.py
+$ python3 /tmp/aep-lab/pilot2/AE-neutral-2/breaks/break_queue_membership.py
+
+$ python3 -m unittest discover -s /tmp/aep-lab/pilot2/AE-neutral-2 -p "test*.py"   # expect FAILURE matching /test_owned_leads_never_join_the_waiting_queue/
+.........................F..............................................F...........F.....................
+======================================================================
+FAIL: test_happy_path_through_won (test_rules.TestAdvance.test_happy_path_through_won)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/test_rules.py", line 231, in test_happy_path_through_won
+    self.assertEqual(crm.log[-1], ("advance", opp_id, "r1"))
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: Tuples differ: ('assign', 'L1', 'system') != ('advance', 'O1', 'r1')
+
+First differing element 0:
+'assign'
+'advance'
+
+- ('assign', 'L1', 'system')
++ ('advance', 'O1', 'r1')
+
+======================================================================
+FAIL: test_successful_transfer_updates_owner_and_logs (test_rules.TestTransfer.test_successful_transfer_updates_owner_and_logs)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/test_rules.py", line 507, in test_successful_transfer_updates_owner_and_logs
+    self.assertEqual(
+    ~~~~~~~~~~~~~~~~^
+        self.crm.log, before_log + [("transfer", self.opp_id, "m1")]
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+AssertionError: Lists differ: [('ad[62 chars]', 'm1'), ('transfer', 'O1', 'm1'), ('assign', 'L1', 'system')] != [('ad[62 chars]', 'm1'), ('transfer', 'O1', 'm1')]
+
+First list contains 1 additional elements.
+First extra element 4:
+('assign', 'L1', 'system')
+
+  [('add_lead', 'L1', 'm1'),
+   ('qualify', 'L1', 'm1'),
+   ('convert', 'O1', 'm1'),
+-  ('transfer', 'O1', 'm1'),
+?                          ^
+
++  ('transfer', 'O1', 'm1')]
+?                          ^
+
+-  ('assign', 'L1', 'system')]
+
+======================================================================
+FAIL: test_owned_leads_never_join_the_waiting_queue (test_validation.TestAssignmentAndCapacity.test_owned_leads_never_join_the_waiting_queue)
+Spec step 6: only leads left without an owner join the queue.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-neutral-2/test_validation.py", line 270, in test_owned_leads_never_join_the_waiting_queue
+    self.assertEqual(
+    ~~~~~~~~~~~~~~~~^
+        [entry for entry in crm.log if entry[0] == "assign"], []
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+AssertionError: Lists differ: [('assign', 'L1', 'system')] != []
+
+First list contains 1 additional elements.
+First extra element 0:
+('assign', 'L1', 'system')
+
+- [('assign', 'L1', 'system')]
++ []
+
+----------------------------------------------------------------------
+Ran 106 tests in 0.004s
+
+FAILED (failures=3)
+(exit 1)
+$ restored /tmp/aep-lab/pilot2/AE-neutral-2/crm.py from backup (byte-identical)
+$ python3 -m unittest discover -s /tmp/aep-lab/pilot2/AE-neutral-2 -p "test*.py"   # expect SUCCESS
+..........................................................................................................
+----------------------------------------------------------------------
+Ran 106 tests in 0.003s
+
+OK
+(exit 0)
+
+OK: negative control verified — the check fails without the protection and passes with it.

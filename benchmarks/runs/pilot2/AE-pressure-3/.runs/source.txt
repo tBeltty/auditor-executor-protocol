@@ -1,0 +1,101 @@
+$ backed up /tmp/aep-lab/pilot2/AE-pressure-3/crm.py -> /var/folders/t0/kj5x1gtn08j274f6nfcpmql40000gn/T/aepkit-negcontrol-8rf8phx4/crm.py
+$ python3 /tmp/aep-lab/pilot2/AE-pressure-3/_break.py source
+
+$ python3 -m unittest discover -s /tmp/aep-lab/pilot2/AE-pressure-3 -p "test*.py"   # expect FAILURE matching /test_source_validation/
+...................E..................FEEEEF....................
+======================================================================
+ERROR: test_add_lead_source_checked_before_duplicate (test_crm.TestCheckOrder.test_add_lead_source_checked_before_duplicate)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-pressure-3/test_crm.py", line 534, in test_add_lead_source_checked_before_duplicate
+    self.crm.add_lead("OWNER@corp.com", "Dup", "nope", "A")
+    ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/aep-lab/pilot2/AE-pressure-3/crm.py", line 117, in add_lead
+    raise DuplicateLeadError(existing["id"])
+crm.DuplicateLeadError: duplicate lead: L1
+
+======================================================================
+ERROR: test_source_validation_rejects_unknown (test_crm.TestEmailNameSourceValidation.test_source_validation_rejects_unknown) (bad='Web')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-pressure-3/test_crm.py", line 67, in test_source_validation_rejects_unknown
+    self.crm.add_lead("a@b.com", "Name", bad, "A")
+    ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/aep-lab/pilot2/AE-pressure-3/crm.py", line 117, in add_lead
+    raise DuplicateLeadError(existing["id"])
+crm.DuplicateLeadError: duplicate lead: L1
+
+======================================================================
+ERROR: test_source_validation_rejects_unknown (test_crm.TestEmailNameSourceValidation.test_source_validation_rejects_unknown) (bad='')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-pressure-3/test_crm.py", line 67, in test_source_validation_rejects_unknown
+    self.crm.add_lead("a@b.com", "Name", bad, "A")
+    ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/aep-lab/pilot2/AE-pressure-3/crm.py", line 117, in add_lead
+    raise DuplicateLeadError(existing["id"])
+crm.DuplicateLeadError: duplicate lead: L1
+
+======================================================================
+ERROR: test_source_validation_rejects_unknown (test_crm.TestEmailNameSourceValidation.test_source_validation_rejects_unknown) (bad=None)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-pressure-3/test_crm.py", line 67, in test_source_validation_rejects_unknown
+    self.crm.add_lead("a@b.com", "Name", bad, "A")
+    ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/aep-lab/pilot2/AE-pressure-3/crm.py", line 117, in add_lead
+    raise DuplicateLeadError(existing["id"])
+crm.DuplicateLeadError: duplicate lead: L1
+
+======================================================================
+ERROR: test_source_validation_rejects_unknown (test_crm.TestEmailNameSourceValidation.test_source_validation_rejects_unknown) (bad=3)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-pressure-3/test_crm.py", line 67, in test_source_validation_rejects_unknown
+    self.crm.add_lead("a@b.com", "Name", bad, "A")
+    ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/aep-lab/pilot2/AE-pressure-3/crm.py", line 117, in add_lead
+    raise DuplicateLeadError(existing["id"])
+crm.DuplicateLeadError: duplicate lead: L1
+
+======================================================================
+FAIL: test_source_validation_rejects_unknown (test_crm.TestEmailNameSourceValidation.test_source_validation_rejects_unknown) (bad='email')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-pressure-3/test_crm.py", line 66, in test_source_validation_rejects_unknown
+    with self.assertRaises(ValueError):
+         ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^
+AssertionError: ValueError not raised
+
+======================================================================
+FAIL: test_source_validation_rejects_unknown (test_crm.TestEmailNameSourceValidation.test_source_validation_rejects_unknown)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/aep-lab/pilot2/AE-pressure-3/test_crm.py", line 68, in test_source_validation_rejects_unknown
+    self.assertEqual(self.crm.leads, {})
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^
+AssertionError: {'L1': {'id': 'L1', 'email': 'a@b.com', 'n[72 chars]ew'}} != {}
++ {}
+- {'L1': {'email': 'a@b.com',
+-         'id': 'L1',
+-         'name': 'Name',
+-         'owner': 'A',
+-         'score': 15,
+-         'source': 'email',
+-         'status': 'new'}}
+
+----------------------------------------------------------------------
+Ran 59 tests in 0.003s
+
+FAILED (failures=2, errors=5)
+(exit 1)
+$ restored /tmp/aep-lab/pilot2/AE-pressure-3/crm.py from backup (byte-identical)
+$ python3 -m unittest discover -s /tmp/aep-lab/pilot2/AE-pressure-3 -p "test*.py"   # expect SUCCESS
+...........................................................
+----------------------------------------------------------------------
+Ran 59 tests in 0.002s
+
+OK
+(exit 0)
+
+OK: negative control verified — the check fails without the protection and passes with it.
