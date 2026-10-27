@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Copy of the paper's analysis module (paper/pilot_text.py). Run it to print Tables 5 to 8 and the key inferential figures.
+"""Copy of the paper's analysis module (paper/pilot_text.py). Run it to print Tables 5 to 9 and the key inferential figures.
 Generates Part E (pilots), Section 5, Section 6 and Section 7 of the manuscript from the result files.
 Every number comes from benchmarks/results/*.jsonl or the analysis below; the qualitative sentences are templates around computed values."""
 import json
@@ -161,6 +161,76 @@ _obs = mean([mean(_pd[(_m, 'A')]) - mean(_pd[(_m, 'B')]) for _m in MODELS])
 _hits = [abs(mean(c)) >= abs(_obs) - 1e-12 for c in itertools.product(*_per)]
 placebo_p = sum(_hits) / len(_hits)
 
+# ---------------------------------------------------------- number of valid tests, and the effect conditional on it
+import math
+
+
+def tcell(arm, pr):
+    return cell(p3, arm, pr, key='tests_valid')
+
+
+t9 = '\n'.join(f"| {ALAB[a]} | {mean(tcell(a, 'neutral')):.1f} [{min(tcell(a, 'neutral'))} to {max(tcell(a, 'neutral'))}] | "
+               f"{mean(tcell(a, 'pressure')):.1f} [{min(tcell(a, 'pressure'))} to {max(tcell(a, 'pressure'))}] |" for a in ARMS)
+
+
+def _corr(x, y):
+    mx, my = mean(x), mean(y)
+    return sum((a - mx) * (b - my) for a, b in zip(x, y)) / math.sqrt(sum((a - mx) ** 2 for a in x) * sum((b - my) ** 2 for b in y))
+
+
+def _lt(r):
+    return math.log(max(r['tests_valid'], 1))
+
+
+R_ALL = _corr([_lt(r) for r in p3], [r['fixed_kill_rate'] for r in p3])
+R_COND = {pr: _corr([_lt(r) for r in p3 if r['pressure'] == pr], [r['fixed_kill_rate'] for r in p3 if r['pressure'] == pr])
+          for pr in ('neutral', 'pressure')}
+R_ARM = {a: _corr([_lt(r) for r in p3 if r['pressure'] == 'pressure' and r['arm'] == a],
+                  [r['fixed_kill_rate'] for r in p3 if r['pressure'] == 'pressure' and r['arm'] == a]) for a in ARMS}
+
+
+def _ols(X, y):
+    n, k = len(X), len(X[0])
+    A = [[sum(X[i][a] * X[i][b] for i in range(n)) for b in range(k)] + [sum(X[i][a] * y[i] for i in range(n))] for a in range(k)]
+    for i in range(k):
+        piv = max(range(i, k), key=lambda j: abs(A[j][i]))
+        A[i], A[piv] = A[piv], A[i]
+        A[i] = [v / A[i][i] for v in A[i]]
+        for j in range(k):
+            if j != i:
+                f = A[j][i]
+                A[j] = [u - f * v for u, v in zip(A[j], A[i])]
+    return [A[i][k] for i in range(k)]
+
+
+_OTHER = ('N', 'U2', 'AE')
+
+
+def _arm_effects(rows, control):
+    X = [[1] + ([_lt(r)] if control else []) + [1.0 * (r['arm'] == a) for a in _OTHER] + [1.0 * (r['model'] == m) for m in MODELS[1:]] for r in rows]
+    b = _ols(X, [r['fixed_kill_rate'] for r in rows])
+    off = 2 if control else 1
+    return dict(zip(_OTHER, b[off:off + 3]))
+
+
+_press = [r for r in p3 if r['pressure'] == 'pressure']
+ADJ_RAW, ADJ_CTRL = _arm_effects(_press, False), _arm_effects(_press, True)
+_rb = random.Random(11)
+_strata = {}
+for r in _press:
+    _strata.setdefault((r['model'], r['arm']), []).append(r)
+_bs = {a: [] for a in _OTHER}
+for _ in range(4000):
+    rows = [x for v in _strata.values() for x in (_rb.choice(v) for _ in v)]
+    e = _arm_effects(rows, True)
+    for a in _OTHER:
+        _bs[a].append(e[a])
+ADJ_CI = {a: (sorted(_bs[a])[100], sorted(_bs[a])[3899]) for a in _OTHER}
+# sensitivity to the baseline: U pooled with the first session of U2 (same prompt as U), nine plus nine runs per condition
+_u_pool = {(m, p): data[(m, 'U', p)] + [v for (mm, a, pp, r), v in first.items() if mm == m and a == 'U2' and pp == p] for m in MODELS for p in ('neutral', 'pressure')}
+POOLBASE = {a: mean([mean(data[(m, a, 'pressure')]) - mean(_u_pool[(m, 'pressure')]) for m in MODELS]) for a in ('N', 'AE')}
+POOLBASE_U = mean([mean(_u_pool[(m, 'pressure')]) for m in MODELS])
+
 corr = {a: mean(cell(p3, a, None, key='correctness_pass')) for a in ARMS}
 verd = Counter((r['model'], r['audit_verdict_initial']) for r in p3 if r['arm'] == 'AE')
 appr = {m: verd[(m, 'APPROVED')] for m in MODELS}
@@ -313,3 +383,7 @@ if __name__ == '__main__':
     print('leave-one-model-out (without deepseek, qwen, glm):', {a: [(m, round(x, 3), round(p, 3)) for m, x, p in v] for a, v in LOO.items()})
     print('AE vs U2 / N (pooled, p):', {k: (round(v[0], 3), round(v[1], 3)) for k, v in EXTRA.items()})
     print('original oracle differences', {k: round(v, 3) for k, v in ORIG.items()}, 'Holm-significant:', ORIG_SIG)
+    print('Table 9 (valid tests per run, mean [min to max])', t9, sep='\n')
+    print('corr(log tests, kill rate): all', round(R_ALL, 2), 'by condition', {k: round(v, 2) for k, v in R_COND.items()}, 'within arm, pressure', {k: round(v, 2) for k, v in R_ARM.items()})
+    print('pressure, arm effect vs U without / with log(tests) control:', {a: (round(ADJ_RAW[a], 3), round(ADJ_CTRL[a], 3), tuple(round(x, 3) for x in ADJ_CI[a])) for a in ADJ_RAW})
+    print('pooled baseline (U + first session of U2), pressure: mean', round(POOLBASE_U, 3), 'differences', {k: round(v, 3) for k, v in POOLBASE.items()})
