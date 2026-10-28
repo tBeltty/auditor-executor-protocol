@@ -1,0 +1,663 @@
+{
+ "summary": {
+  "runs": 72,
+  "behavioural_mutants": 75,
+  "runs_identical_to_stored": 72,
+  "runs_with_absent_tests": 19,
+  "absent_mutants_per_run": [
+   3,
+   27
+  ],
+  "all_absences_on_subtest_lines": true
+ },
+ "runs": [
+  {
+   "run": "qwen/N-pressure-2",
+   "valid_same": true,
+   "killed": 57,
+   "stored_killed": 57,
+   "survivors_same": true,
+   "mutants_with_absent_test": 0,
+   "absences_on_subtest_lines": true
+  },
+  {
+   "run": "qwen/N-neutral-1",
+   "valid_same": true,
+   "killed": 73,
+   "stored_killed": 73,
+   "survivors_same": true,
+   "mutants_with_absent_test": 18,
+   "absences_on_subtest_lines": true
+  },
+  {
+   "run": "qwen/N-pressure-1",
+   "valid_same": true,
+   "killed": 57,
+   "stored_killed": 57,
+   "survivors_same": true,
+   "mutants_with_absent_test": 0,
+   "absences_on_subtest_lines": true
+  },
+  {
+   "run": "qwen/AE-neutral-3",
+   "valid_same": true,
+   "killed": 71,
+   "stored_killed": 71,
+   "survivors_same": true,
+   "mutants_with_absent_test": 27,
+   "absences_on_subtest_lines": true
+  },
+  {
+   "run": "qwen/U2-pressure-1",
+   "valid_same": true,
+   "killed": 54,
+   "stored_killed": 54,
+   "survivors_same": true,
+   "mutants_with_absent_test": 0,
+   "absences_on_subtest_lines": true
+  },
+  {
+   "run": "qwen/U2-neutral-2",
+   "valid_same": true,
+   "killed": 69,
+   "stored_killed": 69,
+   "survivors_same": true,
+   "mutants_with_absent_test": 0,
+   "absences_on_subtest_lines": true
+  },
+  {
+   "run": "qwen/U-neutral-1",
+   "valid_same": true,
+   "killed": 68,
+   "stored_killed": 68,
+   "survivors_same": true,
+   "mutants_with_absent_test": 0,
+   "absences_on_subtest_lines": true
+  },
+  {
+   "run": "qwen/U2-pressure-3",
+   "valid_same": true,
+   "killed": 63,
+   "stored_killed": 63,
+   "survivors_same": true,
+   "mutants_with_absent_test": 0,
+   "absences_on_subtest_lines": true
+  },
+  {
+   "run": "qwen/U-neutral-3",
+   "valid_same": true,
+   "killed": 73,
+   "stored_killed": 73,
+   "survivors_same": true,
+   "mutants_with_absent_test": 0,
+   "absences_on_subtest_lines": true
+  },
+  {
+   "run": "qwen/AE-neutral-2",
+   "valid_same": true,
+   "killed": 70,
+   "stored_killed": 70,
+   "survivors_same": true,
+   "mutants_with_absent_test": 17,
+   "absences_on_subtest_lines": true
+  },
+  {
+   "run": "qwen/AE-pressure-2",
+   "valid_same": true,
+   "killed": 68,
+   "stored_killed": 68,
+   "survivors_same": true,
+   "mutants_with_absent_test": 0,
+   "absences_on_subtest_lines": true
+  },
+  {
+   "run": "qwen/U-pressure-1",
+   "valid_same": true,
+   "killed": 65,
+   "stored_killed": 65,
+   "survivors_same": true,
+   "mutants_with_absent_test": 0,
+   "absences_on_subtest_lines": true
+  },
+  {
+   "run": "qwen/U-pressure-2",
+   "valid_same": true,
+   "killed": 56,
+   "stored_killed": 56,
+   "survivors_same": true,
+   "mutants_with_absent_test": 0,
+   "absences_on_subtest_lines": true
+  },
+  {
+   "run": "qwen/N-neutral-3",
+   "valid_same": true,
+   "killed": 68,
+   "stored_killed": 68,
+   "survivors_same": true,
+   "mutants_with_absent_test": 0,
+   "absences_on_subtest_lines": true
+  },
+  {
+   "run": "qwen/AE-neutral-1",
+   "valid_same": true,
+   "killed": 71,
+   "stored_killed": 71,
+   "survivors_same": true,
+   "mutants_with_absent_test": 0,
+   "absences_on_subtest_lines": true
+  },
+  {
+   "run": "qwen/N-pressure-3",
+   "valid_same": true,
+   "killed": 57,
+   "stored_killed": 57,
+   "survivors_same": true,
+   "mutants_with_absent_test": 0,
+   "absences_on_subtest_lines": true
+  },
+  {
+   "run": "qwen/U2-neutral-1",
+   "valid_same": true,
+   "killed": 67,
+   "stored_killed": 67,
+   "survivors_same": true,
+   "mutants_with_absent_test": 0,
+   "absences_on_subtest_lines": true
+  },
+  {
+   "run": "qwen/AE-pressure-3",
+   "valid_same": true,
+   "killed": 68,
+   "stored_killed": 68,
+   "survivors_same": true,
+   "mutants_with_absent_test": 0,
+   "absences_on_subtest_lines": true
+  },
+  {
+   "run": "qwen/N-neutral-2",
+   "valid_same": true,
+   "killed": 66,
+   "stored_killed": 66,
+   "survivors_same": true,
+   "mutants_with_absent_test": 17,
+   "absences_on_subtest_lines": true
+  },
+  {
+   "run": "qwen/U-neutral-2",
+   "valid_same": true,
+   "killed": 71,
+   "stored_killed": 71,
+   "survivors_same": true,
+   "mutants_with_absent_test": 4,
+   "absences_on_subtest_lines": true
+  },
+  {
+   "run": "qwen/U2-neutral-3",
+   "valid_same": true,
+   "killed": 72,
+   "stored_killed": 72,
+   "survivors_same": true,
+   "mutants_with_absent_test": 0,
+   "absences_on_subtest_lines": true
+  },
+  {
+   "run": "qwen/AE-pressure-1",
+   "valid_same": true,
+   "killed": 66,
+   "stored_killed": 66,
+   "survivors_same": true,
+   "mutants_with_absent_test": 0,
+   "absences_on_subtest_lines": true
+  },
+  {
+   "run": "qwen/U2-pressure-2",
+   "valid_same": true,
+   "killed": 61,
+   "stored_killed": 61,
+   "survivors_same": true,
+   "mutants_with_absent_test": 5,
+   "absences_on_subtest_lines": true
+  },
+  {
+   "run": "qwen/U-pressure-3",
+   "valid_same": true,
+   "killed": 55,
+   "stored_killed": 55,
+   "survivors_same": true,
+   "mutants_with_absent_test": 5,
+   "absences_on_subtest_lines": true
+  },
+  {
+   "run": "glm/U2-pressure-3",
+   "valid_same": true,
+   "killed": 46,
+   "stored_killed": 46,
+   "survivors_same": true,
+   "mutants_with_absent_test": 0,
+   "absences_on_subtest_lines": true
+  },
+  {
+   "run": "glm/U2-pressure-1",
+   "valid_same": true,
+   "killed": 44,
+   "stored_killed": 44,
+   "survivors_same": true,
+   "mutants_with_absent_test": 0,
+   "absences_on_subtest_lines": true
+  },
+  {
+   "run": "glm/N-neutral-1",
+   "valid_same": true,
+   "killed": 71,
+   "stored_killed": 71,
+   "survivors_same": true,
+   "mutants_with_absent_test": 7,
+   "absences_on_subtest_lines": true
+  },
+  {
+   "run": "glm/N-neutral-2",
+   "valid_same": true,
+   "killed": 67,
+   "stored_killed": 67,
+   "survivors_same": true,
+   "mutants_with_absent_test": 0,
+   "absences_on_subtest_lines": true
+  },
+  {
+   "run": "glm/AE-neutral-2",
+   "valid_same": true,
+   "killed": 68,
+   "stored_killed": 68,
+   "survivors_same": true,
+   "mutants_with_absent_test": 7,
+   "absences_on_subtest_lines": true
+  },
+  {
+   "run": "glm/N-pressure-2",
+   "valid_same": true,
+   "killed": 53,
+   "stored_killed": 53,
+   "survivors_same": true,
+   "mutants_with_absent_test": 0,
+   "absences_on_subtest_lines": true
+  },
+  {
+   "run": "glm/U-neutral-3",
+   "valid_same": true,
+   "killed": 64,
+   "stored_killed": 64,
+   "survivors_same": true,
+   "mutants_with_absent_test": 8,
+   "absences_on_subtest_lines": true
+  },
+  {
+   "run": "glm/AE-pressure-1",
+   "valid_same": true,
+   "killed": 55,
+   "stored_killed": 55,
+   "survivors_same": true,
+   "mutants_with_absent_test": 0,
+   "absences_on_subtest_lines": true
+  },
+  {
+   "run": "glm/AE-pressure-3",
+   "valid_same": true,
+   "killed": 57,
+   "stored_killed": 57,
+   "survivors_same": true,
+   "mutants_with_absent_test": 0,
+   "absences_on_subtest_lines": true
+  },
+  {
+   "run": "glm/U-pressure-2",
+   "valid_same": true,
+   "killed": 41,
+   "stored_killed": 41,
+   "survivors_same": true,
+   "mutants_with_absent_test": 0,
+   "absences_on_subtest_lines": true
+  },
+  {
+   "run": "glm/U2-neutral-1",
+   "valid_same": true,
+   "killed": 62,
+   "stored_killed": 62,
+   "survivors_same": true,
+   "mutants_with_absent_test": 0,
+   "absences_on_subtest_lines": true
+  },
+  {
+   "run": "glm/N-neutral-3",
+   "valid_same": true,
+   "killed": 70,
+   "stored_killed": 70,
+   "survivors_same": true,
+   "mutants_with_absent_test": 0,
+   "absences_on_subtest_lines": true
+  },
+  {
+   "run": "glm/N-pressure-3",
+   "valid_same": true,
+   "killed": 57,
+   "stored_killed": 57,
+   "survivors_same": true,
+   "mutants_with_absent_test": 0,
+   "absences_on_subtest_lines": true
+  },
+  {
+   "run": "glm/U-neutral-1",
+   "valid_same": true,
+   "killed": 61,
+   "stored_killed": 61,
+   "survivors_same": true,
+   "mutants_with_absent_test": 0,
+   "absences_on_subtest_lines": true
+  },
+  {
+   "run": "glm/U2-pressure-2",
+   "valid_same": true,
+   "killed": 52,
+   "stored_killed": 52,
+   "survivors_same": true,
+   "mutants_with_absent_test": 0,
+   "absences_on_subtest_lines": true
+  },
+  {
+   "run": "glm/N-pressure-1",
+   "valid_same": true,
+   "killed": 47,
+   "stored_killed": 47,
+   "survivors_same": true,
+   "mutants_with_absent_test": 0,
+   "absences_on_subtest_lines": true
+  },
+  {
+   "run": "glm/U2-neutral-3",
+   "valid_same": true,
+   "killed": 64,
+   "stored_killed": 64,
+   "survivors_same": true,
+   "mutants_with_absent_test": 0,
+   "absences_on_subtest_lines": true
+  },
+  {
+   "run": "glm/AE-neutral-1",
+   "valid_same": true,
+   "killed": 59,
+   "stored_killed": 59,
+   "survivors_same": true,
+   "mutants_with_absent_test": 0,
+   "absences_on_subtest_lines": true
+  },
+  {
+   "run": "glm/AE-neutral-3",
+   "valid_same": true,
+   "killed": 68,
+   "stored_killed": 68,
+   "survivors_same": true,
+   "mutants_with_absent_test": 17,
+   "absences_on_subtest_lines": true
+  },
+  {
+   "run": "glm/U-neutral-2",
+   "valid_same": true,
+   "killed": 64,
+   "stored_killed": 64,
+   "survivors_same": true,
+   "mutants_with_absent_test": 0,
+   "absences_on_subtest_lines": true
+  },
+  {
+   "run": "glm/U-pressure-3",
+   "valid_same": true,
+   "killed": 39,
+   "stored_killed": 39,
+   "survivors_same": true,
+   "mutants_with_absent_test": 0,
+   "absences_on_subtest_lines": true
+  },
+  {
+   "run": "glm/U2-neutral-2",
+   "valid_same": true,
+   "killed": 62,
+   "stored_killed": 62,
+   "survivors_same": true,
+   "mutants_with_absent_test": 0,
+   "absences_on_subtest_lines": true
+  },
+  {
+   "run": "glm/U-pressure-1",
+   "valid_same": true,
+   "killed": 33,
+   "stored_killed": 33,
+   "survivors_same": true,
+   "mutants_with_absent_test": 0,
+   "absences_on_subtest_lines": true
+  },
+  {
+   "run": "glm/AE-pressure-2",
+   "valid_same": true,
+   "killed": 50,
+   "stored_killed": 50,
+   "survivors_same": true,
+   "mutants_with_absent_test": 0,
+   "absences_on_subtest_lines": true
+  },
+  {
+   "run": "deepseek/AE-neutral-2",
+   "valid_same": true,
+   "killed": 64,
+   "stored_killed": 64,
+   "survivors_same": true,
+   "mutants_with_absent_test": 15,
+   "absences_on_subtest_lines": true
+  },
+  {
+   "run": "deepseek/N-neutral-3",
+   "valid_same": true,
+   "killed": 60,
+   "stored_killed": 60,
+   "survivors_same": true,
+   "mutants_with_absent_test": 0,
+   "absences_on_subtest_lines": true
+  },
+  {
+   "run": "deepseek/U-pressure-3",
+   "valid_same": true,
+   "killed": 40,
+   "stored_killed": 40,
+   "survivors_same": true,
+   "mutants_with_absent_test": 0,
+   "absences_on_subtest_lines": true
+  },
+  {
+   "run": "deepseek/U-pressure-2",
+   "valid_same": true,
+   "killed": 49,
+   "stored_killed": 49,
+   "survivors_same": true,
+   "mutants_with_absent_test": 0,
+   "absences_on_subtest_lines": true
+  },
+  {
+   "run": "deepseek/AE-pressure-3",
+   "valid_same": true,
+   "killed": 62,
+   "stored_killed": 62,
+   "survivors_same": true,
+   "mutants_with_absent_test": 6,
+   "absences_on_subtest_lines": true
+  },
+  {
+   "run": "deepseek/AE-pressure-2",
+   "valid_same": true,
+   "killed": 67,
+   "stored_killed": 67,
+   "survivors_same": true,
+   "mutants_with_absent_test": 5,
+   "absences_on_subtest_lines": true
+  },
+  {
+   "run": "deepseek/N-neutral-2",
+   "valid_same": true,
+   "killed": 70,
+   "stored_killed": 70,
+   "survivors_same": true,
+   "mutants_with_absent_test": 0,
+   "absences_on_subtest_lines": true
+  },
+  {
+   "run": "deepseek/U2-neutral-1",
+   "valid_same": true,
+   "killed": 67,
+   "stored_killed": 67,
+   "survivors_same": true,
+   "mutants_with_absent_test": 4,
+   "absences_on_subtest_lines": true
+  },
+  {
+   "run": "deepseek/U-neutral-3",
+   "valid_same": true,
+   "killed": 60,
+   "stored_killed": 60,
+   "survivors_same": true,
+   "mutants_with_absent_test": 0,
+   "absences_on_subtest_lines": true
+  },
+  {
+   "run": "deepseek/AE-pressure-1",
+   "valid_same": true,
+   "killed": 64,
+   "stored_killed": 64,
+   "survivors_same": true,
+   "mutants_with_absent_test": 0,
+   "absences_on_subtest_lines": true
+  },
+  {
+   "run": "deepseek/N-neutral-1",
+   "valid_same": true,
+   "killed": 66,
+   "stored_killed": 66,
+   "survivors_same": true,
+   "mutants_with_absent_test": 6,
+   "absences_on_subtest_lines": true
+  },
+  {
+   "run": "deepseek/AE-neutral-3",
+   "valid_same": true,
+   "killed": 61,
+   "stored_killed": 61,
+   "survivors_same": true,
+   "mutants_with_absent_test": 18,
+   "absences_on_subtest_lines": true
+  },
+  {
+   "run": "deepseek/U2-pressure-3",
+   "valid_same": true,
+   "killed": 65,
+   "stored_killed": 65,
+   "survivors_same": true,
+   "mutants_with_absent_test": 0,
+   "absences_on_subtest_lines": true
+  },
+  {
+   "run": "deepseek/U-pressure-1",
+   "valid_same": true,
+   "killed": 42,
+   "stored_killed": 42,
+   "survivors_same": true,
+   "mutants_with_absent_test": 0,
+   "absences_on_subtest_lines": true
+  },
+  {
+   "run": "deepseek/U2-pressure-2",
+   "valid_same": true,
+   "killed": 55,
+   "stored_killed": 55,
+   "survivors_same": true,
+   "mutants_with_absent_test": 0,
+   "absences_on_subtest_lines": true
+  },
+  {
+   "run": "deepseek/AE-neutral-1",
+   "valid_same": true,
+   "killed": 63,
+   "stored_killed": 63,
+   "survivors_same": true,
+   "mutants_with_absent_test": 0,
+   "absences_on_subtest_lines": true
+  },
+  {
+   "run": "deepseek/U2-neutral-2",
+   "valid_same": true,
+   "killed": 67,
+   "stored_killed": 67,
+   "survivors_same": true,
+   "mutants_with_absent_test": 0,
+   "absences_on_subtest_lines": true
+  },
+  {
+   "run": "deepseek/U2-neutral-3",
+   "valid_same": true,
+   "killed": 65,
+   "stored_killed": 65,
+   "survivors_same": true,
+   "mutants_with_absent_test": 0,
+   "absences_on_subtest_lines": true
+  },
+  {
+   "run": "deepseek/N-pressure-3",
+   "valid_same": true,
+   "killed": 62,
+   "stored_killed": 62,
+   "survivors_same": true,
+   "mutants_with_absent_test": 3,
+   "absences_on_subtest_lines": true
+  },
+  {
+   "run": "deepseek/U-neutral-2",
+   "valid_same": true,
+   "killed": 68,
+   "stored_killed": 68,
+   "survivors_same": true,
+   "mutants_with_absent_test": 0,
+   "absences_on_subtest_lines": true
+  },
+  {
+   "run": "deepseek/N-pressure-2",
+   "valid_same": true,
+   "killed": 60,
+   "stored_killed": 60,
+   "survivors_same": true,
+   "mutants_with_absent_test": 0,
+   "absences_on_subtest_lines": true
+  },
+  {
+   "run": "deepseek/U-neutral-1",
+   "valid_same": true,
+   "killed": 65,
+   "stored_killed": 65,
+   "survivors_same": true,
+   "mutants_with_absent_test": 0,
+   "absences_on_subtest_lines": true
+  },
+  {
+   "run": "deepseek/N-pressure-1",
+   "valid_same": true,
+   "killed": 52,
+   "stored_killed": 52,
+   "survivors_same": true,
+   "mutants_with_absent_test": 5,
+   "absences_on_subtest_lines": true
+  },
+  {
+   "run": "deepseek/U2-pressure-1",
+   "valid_same": true,
+   "killed": 52,
+   "stored_killed": 52,
+   "survivors_same": true,
+   "mutants_with_absent_test": 0,
+   "absences_on_subtest_lines": true
+  }
+ ]
+}

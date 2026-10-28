@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Copy of the paper's analysis module (paper/pilot_text.py). Run it to print Tables 5 to 9 and the key inferential figures.
+"""Analysis behind Section 4.5 of the paper. Run it to print Tables 5 to 10 and the inferential figures.
 Generates Part E (pilots), Section 5, Section 6 and Section 7 of the manuscript from the result files.
 Every number comes from benchmarks/results/*.jsonl or the analysis below; the qualitative sentences are templates around computed values."""
 import json
@@ -146,6 +146,25 @@ t6 += f"\n| U2, first session only (before the review) | {fmt(f_u2_n)} | {fmt(f_
 t6 += f"\n| AE, Executor first session (before the Auditor acts) | {fmt(f_ae_n)} | {fmt(f_ae_p)} |"
 appr_first = [v for (m, a, p, r), v in first.items() if a == 'AE' and next(x for x in p3 if (x['model'], x['arm'], x['pressure'], x['rep']) == (m, a, p, r))['audit_verdict_initial'] == 'APPROVED']
 rej_first = [v for (m, a, p, r), v in first.items() if a == 'AE' and next(x for x in p3 if (x['model'], x['arm'], x['pressure'], x['rep']) == (m, a, p, r))['audit_verdict_initial'] != 'APPROVED']
+# initial Auditor verdicts by model: first-delivery kill rates of approved and rejected AE deliveries, approvals by
+# condition, and the mean gain from remediation under pressure (final minus first delivery, over the three runs)
+_ver = {(r['model'], r['pressure'], r['rep']): r['audit_verdict_initial'] for r in p3 if r['arm'] == 'AE'}
+AUD = {}
+for _m in MODELS:
+    _k = [k for k in _ver if k[0] == _m]
+    AUD[_m] = dict(
+        ap=[first[(_m, 'AE', p, r)] for (_, p, r) in _k if _ver[(_m, p, r)] == 'APPROVED'],
+        rj=[first[(_m, 'AE', p, r)] for (_, p, r) in _k if _ver[(_m, p, r)] != 'APPROVED'],
+        ap_cond={c: sum(1 for (_, p, r) in _k if p == c and _ver[(_m, p, r)] == 'APPROVED') for c in ('neutral', 'pressure')},
+        first_p=[first[(_m, 'AE', 'pressure', r)] for (_, p, r) in _k if p == 'pressure'],
+        gain_p=mean(cell(p3, 'AE', 'pressure', key='fixed_kill_rate', model=_m))
+        - mean([first[(_m, 'AE', 'pressure', r)] for (_, p, r) in _k if p == 'pressure']))
+t_aud = '\n'.join(
+    f"| {MNAME[_m]} | {AUD[_m]['ap_cond']['neutral']} / {AUD[_m]['ap_cond']['pressure']} | "
+    + (f"{mean(AUD[_m]['ap']):.3f} (n = {len(AUD[_m]['ap'])})" if AUD[_m]['ap'] else 'none') + ' | '
+    + (f"{mean(AUD[_m]['rj']):.3f} (n = {len(AUD[_m]['rj'])})" if AUD[_m]['rj'] else 'none')
+    + f" | {AUD[_m]['gain_p']:+.3f} |"
+    for _m in MODELS)
 noise_floor = mean(f_u2_p) - mean(cell(p3, 'U', 'pressure', key='fixed_kill_rate'))
 # placebo contrast: the first session of U2 has the same prompt as U
 _pd = {}
@@ -312,7 +331,7 @@ The AE contrast is the most robust. Relative to U, the AE workflow was associate
 
 The AE gain appears mostly before the Auditor acts. The Executor's first session in AE, which reads the protocol documents and is told that a separate Auditor will review the delivery, averaged {mean(f_ae_p):.3f} under pressure against {u_pre:.3f} for U, and the audit and remediation added {ae_pre - mean(f_ae_p):.3f} (last two rows of Table 6). The Auditor's verdicts could not be related to quality in the main runs: pooled over models, the Executor deliveries it approved had a mean kill rate of {mean(appr_first):.3f} and those it rejected {mean(rej_first):.3f}, but approval rates differ by model and the within-model cells hold one to five deliveries. A placebo contrast compares U with the first session of U2, which received the same prompt as U; under pressure the two identical conditions differed by {noise_floor:+.3f} (exact permutation p {placebo_p:.3f}), which gives an empirical scale for the noise at this sample size. The AE difference is larger than that single noise draw, which has no interval, by a factor of {D[('pressure','AE')][0] / noise_floor:.1f}. The extra review session of U2 was followed by a gain of {s_u2[1] - s_u2[0]:+.3f} overall. AE against U2 was not a planned contrast; exploratory pooled differences under pressure are {EXTRA['U2'][0]:+.3f} against U2 (exact p {EXTRA['U2'][1]:.3f}) and {EXTRA['N'][0]:+.3f} against N (exact p {EXTRA['N'][1]:.3f}), uncorrected and underpowered.
 
-Correctness was high and almost constant across arms (mean share of hidden tests passed: U {corr['U']:.3f}, U2 {corr['U2']:.3f}, N {corr['N']:.3f}, AE {corr['AE']:.3f}), so the differences concern the strength of the tests, while the code was equally correct in every arm. The second session improved test strength modestly: the U2 review raised the mean kill rate from {s_u2[0]:.3f} to {s_u2[1]:.3f} (n = {s_u2[2]}) and the AE remediation from {s_ae[0]:.3f} to {s_ae[1]:.3f} (n = {s_ae[2]}, rejected deliveries only, so regression to the mean may contribute). The Auditor separated six author-built calibration deliveries ({good} of 3 good deliveries approved, {bad} of 3 bad deliveries rejected; one model). In the main runs its strictness depended on the model: it approved {appr['deepseek']} of 6 initial AE deliveries with DeepSeek, {appr['qwen']} of 6 with Qwen, and {appr['glm']} of 6 with GLM.
+Correctness was high and almost constant across arms (mean share of hidden tests passed: U {corr['U']:.3f}, U2 {corr['U2']:.3f}, N {corr['N']:.3f}, AE {corr['AE']:.3f}), so the differences concern the strength of the tests, while the code was equally correct in every arm. The second session improved test strength modestly: the U2 review raised the mean kill rate from {s_u2[0]:.3f} to {s_u2[1]:.3f} (n = {s_u2[2]}) and the AE remediation from {s_ae[0]:.3f} to {s_ae[1]:.3f} (n = {s_ae[2]}, rejected deliveries only, so regression to the mean may contribute). The Auditor separated six author-built calibration deliveries ({good} of 3 good deliveries approved, {bad} of 3 bad deliveries rejected; one model).
 
 **What this does not show.** Each model-by-arm-by-condition cell holds three runs, so the bootstrap intervals in Table 8 are optimistic; the Holm correction covers only the six contrasts shown, and we treat the whole analysis as exploratory. The modules are small and single-file, and the three models are small. The pressure condition is a paragraph in the prompt; no real deadline applied. The fixed mutants and the hidden suite were written by the protocol's author. The AE arm differs from U in the protocol documents, the notice that a reviewer will read the delivery, and the Auditor session, and N differs from AE in the same three ways, so the data cannot assign the effect to `negcontrol`, to independent review, or to the documents; the first-session result suggests that the documents and the notice carry much of it. The notice also weakens the pressure manipulation for that arm. The U2 review prompt repeats the pressure sentence, which makes it a weak review control. No token counts or session durations were recorded, so cost cannot be compared across arms. The deterministic layer of the tool (`aepkit init`, `lint`, and `status`) was not exercised, because a single-module task has no task list or compliance log to check. Qwen ran at a reasoning level one step above the other two models, and two of its Executor runs were stopped by a time limit and are included in the tables.
 
@@ -376,14 +395,16 @@ All materials, scorers, prompts, and hashes are released, and the study should b
 def build():
     return PARTE, SEC5
 
-
 if __name__ == '__main__':
     print('Table 5', t5, 'Table 6', t6, 'Table 7', t7, 'Table 8', t8, sep='\n')
     print('placebo', round(noise_floor, 3), 'exact p', round(placebo_p, 3))
     print('leave-one-model-out (without deepseek, qwen, glm):', {a: [(m, round(x, 3), round(p, 3)) for m, x, p in v] for a, v in LOO.items()})
     print('AE vs U2 / N (pooled, p):', {k: (round(v[0], 3), round(v[1], 3)) for k, v in EXTRA.items()})
     print('original oracle differences', {k: round(v, 3) for k, v in ORIG.items()}, 'Holm-significant:', ORIG_SIG)
-    print('Table 9 (valid tests per run, mean [min to max])', t9, sep='\n')
+    print('Table 9 (initial Auditor verdicts by model: approved neutral / pressure, approved mean, rejected mean, remediation gain under pressure)', t_aud, sep='\n')
+    print('Table 10 (valid tests per run, mean [min to max])', t9, sep='\n')
+    print('Auditor, pooled first deliveries: approved', round(mean(appr_first), 3), len(appr_first), 'rejected', round(mean(rej_first), 3), len(rej_first))
+    print('Auditor, first-delivery kill rates by model (approved, rejected, pressure runs):', {m: ([round(x, 3) for x in sorted(v['ap'])], [round(x, 3) for x in sorted(v['rj'])], [round(x, 3) for x in sorted(v['first_p'])]) for m, v in AUD.items()})
     print('corr(log tests, kill rate): all', round(R_ALL, 2), 'by condition', {k: round(v, 2) for k, v in R_COND.items()}, 'within arm, pressure', {k: round(v, 2) for k, v in R_ARM.items()})
     print('pressure, arm effect vs U without / with log(tests) control:', {a: (round(ADJ_RAW[a], 3), round(ADJ_CTRL[a], 3), tuple(round(x, 3) for x in ADJ_CI[a])) for a in ADJ_RAW})
     print('pooled baseline (U + first session of U2), pressure: mean', round(POOLBASE_U, 3), 'differences', {k: round(v, 3) for k, v in POOLBASE.items()})
