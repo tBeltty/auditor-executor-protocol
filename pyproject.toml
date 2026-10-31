@@ -50,7 +50,7 @@ test = [
 dev = [
     "pytest>=7.0",
     "pytest-cov>=4.0",
-    "ruff==0.16.10",
+    "ruff==0.17.3",
     "mypy==2.4.0",
     "build==1.6.1",
     "twine==7.0.0",
