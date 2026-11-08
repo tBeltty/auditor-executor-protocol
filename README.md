@@ -170,7 +170,7 @@ Install the plugin at the prompt of a Claude Code terminal session, then open th
 
 It works in the terminal and in the desktop app's local sessions (in the app: **+** next to the prompt, **Plugins**, **Add marketplace**). It needs Claude Code 2.1.287 or later, and every limit and feature is an option in `/config`.
 
-It sends no data about you anywhere. Its one network request, a daily version check, can be turned off, and its README lists every process it starts and everything it can refuse. To get new versions automatically, turn on auto-update once: `/plugin`, **Marketplaces**, `auditor-executor-protocol`, **Enable auto-update**.
+It makes no network requests and sends no data anywhere, and its README lists every process it starts and everything it can refuse. To get new versions automatically, turn on auto-update once: `/plugin`, **Marketplaces**, `auditor-executor-protocol`, **Enable auto-update**.
 
 Setup, options and how each number is computed: [integrations/claude-code/aeprogress](https://github.com/tBeltty/auditor-executor-protocol/tree/main/integrations/claude-code/aeprogress).
 

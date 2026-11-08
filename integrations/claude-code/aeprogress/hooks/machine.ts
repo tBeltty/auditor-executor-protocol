@@ -26,10 +26,20 @@ export function sysctlMachine(loadavg: string, ncpu: string, os: 'macos' | 'bsd'
   return { busy: load / cores, detail: `load ${load.toFixed(1)} of ${cores} cores`, os, indexerCpu: indexerCpu(ps) }
 }
 
-/** Windows has no load average: the processors' average LoadPercentage stands in. */
-export function windowsMachine(percentOut: string): Machine | undefined {
-  const cpu = numbers(percentOut)[0]
-  if (cpu === undefined) return undefined
+/**
+ * Windows has no load average: the total processor time stands in, read from typeperf's CSV
+ * (`"<time>","<percent>"` on the sample's line). On a Windows whose counter names are not in
+ * English, typeperf finds no counter and this answers undefined.
+ */
+export function windowsMachine(typeperfOut: string): Machine | undefined {
+  const sample = typeperfOut
+    .split(/\r?\n/)
+    .map(line => line.match(/^"[^"]*","([0-9]+(?:[.,][0-9]+)?)"\s*$/))
+    .filter((m): m is RegExpMatchArray => m !== null)
+    .pop()
+  if (!sample?.[1]) return undefined
+  const cpu = Number(sample[1].replace(',', '.'))
+  if (!Number.isFinite(cpu)) return undefined
   return { busy: cpu / 100, detail: `CPU at ${Math.round(cpu)}%`, os: 'windows', indexerCpu: 0 }
 }
 

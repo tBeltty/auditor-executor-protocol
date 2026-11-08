@@ -270,6 +270,10 @@ test('an old aepkit on the PATH does not hide a newer one', { options: { runDir:
   await ui.unmount()
 })
 
+/** What typeperf prints for one sample of the total processor time. */
+const TYPEPERF = (value: string) =>
+  `\r\n"(PDH-CSV 4.0)","\\\\HOST\\Processor(_Total)\\% Processor Time"\r\n"11/08/2026 15:00:00.123","${value}"\r\nExiting, please wait...\r\nThe command completed successfully.\r\n`
+
 const MAC = {
   '/usr/sbin/sysctl': '',
   '/System/Library/CoreServices': '',
@@ -312,8 +316,12 @@ describe('the machine readings', () => {
     })
   })
 
-  test('Windows: the processors\' LoadPercentage', async () => {
-    expect(windowsMachine('37\r\n')).toEqual({ busy: 0.37, detail: 'CPU at 37%', os: 'windows', indexerCpu: 0 })
+  test('Windows: total processor time from typeperf', async () => {
+    expect(windowsMachine(TYPEPERF('37.012345'))).toEqual({ busy: 0.37012345, detail: 'CPU at 37%', os: 'windows', indexerCpu: 0 })
+    // A Windows that writes decimals with a comma.
+    expect(windowsMachine(TYPEPERF('12,5'))?.busy).toBe(0.125)
+    // A counter typeperf cannot find (its names are not in English there): no reading.
+    expect(windowsMachine('Error: No valid counters.\r\n')).toBeUndefined()
     expect(windowsMachine('')).toBeUndefined()
   })
 
@@ -329,7 +337,7 @@ describe('the machine readings', () => {
       {
         env: { SystemRoot: 'C:\\Windows' },
         commands: {
-          'powershell -NoProfile -Command Get-CimInstance Win32_Processor | Measure-Object -Property LoadPercentage -Average | Select-Object -ExpandProperty Average': '42\r\n',
+          'typeperf \\Processor(_Total)\\% Processor Time -sc 1': TYPEPERF('42.0'),
         },
       },
       [/Machine 42% busy/, /CPU at 42%/],

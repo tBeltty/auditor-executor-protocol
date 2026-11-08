@@ -1,11 +1,7 @@
-// Whether a newer aeprogress exists: the version arithmetic and where a copy runs from. The
-// checks themselves, with `$`, are in register.tsx.
+// Whether a newer version exists: the version arithmetic and where a copy runs from. The
+// check itself, with `$`, is in register.tsx.
 
-/** The plugin's published manifest; only its `version` is read. */
-export const REMOTE_MANIFEST =
-  'https://raw.githubusercontent.com/tBeltty/auditor-executor-protocol/main/integrations/claude-code/aeprogress/.claude-plugin/plugin.json'
-
-export type UpdateMode = 'daily' | 'offline' | 'off'
+export type UpdateMode = 'on' | 'off'
 export type InstallKind = 'synced' | 'marketplace' | 'local'
 
 /** "0.3.4" -> [0, 3, 4]; anything else is undefined. */
@@ -53,4 +49,15 @@ export function howToUpdate(kind: InstallKind): string {
   return kind === 'marketplace'
     ? 'Update it from /plugin, Installed, auditor-executor-protocol, Update now.'
     : 'Pull the new version where you load it from.'
+}
+
+/** The version a marketplace catalog (`marketplace.json`) lists for a plugin, if any. */
+export function catalogEntryVersion(catalog: string, plugin: string): string | undefined {
+  try {
+    const entries = (JSON.parse(catalog) as { plugins?: { name?: string; version?: unknown }[] }).plugins ?? []
+    const version = entries.find(p => p.name === plugin)?.version
+    return typeof version === 'string' && versionParts(version) ? version : undefined
+  } catch {
+    return undefined
+  }
 }

@@ -14,7 +14,7 @@ import {
 } from './limit'
 import type { Kind, Limits, LiveWorker } from './limit'
 import { linuxMachine, numbers, sysctlMachine, windowsMachine } from './machine'
-import { howToUpdate, installKind, isNewer, marketplaceDir, versionIn } from './update'
+import { catalogEntryVersion, howToUpdate, installKind, isNewer, marketplaceDir } from './update'
 import type { UpdateMode } from './update'
 import {
   bandLayout,
@@ -51,7 +51,6 @@ const PAD = 1
 const REFRESH_MS = 20_000
 // Turn ends and subagent starts and stops come in bursts; one read covers a burst.
 const MIN_GAP_MS = 2_000
-const RUN_TIMEOUT_MS = 15_000
 const SEARCH_DEPTH = 3
 const SKIP_DIRS = new Set(['node_modules', 'venv', 'dist', 'build', 'target', '__pycache__'])
 // Spotlight's indexing CPU is kept for this many reads, newest last.
@@ -110,7 +109,7 @@ function optionsOf(raw: Readonly<Record<string, unknown>>): Options {
     spotlightCpu: count('spotlightCpuPercent', 50),
     compactOnClose: raw.compactOnClose !== false,
     compactSeconds: Math.max(1, Math.round(count('compactCountdownSeconds', 40))),
-    updateCheck: (['daily', 'offline', 'off'] as const).find(m => m === raw.updateCheck) ?? 'daily',
+    updateCheck: raw.updateCheck === 'off' ? 'off' : 'on',
   }
 }
 
@@ -164,11 +163,10 @@ let interactive = true
  * is kept for the session.
  */
 async function aepkitStatus($: EngineInterface, way: number, dir: string): Promise<ProcessRunResult | undefined> {
-  const init = { cwd: dir, timeoutMs: RUN_TIMEOUT_MS }
-  if (way === 0) return $.process.run(['aepkit', 'status', '--json', '.'], init).catch(() => undefined)
-  if (way === 1) return $.process.run(['python3', '-m', 'aepkit', 'status', '--json', '.'], init).catch(() => undefined)
-  if (way === 2) return $.process.run(['python', '-m', 'aepkit', 'status', '--json', '.'], init).catch(() => undefined)
-  return $.process.run(['py', '-m', 'aepkit', 'status', '--json', '.'], init).catch(() => undefined)
+  if (way === 0) return $.process.run(['aepkit', 'status', '--json', '.'], { cwd: dir, timeoutMs: 15_000 }).catch(() => undefined)
+  if (way === 1) return $.process.run(['python3', '-m', 'aepkit', 'status', '--json', '.'], { cwd: dir, timeoutMs: 15_000 }).catch(() => undefined)
+  if (way === 2) return $.process.run(['python', '-m', 'aepkit', 'status', '--json', '.'], { cwd: dir, timeoutMs: 15_000 }).catch(() => undefined)
+  return $.process.run(['py', '-m', 'aepkit', 'status', '--json', '.'], { cwd: dir, timeoutMs: 15_000 }).catch(() => undefined)
 }
 
 async function runAepkit($: EngineInterface, dir: string) {
@@ -205,7 +203,7 @@ async function externalWorkers($: EngineInterface, dir: string, known: Set<strin
   }
   if (!(await usesOrca($))) return []
   if (orcaRepo?.dir !== dir) {
-    const current = await $.process.run(['orca', 'worktree', 'current', '--json'], { cwd: dir, timeoutMs: RUN_TIMEOUT_MS }).catch(() => undefined)
+    const current = await $.process.run(['orca', 'worktree', 'current', '--json'], { cwd: dir, timeoutMs: 15_000 }).catch(() => undefined)
     let repoId: string | undefined
     try {
       repoId = current?.exitCode === 0 ? JSON.parse(current.stdout).result?.worktree?.repoId : undefined
@@ -214,7 +212,7 @@ async function externalWorkers($: EngineInterface, dir: string, known: Set<strin
     }
     orcaRepo = { dir, repoId }
   }
-  const ps = await $.process.run(['orca', 'worktree', 'ps', '--json'], { cwd: dir, timeoutMs: RUN_TIMEOUT_MS }).catch(() => undefined)
+  const ps = await $.process.run(['orca', 'worktree', 'ps', '--json'], { cwd: dir, timeoutMs: 15_000 }).catch(() => undefined)
   if (!ps || ps.exitCode !== 0) return []
   try {
     return orcaWorkers(ps.stdout, orcaRepo.repoId, known)
@@ -244,7 +242,7 @@ async function readLoad($: EngineInterface, dir: string): Promise<void> {
 async function rootOf($: EngineInterface, dir: string): Promise<string> {
   const known = await read($, projectRoot)
   if (known) return known
-  const git = await $.process.run(['git', 'rev-parse', '--show-toplevel'], { cwd: dir || '.', timeoutMs: RUN_TIMEOUT_MS }).catch(() => undefined)
+  const git = await $.process.run(['git', 'rev-parse', '--show-toplevel'], { cwd: dir || '.', timeoutMs: 15_000 }).catch(() => undefined)
   const root = git?.exitCode === 0 && git.stdout.trim() ? git.stdout.trim() : await $.session.cwd()
   await update($, projectRoot, () => root)
   return root
@@ -306,7 +304,7 @@ async function readRun($: EngineInterface): Promise<void> {
 
 /** Live Orca workers, by dispatch id; throws when Orca cannot be asked. */
 async function orcaLiveIds($: EngineInterface): Promise<string[]> {
-  const ran = await $.process.run(['orca', 'orchestration', 'worker-list', '--json'], { timeoutMs: RUN_TIMEOUT_MS })
+  const ran = await $.process.run(['orca', 'orchestration', 'worker-list', '--json'], { timeoutMs: 15_000 })
   if (ran.exitCode !== 0) throw new Error(ran.stderr.trim() || `orca exited with ${ran.exitCode}`)
   return orcaLive(ran.stdout)
 }
@@ -393,7 +391,6 @@ async function open($: EngineInterface): Promise<void> {
 
 /** The machine's load now, or undefined when no source answers. Never throws. */
 async function readMachine($: EngineInterface): Promise<Machine | undefined> {
-  const quick = { timeoutMs: 3_000 }
   try {
     if (await $.fs.exists('/proc/loadavg')) {
       const loadavg = (await $.fs.read('/proc/loadavg')) as string
@@ -401,25 +398,25 @@ async function readMachine($: EngineInterface): Promise<Machine | undefined> {
       const fromProc = linuxMachine(loadavg, cpuinfo)
       if (fromProc) return fromProc
       // A /proc/cpuinfo without "processor" lines (some ARM boards): ask nproc.
-      const nproc = await $.process.run(['nproc'], quick).catch(() => undefined)
+      const nproc = await $.process.run(['nproc'], { timeoutMs: 3_000 }).catch(() => undefined)
       const cores = nproc?.exitCode === 0 ? (numbers(nproc.stdout)[0] ?? 0) : 0
       return cores > 0 ? linuxMachine(loadavg, 'processor :\n'.repeat(cores)) : undefined
     }
     if (await $.fs.exists('/usr/sbin/sysctl')) {
       const isMac = await $.fs.exists('/System/Library/CoreServices')
-      const loadavg = await $.process.run(['/usr/sbin/sysctl', '-n', 'vm.loadavg'], quick).catch(() => undefined)
-      const ncpu = await $.process.run(['/usr/sbin/sysctl', '-n', 'hw.ncpu'], quick).catch(() => undefined)
+      const loadavg = await $.process.run(['/usr/sbin/sysctl', '-n', 'vm.loadavg'], { timeoutMs: 3_000 }).catch(() => undefined)
+      const ncpu = await $.process.run(['/usr/sbin/sysctl', '-n', 'hw.ncpu'], { timeoutMs: 3_000 }).catch(() => undefined)
       // Spotlight only exists on macOS; nowhere else is ps run for it.
-      const ps = isMac ? await $.process.run(['/bin/ps', '-A', '-o', '%cpu=,comm='], quick).catch(() => undefined) : undefined
+      const ps = isMac ? await $.process.run(['/bin/ps', '-A', '-o', '%cpu=,comm='], { timeoutMs: 3_000 }).catch(() => undefined) : undefined
       return sysctlMachine(loadavg?.stdout ?? '', ncpu?.stdout ?? '', isMac ? 'macos' : 'bsd', ps?.stdout ?? '')
     }
     if (await $.fs.exists('/sbin/sysctl')) {
-      const loadavg = await $.process.run(['/sbin/sysctl', '-n', 'vm.loadavg'], quick).catch(() => undefined)
-      const ncpu = await $.process.run(['/sbin/sysctl', '-n', 'hw.ncpu'], quick).catch(() => undefined)
+      const loadavg = await $.process.run(['/sbin/sysctl', '-n', 'vm.loadavg'], { timeoutMs: 3_000 }).catch(() => undefined)
+      const ncpu = await $.process.run(['/sbin/sysctl', '-n', 'hw.ncpu'], { timeoutMs: 3_000 }).catch(() => undefined)
       return sysctlMachine(loadavg?.stdout ?? '', ncpu?.stdout ?? '', 'bsd')
     }
     if ((await $.env.get('SystemRoot')) || (await $.env.get('WINDIR'))) {
-      const out = await $.process.run(['powershell', '-NoProfile', '-Command', 'Get-CimInstance Win32_Processor | Measure-Object -Property LoadPercentage -Average | Select-Object -ExpandProperty Average'], { timeoutMs: 8_000 }).catch(() => undefined)
+      const out = await $.process.run(['typeperf', '\\Processor(_Total)\\% Processor Time', '-sc', '1'], { timeoutMs: 8_000 }).catch(() => undefined)
       return out?.exitCode === 0 ? windowsMachine(out.stdout) : undefined
     }
   } catch {
@@ -533,10 +530,8 @@ async function compactNow($: EngineInterface): Promise<void> {
 
 // ---- Update check ----
 
-// The version check: at most once a day, waiting at most this long for GitHub.
-const DAY_MS = 86_400_000
-const FETCH_TIMEOUT_MS = 8_000
-const STORE_KEY = 'updateCheck'
+/** This copy's version; a test keeps it equal to the manifest's and the marketplace entry's. */
+const VERSION = '0.5.4'
 
 const available = atom(
   { plugin: 'auditor-executor-protocol', key: 'updateAvailable' } as const,
@@ -544,70 +539,42 @@ const available = atom(
   { shape: 'update-1' },
 )
 
-async function readVersion($: EngineInterface, path: string): Promise<string | undefined> {
-  const text = await $.fs.read(path).catch(() => undefined)
-  return typeof text === 'string' ? versionIn(text) : undefined
-}
-
-/** The version the on-disk marketplace catalog lists, refreshed whenever Claude Code updates it. */
+/** The version the on-disk marketplace catalog lists for this plugin, refreshed whenever Claude Code updates it. */
 async function catalogVersion($: EngineInterface, root: string): Promise<string | undefined> {
   const dir = marketplaceDir(root)
   if (!dir) return undefined
   const text = await $.fs.read(`${dir}/.claude-plugin/marketplace.json`).catch(() => undefined)
-  if (typeof text !== 'string') return undefined
-  try {
-    const entries = (JSON.parse(text) as { plugins?: { name?: string; source?: unknown }[] }).plugins ?? []
-    const source = entries.find(p => p.name === $.plugin.name)?.source
-    if (typeof source !== 'string' || !source.startsWith('./')) return undefined
-    return readVersion($, `${dir}/${source.slice(2).replace(/\/+$/, '')}/.claude-plugin/plugin.json`)
-  } catch {
-    return undefined
-  }
+  return typeof text === 'string' ? catalogEntryVersion(text, $.plugin.name) : undefined
 }
 
-/** The published version, asked of GitHub at most once a day; the answer is kept between sessions. */
-async function remoteVersion($: EngineInterface): Promise<string | undefined> {
-  if (await $.env.get('CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC')) return undefined
-  const now = await $.clock.now()
-  const last = (await $.store.get(STORE_KEY).catch(() => undefined)) as { at?: number; version?: string } | undefined
-  if (last && typeof last.at === 'number' && now - last.at < DAY_MS) return last.version
-  const timeout = $.clock.sleep(FETCH_TIMEOUT_MS).then(() => undefined)
-  const response = await Promise.race([$.http.fetch('https://raw.githubusercontent.com/tBeltty/auditor-executor-protocol/main/integrations/claude-code/aeprogress/.claude-plugin/plugin.json').catch(() => undefined), timeout])
-  const version = response && response.ok ? versionIn(response.text) : undefined
-  await $.store.set(STORE_KEY, { at: now, ...(version ? { version } : {}) }).catch(() => undefined)
-  return version
-}
-
-/** Looks for a newer version and keeps what it found for the pane; never throws. */
-export async function checkForUpdate($: EngineInterface, mode: UpdateMode): Promise<void> {
+/**
+ * Looks for a newer version in the marketplace catalog Claude Code keeps on disk, and keeps
+ * what it found for the pane. No network: copies from a GitHub marketplace learn of new
+ * versions when Claude Code refreshes the catalog (auto-update), and copies from the claude.ai
+ * directory update themselves. Never throws.
+ */
+async function checkForUpdate($: EngineInterface, mode: UpdateMode): Promise<void> {
   try {
     if (mode === 'off') return
     const root = $.plugin.root
     const kind = installKind(root)
-    if (kind === 'synced') return
-    const installed = await readVersion($, `${root}/.claude-plugin/plugin.json`)
-    if (!installed) return
-    const found = [
-      kind === 'marketplace' ? await catalogVersion($, root) : undefined,
-      mode === 'daily' ? await remoteVersion($) : undefined,
-    ].filter((v): v is string => v !== undefined)
-    const latest = found.reduce<string | undefined>((best, v) => (!best || isNewer(v, best) ? v : best), undefined)
-    if (!latest || !isNewer(latest, installed)) {
+    if (kind !== 'marketplace') return
+    const latest = await catalogVersion($, root)
+    if (!latest || !isNewer(latest, VERSION)) {
       await update($, available, () => null)
       return
     }
-    await update($, available, () => ({ installed, latest, kind }))
-    $.ui.toast(`aeprogress ${latest} is available (you have ${installed}). ${howToUpdate(kind)}`)
+    await update($, available, () => ({ installed: VERSION, latest, kind }))
+    $.ui.toast(`aeprogress ${latest} is available (you have ${VERSION}). ${howToUpdate(kind)}`)
   } catch {
     // An update check that fails changes nothing.
   }
 }
 
 /** What the last check found, read while drawing the pane. */
-export async function updateNotice($: EngineInterface): Promise<UpdateInfo | null> {
+async function updateNotice($: EngineInterface): Promise<UpdateInfo | null> {
   return read($, available)
 }
-
 
 // ---- Launch limit: what each launch hook decides, before and after the call ----
 
@@ -811,13 +778,8 @@ export const register: Register = (on, rawOptions) => {
     return ran
   })
 
-  on('classic.SubagentStop', async ($, e, next) => {
-    const result = await next(e)
-    void refresh($)
-    return result
-  })
-
-  // A verdict or a report lands when the log is edited, so read it again after a turn.
+  // A verdict or a report lands when the log is edited, and a subagent's turn ending means
+  // it finished, so read the run again after any turn.
   // The main loop's turn ending also starts a scheduled compaction's countdown; an
   // aborted turn (the owner pressed Esc) cancels it.
   on('turn.complete', async ($, e, next) => {

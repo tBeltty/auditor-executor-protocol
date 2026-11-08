@@ -159,3 +159,23 @@ jobs:
 
       - name: Run the mod's tests
         run: claude plugin test integrations/claude-code/aeprogress
+
+  mod-windows-load:
+    name: aeprogress load reading on Windows
+    runs-on: windows-latest
+    timeout-minutes: 10
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Set up Node
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: "22"
+
+      # The plugin's own parser, loaded from its TypeScript source, against what the real
+      # typeperf prints on a real Windows.
+      - name: Read the processor time as the plugin does
+        run: node --experimental-strip-types --no-warnings .github/scripts/windows-load.mjs

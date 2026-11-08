@@ -1,13 +1,12 @@
 {
   "name": "auditor-executor-protocol",
   "displayName": "Auditor/Executor Protocol",
-  "version": "0.5.3",
+  "version": "0.5.4",
   "description": "The Auditor/Executor protocol for multi-phase work with agents, as a skill, plus the aeprogress pane that follows a run. The Auditor writes numbered tasks with gates and audits each delivery by re-running it; Executors implement one task at a time and log their evidence. The pane (/aeprogress) shows progress per phase and who works on what, holds back Executor launches when the machine is busy, and compacts the Auditor's session when a phase closes. The pane needs a run made with the protocol and the aepkit CLI (pipx install aepkit); it does nothing on its own.",
   "author": {
     "name": "tBeltty"
   },
   "homepage": "https://github.com/tBeltty/auditor-executor-protocol/tree/main/integrations/claude-code/aeprogress",
-  "documentationUrl": "https://github.com/tBeltty/auditor-executor-protocol/tree/main/integrations/claude-code/aeprogress#readme",
   "supportUrl": "https://github.com/tBeltty/auditor-executor-protocol/issues",
   "privacyPolicyUrl": "https://github.com/tBeltty/auditor-executor-protocol/tree/main/integrations/claude-code/aeprogress#privacy",
   "repository": "https://github.com/tBeltty/auditor-executor-protocol",
@@ -96,11 +95,10 @@
     "updateCheck": {
       "type": "string",
       "title": "Update check",
-      "description": "daily: compare this copy with the catalog Claude Code keeps on disk, and at most once a day ask GitHub for the plugin's published version (one request for a public file; nothing of yours is sent). offline: only the catalog on disk, no network. off: no check. Copies installed from the claude.ai directory update themselves and are never checked.",
-      "default": "daily",
+      "description": "on: compare this copy with the marketplace catalog Claude Code keeps on disk, and say in the pane when a newer version is listed. It makes no network request; the catalog is refreshed by Claude Code (turn on auto-update for this marketplace). off: no check. Copies installed from the claude.ai directory update themselves and are never checked.",
+      "default": "on",
       "options": [
-        "daily",
-        "offline",
+        "on",
         "off"
       ]
     }

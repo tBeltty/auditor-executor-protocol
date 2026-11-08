@@ -98,9 +98,11 @@ fetches new versions in the background during a session and offers `/reload-plug
 A copy installed from the claude.ai directory updates itself at every start, with nothing
 to turn on.
 
-Either way, the pane says when a newer `aeprogress` exists (see **Update check** in
-[Options](#options-config)): it compares the running copy with the marketplace catalog
-Claude Code keeps on disk, and at most once a day with the version published on GitHub.
+With auto-update off, the pane still says when a newer version exists (see **Update
+check** in [Options](#options-config)): it compares the running copy with the marketplace
+catalog Claude Code keeps on disk. Claude Code refreshes that catalog when auto-update runs
+and when you update the marketplace (`/plugin`, **Marketplaces**, **Update marketplace**).
+The pane makes no network request for it.
 
 ## Use
 
@@ -191,7 +193,7 @@ exists, and turns it into one number, the busy fraction:
 |---|---|---|---|
 | Linux | `/proc/loadavg` over the processors in `/proc/cpuinfo` (`nproc` when cpuinfo lists none) | 1-minute load / cores | Parser checked against a real kernel's output (arm64 container); not yet run inside Claude Code on Linux |
 | macOS, BSD | `sysctl -n vm.loadavg` over `sysctl -n hw.ncpu` | 1-minute load / cores | macOS: run for real |
-| Windows | PowerShell: `Get-CimInstance Win32_Processor`, `LoadPercentage` averaged | CPU % / 100 | Simulated output only |
+| Windows | `typeperf "\Processor(_Total)\% Processor Time" -sc 1`, the total processor time, from a program every Windows ships | CPU % / 100 | Run in CI on a real Windows (GitHub Actions); on a Windows whose counter names are not in English, the load shows as unknown |
 
 A system where no source answers shows "Machine load unknown", and the limit then
 applies only its worker counts.
@@ -277,7 +279,7 @@ this folder lists the same events and calls.
 ### Processes it starts
 
 These are all of them, each with fixed arguments. Each one is short, has a time limit (15
-seconds, 8 for PowerShell, 3 for the load readings), runs without a shell, and is never
+seconds, 8 for typeperf, 3 for the other load readings), runs without a shell, and is never
 left running.
 
 | Command | When | Why |
@@ -286,37 +288,25 @@ left running.
 | `git rev-parse --show-toplevel` in the run folder | Once, when Spotlight indexing stays busy | The folder to name in the Spotlight recommendation |
 | macOS and BSD: `sysctl -n vm.loadavg`, `sysctl -n hw.ncpu`; macOS also `ps -A -o %cpu=,comm=` | Each refresh, and before each launch the limit judges | The machine's load, and Spotlight's indexing CPU |
 | Linux: `nproc`, only when `/proc/cpuinfo` lists no processors | Same | The machine's load |
-| Windows: `powershell -NoProfile -Command "Get-CimInstance Win32_Processor \| Measure-Object -Property LoadPercentage -Average \| Select-Object -ExpandProperty Average"` | Same | The machine's load |
+| Windows: `typeperf "\Processor(_Total)\% Processor Time" -sc 1` | Same | The machine's load |
 | `orca worktree current --json`, `orca worktree ps --json`, `orca orchestration worker-list --json` | Inside an Orca terminal, or with **External workers** set to `orca` | Orca workers in progress, and the live count for the limit |
 
-### The one network request it makes
-
-With **Update check** on `daily` (the default), at
-most once a day, at session start, it asks GitHub for
-`https://raw.githubusercontent.com/tBeltty/auditor-executor-protocol/main/integrations/claude-code/aeprogress/.claude-plugin/plugin.json`
-and reads only its `version`. The request carries nothing of yours, it goes through
-Claude Code (which applies your organization's web-fetch policy), and it is skipped when
-`CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC` is set, for a copy installed from the claude.ai
-directory, and with **Update check** on `offline` or `off`. The date of the last check and
-the version it found are kept in the plugin's own storage, so the next session knows
-whether a day has passed.
-
-Refreshes happen at session start, when `/aeprogress` runs, after each turn, when a
-subagent starts or stops, and every 20 seconds only while the pane is open.
+Refreshes happen at session start, when `/aeprogress` runs, when a subagent starts, after
+each turn (a subagent's included), and every 20 seconds only while the pane is open.
 
 ### Files it reads
 
 The run folder's `compliance-log.md`, `execution-guide.md` and
 `plan-of-record.md` (through `aepkit`); the working directory's folder names, up to three
 levels, to find a run; the `--spec-file` an Orca `worker-start` names, to look for
-`Load: docs-only`; the **Workers file**, if you set one; on Linux, `/proc/loadavg` and
-`/proc/cpuinfo`. It writes no files.
+`Load: docs-only`; the **Workers file**, if you set one; the marketplace catalog Claude
+Code keeps on disk (`marketplace.json`), for the update check; on Linux, `/proc/loadavg`
+and `/proc/cpuinfo`. It writes no files.
 
 ### Environment variables it reads
 
-`ORCA_WORKTREE_ID` (to know it runs inside an Orca terminal), `SystemRoot` and `WINDIR`
-(to know it runs on Windows), and `CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC` (to skip the
-version check). It sets none.
+`ORCA_WORKTREE_ID` (to know it runs inside an Orca terminal), and `SystemRoot` and `WINDIR`
+(to know it runs on Windows). It sets none.
 
 ### What it can refuse
 
@@ -359,8 +349,7 @@ you type.
 | `tool.call`, for `Agent` | Reads the call's prompt and description for task IDs of the run; for an Executor launch past the limits, answers with a refusal; after a launch, keeps the new subagent's id with those task IDs | Only the refusal; otherwise the call and its result pass unchanged |
 | `tool.call`, for `Bash` | Looks only for `orca orchestration worker-start`, or `orca orchestration send` to a dispatch that is not live; past the limits, answers with a refusal; after a launch, keeps the dispatch id it printed | Only the refusal; every other command, and every result, passes unchanged |
 | `tool.call`, for `mcp__auditor-executor-protocol__compact_and_resume` | Its own tool: keeps the compaction to run when the turn ends and answers with a sentence asking Claude to end its turn | Nothing outside its own tool |
-| `classic.SubagentStop` | Reads the run again, so the pane drops the finished subagent | Nothing |
-| `turn.complete` | Reads the run again while the pane is open; at the end of the main conversation's turn starts a scheduled compaction's countdown, or drops it if you pressed Esc | Nothing |
+| `turn.complete` | Reads the run again while the pane is open, after the main conversation's turns and a subagent's alike, so a finished subagent leaves the pane; at the end of the main conversation's turn starts a scheduled compaction's countdown, or drops it if you pressed Esc | Nothing |
 | `prompt.submit` | When you type a prompt while a compaction is scheduled, drops the countdown, since you took over | Nothing: your prompt passes as you typed it |
 | `session.compact` | When you run `/compact` yourself while a countdown is pending, drops the countdown and, after your compaction ends, submits the `resume` prompt once | Nothing: your compaction runs as you asked |
 | `ui.render`, for the pane | Draws the pane | Only its own pane |
@@ -368,13 +357,11 @@ you type.
 
 ## Privacy
 
-`aeprogress` sends nothing about you anywhere: no telemetry, no analytics, no data to the
-author or to any service. Its only network request is the daily version check above, a
-plain request for a public file, and you can turn it off.
+`aeprogress` makes no network requests and sends nothing anywhere: no telemetry, no
+analytics, no data to the author or to any service.
 
 What it reads stays in your Claude Code session, in memory, and is gone when the session
-ends. Only the version check keeps anything between sessions: the date of the last check
-and the version it found.
+ends. It keeps nothing between sessions.
 
 The processes above run on your machine. One of them can reach beyond it, under your
 control: Orca's CLI talks to the Orca app on your machine and to any Orca servers you
@@ -396,7 +383,7 @@ paired yourself.
 | Spotlight CPU that triggers the recommendation (%) | 50 | Indexing CPU held on two reads in a row |
 | Compact on phase close | on | Offer the Auditor the `compact_and_resume` tool |
 | Compaction countdown (seconds) | 40 | How long the band waits before compacting |
-| Update check | `daily` | `daily`: the catalog on disk, and GitHub at most once a day. `offline`: the catalog on disk only. `off`: no check |
+| Update check | `on` | `on`: say in the pane when the marketplace catalog on disk lists a newer version, with no network request. `off`: no check |
 
 ## Develop
 

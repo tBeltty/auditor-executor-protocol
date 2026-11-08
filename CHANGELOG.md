@@ -8,6 +8,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Changed
+- Claude Code plugin 0.5.4, fewer things for the directory's review to hold:
+  - No network request at all: the daily version check on GitHub is gone. The pane still says
+    when the marketplace catalog Claude Code keeps on disk lists a newer version (option
+    **Update check**: `on` or `off`); copies from the claude.ai directory update themselves.
+  - It no longer reads its own manifest: its version is a constant in the code, and the
+    catalog's version comes from the marketplace entry, which now carries it. A test keeps the
+    three equal.
+  - Windows reads the load with `typeperf`, a program every Windows ships, in place of a
+    PowerShell command; a CI job runs it on a real Windows through the plugin's own parser.
+  - Every process call writes its options at the call, the `classic.SubagentStop` hook is gone
+    (`turn.complete` covers a subagent's end), `documentationUrl` (the same as `homepage`) is
+    gone, and the icon's SVG source moves out of the plugin folder, to
+    `integrations/claude-code/icon-source/`.
+  - The pane's drawing renamed a local helper that shadowed `isOpen`.
 - Claude Code plugin 0.5.2, for the plugin directory's checks:
   - Every process it runs names a fixed program with fixed arguments: `aepkit status --json .`
     runs in the run folder (or `python3`, `python`, `py -m aepkit`), `orca` by its plain name,
