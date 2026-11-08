@@ -1,7 +1,7 @@
 {
   "name": "auditor-executor-protocol",
   "displayName": "Auditor/Executor Protocol",
-  "version": "0.5.1",
+  "version": "0.5.2",
   "description": "The Auditor/Executor protocol for multi-phase work with agents, as a skill, plus the aeprogress pane that follows a run. The Auditor writes numbered tasks with gates and audits each delivery by re-running it; Executors implement one task at a time and log their evidence. The pane (/aeprogress) shows progress per phase and who works on what, holds back Executor launches when the machine is busy, and compacts the Auditor's session when a phase closes. The pane needs a run made with the protocol and the aepkit CLI (pipx install aepkit); it does nothing on its own.",
   "author": {
     "name": "tBeltty"
@@ -24,25 +24,19 @@
     "externalWorkers": {
       "type": "string",
       "title": "External workers",
-      "description": "Where to look for workers outside this session. auto: Orca when the session runs inside an Orca terminal, or the workers command when one is set. orca: always ask Orca. command: only the workers command. off: only this session's subagents and the status board.",
+      "description": "Where to look for workers outside this session. auto: Orca when the session runs inside an Orca terminal, or the workers file when one is set. orca: always ask Orca. file: only the workers file. off: only this session's subagents and the status board.",
       "default": "auto",
       "options": [
         "auto",
         "orca",
-        "command",
+        "file",
         "off"
       ]
     },
-    "workersCommand": {
+    "workersFile": {
       "type": "string",
-      "title": "Workers command",
-      "description": "For any other harness: a command (no shell; quotes group words) that prints the workers running now, one per line. Every line that names a task ID such as P1-T3 shows that task as in progress, with the line as who. Runs in the run folder.",
-      "default": ""
-    },
-    "aepkitCommand": {
-      "type": "string",
-      "title": "aepkit command",
-      "description": "How to run aepkit, when it is not on the PATH Claude Code sees (the desktop app's PATH is often shorter than a terminal's): a full path, or for example `python3 -m aepkit`. Empty tries aepkit, ~/.local/bin/aepkit, then python3 -m aepkit.",
+      "title": "Workers file",
+      "description": "For any other harness: a text file it keeps with the workers running now, one per line, relative to the run folder or absolute. Every line that names a task ID such as P1-T3 shows that task as in progress, with the rest of the line as who. The mod only reads it.",
       "default": ""
     },
     "autoOpen": {

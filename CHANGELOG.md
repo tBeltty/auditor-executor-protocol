@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+- Claude Code plugin 0.5.2, for the plugin directory's checks:
+  - Every process it runs names a fixed program with fixed arguments: `aepkit status --json .`
+    runs in the run folder (or `python3`, `python`, `py -m aepkit`), `orca` by its plain name,
+    and the Windows load reading as a chain of plain PowerShell cmdlets.
+  - The **Workers command** option becomes **Workers file**: another harness keeps a text file
+    of its running workers and the plugin only reads it, running nothing. The **aepkit command**
+    option is gone; aepkit must be on the PATH or importable by `python3`.
+  - The guarded hooks no longer chain `.catch` on their registration: each asks a function in
+    the hooks module whether to refuse, then passes the call on, and handles its own errors.
+
 ## [0.7.6] - 2026-11-08
 
 ### Changed

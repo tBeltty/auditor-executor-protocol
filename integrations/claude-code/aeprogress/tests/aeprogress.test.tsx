@@ -153,7 +153,8 @@ describe('the arithmetic', () => {
 test('the pane draws the %, a bar per phase and the open items, on every surface', { options: { runDir: RUN } }, async ($, on) => {
   const calls = engine(on)
   await $.session.start({ cwd: '/', surface: 'terminal', isInteractive: true })
-  expect(calls[0]).toEqual(['aepkit', 'status', '--json', RUN])
+  // aepkit runs from the run folder, with fixed arguments.
+  expect(calls[0]).toEqual(['aepkit', 'status', '--json', '.'])
 
   for (const surface of ['terminal', 'desktop'] as const) {
     const ui = await $.ui.mount({ ...PANE, surface })
@@ -209,7 +210,7 @@ test('inside Orca, a worker of this repository shows in progress', { options: { 
     },
   })
   await $.session.start({ cwd: '/', surface: 'terminal', isInteractive: true })
-  expect(calls.some(c => c[0] === '/opt/orca/bin/orca' && c.includes('ps'))).toBe(true)
+  expect(calls.some(c => c[0] === 'orca' && c.includes('ps'))).toBe(true)
 
   const ui = await $.ui.mount({ ...PANE, surface: 'terminal' })
   expect(await ui.find({ type: 'Text', text: /P1-G1 {2}Dee · Orca/ })).toBeDefined()
@@ -224,12 +225,12 @@ test('outside Orca, nothing asks Orca', { options: { runDir: RUN } }, async ($, 
 })
 
 test(
-  'any other harness reports through the workers command',
-  { options: { runDir: RUN, workersCommand: 'my-harness list --running' } },
+  'any other harness reports through the workers file, and nothing is run for it',
+  { options: { runDir: RUN, workersFile: 'workers.txt' } },
   async ($, on) => {
-    const calls = engine(on, { workersOut: 'job 7  P1-G1  running\n' })
+    const calls = engine(on, { files: { 'docs/run/workers.txt': 'job 7  P1-G1  running\n' } })
     await $.session.start({ cwd: '/', surface: 'terminal', isInteractive: true })
-    expect(calls.some(c => c.join(' ') === 'my-harness list --running')).toBe(true)
+    expect(calls.filter(c => c[0] !== 'aepkit' && c[0] !== 'SHELL')).toEqual([])
 
     const ui = await $.ui.mount({ ...PANE, surface: 'terminal' })
     expect(await ui.find({ type: 'Text', text: /P1-G1 {2}job 7 running · worker/ })).toBeDefined()
@@ -262,7 +263,7 @@ test('an old aepkit on the PATH does not hide a newer one', { options: { runDir:
     env: { HOME: '/home/me' },
   })
   await $.session.start({ cwd: '/', surface: 'terminal', isInteractive: true })
-  expect(calls.map(c => c[0])).toEqual(['aepkit', '/home/me/.local/bin/aepkit'])
+  expect(calls.map(c => c[0])).toEqual(['aepkit', 'python3'])
 
   const ui = await $.ui.mount({ ...PANE, surface: 'terminal' })
   expect((await ui.find({ type: 'Text', text: /^43\.8%$/ }))?.text).toBe('43.8%')
@@ -328,7 +329,7 @@ describe('the machine readings', () => {
       {
         env: { SystemRoot: 'C:\\Windows' },
         commands: {
-          'powershell -NoProfile -Command (Get-CimInstance Win32_Processor | Measure-Object LoadPercentage -Average).Average': '42\r\n',
+          'powershell -NoProfile -Command Get-CimInstance Win32_Processor | Measure-Object -Property LoadPercentage -Average | Select-Object -ExpandProperty Average': '42\r\n',
         },
       },
       [/Machine 42% busy/, /CPU at 42%/],

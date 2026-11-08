@@ -64,8 +64,10 @@ keep one of the two.
 
 - Claude Code with mods (function hooks): the terminal app, the desktop app's local
   sessions, or the IDE extensions.
-- `aepkit` 0.7.0 or newer on the machine (`pipx install aepkit`, or
-  `pipx upgrade aepkit`). The pane says so when it is missing or too old.
+- `aepkit` 0.7.0 or newer on the PATH Claude Code sees (`pipx install aepkit`, or
+  `pipx upgrade aepkit`), or importable by `python3`. The pane says so when it is missing
+  or too old. If the desktop app does not find it, add pipx's folder (`~/.local/bin`) to
+  your login shell's PATH.
 
 ## Install
 
@@ -131,7 +133,7 @@ run, so a worker of another project never shows. It looks in three places:
 |---|---|---|
 | Claude Code subagents | The session's own agent list, plus the task ID the spawn prompt named (`ROLE: Executor, reporting on P1-T3`), so an Auditor in Autonomous mode is followed with no setup | Always |
 | Orca workers | `orca worktree ps --json`: a worktree whose name, branch or folder names the task ID and whose agent has not finished. Only worktrees of the run's repository count | **External workers** `auto` inside an Orca terminal, or `orca` |
-| Any other harness | **Workers command**: a command that prints the workers running now, one per line. Every line that names a task ID of the run marks it in progress, and the line is shown as who | **External workers** `auto` or `command`, when the command is set |
+| Any other harness | **Workers file**: a text file the harness keeps with the workers running now, one per line, relative to the run folder or absolute. Every line that names a task ID of the run marks it in progress, and the rest of the line is shown as who. The mod only reads the file | **External workers** `auto` or `file`, when the file is set |
 
 A worker's name shows without the task IDs it carries (a subagent described as
 `Executor P2-T3` shows as `P2-T3  Executor`), since the row already names the task.
@@ -139,8 +141,8 @@ A worker's name shows without the task IDs it carries (a subagent described as
 A status board column named `Executor` (or `Worker`, `Agent`, `Owner`, `Assignee`) is
 shown next to items awaiting audit or needing attention.
 
-A workers command for a harness that writes one JSON object per running job could be
-as small as `sh -c "my-harness jobs --running"`, as long as each line names the task ID.
+A harness can keep that file with one line per running job, such as `P1-T3  Ana  building`.
+Any format works as long as each line names the task ID.
 
 ## The launch limit
 
@@ -166,7 +168,7 @@ for a build)`, and can wait for a worker to finish.
 |---|---|---|
 | Claude Code subagents | A subagent whose prompt names a task ID of the run (an Executor handoff). Exploration, review and workflow subagents are never held back | The session's own agent list |
 | Orca | `orca orchestration worker-start`, and `orca orchestration send --to dispatch:<id>` when that dispatch is not live (it reopens the worker). A message to a live worker or to the coordinator, such as a worker's own report, is never held back. `orca` must be the command itself: the same words inside an `echo` or a commit message are not a launch | `orca orchestration worker-list --json`: workers `live` and `in_progress`. Without a bound Run that is every Orca worker on the machine, which is what a machine-wide limit wants. If Orca cannot be asked, the launch is refused, to stay on the safe side |
-| Any other harness | Not seen: its launches go through without the limit. Its workers still show in the pane through the workers command | |
+| Any other harness | Not seen: its launches go through without the limit. Its workers still show in the pane through the workers file | |
 
 Claude Code subagents and Orca workers are counted together.
 
@@ -189,7 +191,7 @@ exists, and turns it into one number, the busy fraction:
 |---|---|---|---|
 | Linux | `/proc/loadavg` over the processors in `/proc/cpuinfo` (`nproc` when cpuinfo lists none) | 1-minute load / cores | Parser checked against a real kernel's output (arm64 container); not yet run inside Claude Code on Linux |
 | macOS, BSD | `sysctl -n vm.loadavg` over `sysctl -n hw.ncpu` | 1-minute load / cores | macOS: run for real |
-| Windows | PowerShell, `Win32_Processor` `LoadPercentage` averaged | CPU % / 100 | Simulated output only |
+| Windows | PowerShell: `Get-CimInstance Win32_Processor`, `LoadPercentage` averaged | CPU % / 100 | Simulated output only |
 
 A system where no source answers shows "Machine load unknown", and the limit then
 applies only its worker counts.
@@ -274,18 +276,18 @@ this folder lists the same events and calls.
 
 ### Processes it starts
 
-Each one is short, has a time limit (15 seconds, 8 for
-PowerShell, 3 for the load readings), runs without a shell, and is never left running.
+These are all of them, each with fixed arguments. Each one is short, has a time limit (15
+seconds, 8 for PowerShell, 3 for the load readings), runs without a shell, and is never
+left running.
 
 | Command | When | Why |
 |---|---|---|
-| `aepkit status --json <run folder>` (or `~/.local/bin/aepkit`, `python3 -m aepkit`, `python -m aepkit`, `py -m aepkit`, or the **aepkit command** you set) | Each refresh | Reads the run's progress |
+| `aepkit status --json .`, run in the run folder (or `python3 -m aepkit`, `python -m aepkit`, `py -m aepkit` with the same arguments, when `aepkit` is not on the PATH) | Each refresh | Reads the run's progress |
 | `git rev-parse --show-toplevel` in the run folder | Once, when Spotlight indexing stays busy | The folder to name in the Spotlight recommendation |
 | macOS and BSD: `sysctl -n vm.loadavg`, `sysctl -n hw.ncpu`; macOS also `ps -A -o %cpu=,comm=` | Each refresh, and before each launch the limit judges | The machine's load, and Spotlight's indexing CPU |
 | Linux: `nproc`, only when `/proc/cpuinfo` lists no processors | Same | The machine's load |
-| Windows: `powershell -NoProfile -Command` reading `Win32_Processor.LoadPercentage` | Same | The machine's load |
+| Windows: `powershell -NoProfile -Command "Get-CimInstance Win32_Processor \| Measure-Object -Property LoadPercentage -Average \| Select-Object -ExpandProperty Average"` | Same | The machine's load |
 | `orca worktree current --json`, `orca worktree ps --json`, `orca orchestration worker-list --json` | Inside an Orca terminal, or with **External workers** set to `orca` | Orca workers in progress, and the live count for the limit |
-| The **Workers command** you set, in the run folder | Each refresh, only if you set one | Workers of another harness |
 
 ### The one network request it makes
 
@@ -307,14 +309,14 @@ subagent starts or stops, and every 20 seconds only while the pane is open.
 The run folder's `compliance-log.md`, `execution-guide.md` and
 `plan-of-record.md` (through `aepkit`); the working directory's folder names, up to three
 levels, to find a run; the `--spec-file` an Orca `worker-start` names, to look for
-`Load: docs-only`; on Linux, `/proc/loadavg` and `/proc/cpuinfo`. It writes no files.
+`Load: docs-only`; the **Workers file**, if you set one; on Linux, `/proc/loadavg` and
+`/proc/cpuinfo`. It writes no files.
 
 ### Environment variables it reads
 
-`HOME` and `USERPROFILE` (to find aepkit),
-`ORCA_CLI_BIN_DIR` and `ORCA_WORKTREE_ID` (to know it runs inside Orca), `SystemRoot`
-and `WINDIR` (to know it runs on Windows), and `CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC`
-(to skip the version check). It sets none.
+`ORCA_WORKTREE_ID` (to know it runs inside an Orca terminal), `SystemRoot` and `WINDIR`
+(to know it runs on Windows), and `CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC` (to skip the
+version check). It sets none.
 
 ### What it can refuse
 
@@ -374,18 +376,17 @@ What it reads stays in your Claude Code session, in memory, and is gone when the
 ends. Only the version check keeps anything between sessions: the date of the last check
 and the version it found.
 
-The processes above run on your machine. Two of them can reach beyond it, and you control
-both: Orca's CLI talks to the Orca app on your machine and to any Orca servers you paired
-yourself, and a Workers command does whatever you wrote it to do.
+The processes above run on your machine. One of them can reach beyond it, under your
+control: Orca's CLI talks to the Orca app on your machine and to any Orca servers you
+paired yourself.
 
 ## Options (`/config`)
 
 | Option | Default | What it does |
 |---|---|---|
 | Run folder | empty | The run to read; empty searches the working directory |
-| External workers | `auto` | `auto`, `orca`, `command` or `off` |
-| Workers command | empty | The command for any other harness |
-| aepkit command | empty | How to run aepkit, such as a full path |
+| External workers | `auto` | `auto`, `orca`, `file` or `off` |
+| Workers file | empty | The file another harness keeps with its running workers |
 | Open at session start | on | Open the pane when a run is found |
 | Launch limit | on | Hold back Executor launches past the limits below, while a run is found |
 | Most live workers | 2 | Subagents and Orca workers together |

@@ -41,7 +41,6 @@ import {
   parseStatus,
   percent,
   phaseShares,
-  splitCommand,
   subagentWorkers,
   taskIdsIn,
 } from './progress'
@@ -78,8 +77,7 @@ const spotlightToasted = atom({ plugin: 'auditor-executor-protocol', key: 'spotl
 type Options = {
   runDir: string
   externalWorkers: string
-  workersCommand: string
-  aepkitCommand: string
+  workersFile: string
   autoOpen: boolean
   launchLimit: boolean
   limits: Limits
@@ -100,8 +98,7 @@ function optionsOf(raw: Readonly<Record<string, unknown>>): Options {
   return {
     runDir: text('runDir', ''),
     externalWorkers: text('externalWorkers', 'auto'),
-    workersCommand: text('workersCommand', ''),
-    aepkitCommand: text('aepkitCommand', ''),
+    workersFile: text('workersFile', ''),
     autoOpen: raw.autoOpen !== false,
     launchLimit: raw.launchLimit !== false,
     limits: {
@@ -155,29 +152,30 @@ async function resolveRun($: EngineInterface, options: Options): Promise<string>
 
 // Module state: what a reload starts over with and works out again.
 let options: Options = optionsOf({})
-let aepkit: string[] | undefined
+let aepkitWay: number | undefined
 let orcaRepo: { dir: string; repoId: string | undefined } | undefined
 let reading: Promise<void> | undefined
 let lastRead = 0
 let interactive = true
 
+/**
+ * `aepkit status --json` for the run folder, run from that folder with fixed arguments.
+ * pipx puts aepkit on the PATH; Windows names Python `python` or `py`. The way that worked
+ * is kept for the session.
+ */
+async function aepkitStatus($: EngineInterface, way: number, dir: string): Promise<ProcessRunResult | undefined> {
+  const init = { cwd: dir, timeoutMs: RUN_TIMEOUT_MS }
+  if (way === 0) return $.process.run(['aepkit', 'status', '--json', '.'], init).catch(() => undefined)
+  if (way === 1) return $.process.run(['python3', '-m', 'aepkit', 'status', '--json', '.'], init).catch(() => undefined)
+  if (way === 2) return $.process.run(['python', '-m', 'aepkit', 'status', '--json', '.'], init).catch(() => undefined)
+  return $.process.run(['py', '-m', 'aepkit', 'status', '--json', '.'], init).catch(() => undefined)
+}
+
 async function runAepkit($: EngineInterface, dir: string) {
-  const home = (await $.env.get('HOME')) ?? (await $.env.get('USERPROFILE')) ?? ''
-  // pipx puts aepkit in ~/.local/bin on every system; Windows names Python `python` or `py`.
-  const candidates = aepkit
-    ? [aepkit]
-    : options.aepkitCommand
-      ? [splitCommand(options.aepkitCommand)]
-      : [
-          ['aepkit'],
-          [`${home}/.local/bin/aepkit`],
-          ['python3', '-m', 'aepkit'],
-          ['python', '-m', 'aepkit'],
-          ['py', '-m', 'aepkit'],
-        ]
+  const ways = aepkitWay !== undefined ? [aepkitWay] : [0, 1, 2, 3]
   let tooOld: ProcessRunResult | undefined
-  for (const argv of candidates) {
-    const ran = await $.process.run([...argv, 'status', '--json', dir], { timeoutMs: RUN_TIMEOUT_MS }).catch(() => undefined)
+  for (const way of ways) {
+    const ran = await aepkitStatus($, way, dir)
     // `python3 -m aepkit` without aepkit installed exits 1 with "No module named".
     if (!ran || /No module named/.test(ran.stderr)) continue
     // An aepkit older than 0.7.0: a newer one may still be reachable the next way.
@@ -185,33 +183,29 @@ async function runAepkit($: EngineInterface, dir: string) {
       tooOld ??= ran
       continue
     }
-    aepkit = argv
+    aepkitWay = way
     return ran
   }
   return tooOld
 }
 
-async function orcaBinary($: EngineInterface): Promise<string | undefined> {
-  const binDir = await $.env.get('ORCA_CLI_BIN_DIR')
-  if (binDir) return `${binDir.replace(/[\\/]+$/, '')}/orca`
-  if (options.externalWorkers === 'orca') return 'orca'
-  // auto: only inside an Orca terminal, so no session spawns a binary it lacks.
-  return (await $.env.get('ORCA_WORKTREE_ID')) ? 'orca' : undefined
+/** Whether to ask Orca: always with External workers on `orca`; on `auto`, inside an Orca terminal. */
+async function usesOrca($: EngineInterface): Promise<boolean> {
+  if (options.externalWorkers === 'orca') return true
+  return options.externalWorkers === 'auto' && Boolean(await $.env.get('ORCA_WORKTREE_ID'))
 }
 
 async function externalWorkers($: EngineInterface, dir: string, known: Set<string>): Promise<Worker[]> {
   const mode = options.externalWorkers
   if (mode === 'off') return []
-  if (mode === 'command' || (mode === 'auto' && options.workersCommand)) {
-    const argv = splitCommand(options.workersCommand)
-    if (argv.length === 0) return []
-    const ran = await $.process.run(argv, { cwd: dir, timeoutMs: RUN_TIMEOUT_MS }).catch(() => undefined)
-    return ran && ran.exitCode === 0 ? commandWorkers(ran.stdout, known) : []
+  if (mode === 'file' || (mode === 'auto' && options.workersFile)) {
+    if (!options.workersFile) return []
+    const text = await $.fs.read(join(dir, options.workersFile)).catch(() => undefined)
+    return typeof text === 'string' ? commandWorkers(text, known) : []
   }
-  const orca = await orcaBinary($)
-  if (!orca) return []
+  if (!(await usesOrca($))) return []
   if (orcaRepo?.dir !== dir) {
-    const current = await $.process.run([orca, 'worktree', 'current', '--json'], { cwd: dir, timeoutMs: RUN_TIMEOUT_MS }).catch(() => undefined)
+    const current = await $.process.run(['orca', 'worktree', 'current', '--json'], { cwd: dir, timeoutMs: RUN_TIMEOUT_MS }).catch(() => undefined)
     let repoId: string | undefined
     try {
       repoId = current?.exitCode === 0 ? JSON.parse(current.stdout).result?.worktree?.repoId : undefined
@@ -220,7 +214,7 @@ async function externalWorkers($: EngineInterface, dir: string, known: Set<strin
     }
     orcaRepo = { dir, repoId }
   }
-  const ps = await $.process.run([orca, 'worktree', 'ps', '--json'], { cwd: dir, timeoutMs: RUN_TIMEOUT_MS }).catch(() => undefined)
+  const ps = await $.process.run(['orca', 'worktree', 'ps', '--json'], { cwd: dir, timeoutMs: RUN_TIMEOUT_MS }).catch(() => undefined)
   if (!ps || ps.exitCode !== 0) return []
   try {
     return orcaWorkers(ps.stdout, orcaRepo.repoId, known)
@@ -312,8 +306,7 @@ async function readRun($: EngineInterface): Promise<void> {
 
 /** Live Orca workers, by dispatch id; throws when Orca cannot be asked. */
 async function orcaLiveIds($: EngineInterface): Promise<string[]> {
-  const orca = (await orcaBinary($)) ?? 'orca'
-  const ran = await $.process.run([orca, 'orchestration', 'worker-list', '--json'], { timeoutMs: RUN_TIMEOUT_MS })
+  const ran = await $.process.run(['orca', 'orchestration', 'worker-list', '--json'], { timeoutMs: RUN_TIMEOUT_MS })
   if (ran.exitCode !== 0) throw new Error(ran.stderr.trim() || `orca exited with ${ran.exitCode}`)
   return orcaLive(ran.stdout)
 }
@@ -335,7 +328,7 @@ async function liveExecutors($: EngineInterface, orcaIds?: readonly string[]): P
     .filter(a => LIVE_AGENT.has(a.status) && (a.id in executors || namesTask(`${a.description} ${a.name ?? ''}`)))
     .map(a => ({ id: a.id, kind: known[a.id] ?? 'build' }))
   let orca = orcaIds
-  if (!orca && (await orcaBinary($))) orca = await orcaLiveIds($).catch(() => [])
+  if (!orca && (await usesOrca($))) orca = await orcaLiveIds($).catch(() => [])
   for (const id of orca ?? []) live.push({ id, kind: known[id] ?? 'build' })
   return live
 }
@@ -426,7 +419,7 @@ async function readMachine($: EngineInterface): Promise<Machine | undefined> {
       return sysctlMachine(loadavg?.stdout ?? '', ncpu?.stdout ?? '', 'bsd')
     }
     if ((await $.env.get('SystemRoot')) || (await $.env.get('WINDIR'))) {
-      const out = await $.process.run(['powershell', '-NoProfile', '-Command', '(Get-CimInstance Win32_Processor | Measure-Object LoadPercentage -Average).Average'], { timeoutMs: 8_000 }).catch(() => undefined)
+      const out = await $.process.run(['powershell', '-NoProfile', '-Command', 'Get-CimInstance Win32_Processor | Measure-Object -Property LoadPercentage -Average | Select-Object -ExpandProperty Average'], { timeoutMs: 8_000 }).catch(() => undefined)
       return out?.exitCode === 0 ? windowsMachine(out.stdout) : undefined
     }
   } catch {
@@ -615,6 +608,124 @@ export async function updateNotice($: EngineInterface): Promise<UpdateInfo | nul
   return read($, available)
 }
 
+
+// ---- Launch limit: what each launch hook decides, before and after the call ----
+
+type LaunchPlan = { refusal?: string; isLaunch: boolean; ids: string[]; isExecutor: boolean; kind: Kind; live: LiveWorker[] }
+
+/** Whether a Claude Code Agent call launches an Executor past the limits. Never throws. */
+async function planAgentLaunch($: EngineInterface, input: { prompt?: unknown; description?: unknown }): Promise<LaunchPlan> {
+  const prompt = typeof input.prompt === 'string' ? input.prompt : ''
+  const description = typeof input.description === 'string' ? input.description : ''
+  const ids = taskIdsIn(`${description} ${prompt}`)
+  const kind: Kind = isDocsOnly(prompt) ? 'docs' : 'build'
+  const plan: LaunchPlan = { isLaunch: false, ids, isExecutor: false, kind, live: [] }
+  try {
+    const snap = await read($, snapshot)
+    const runIds = new Set(snap.items.map(i => i.id.toUpperCase()))
+    plan.isExecutor = ids.some(id => runIds.size === 0 || runIds.has(id))
+    if (plan.isExecutor && (await runActive($))) {
+      plan.isLaunch = true
+      plan.live = await liveExecutors($)
+      plan.refusal = await judgeLaunch($, kind, plan.live)
+    }
+  } catch {
+    if (plan.isLaunch) {
+      plan.refusal = 'aeprogress launch limit: the live workers could not be counted, so this Executor is not launched.'
+    }
+  }
+  return plan
+}
+
+/** After an Agent call: keep the new subagent's id with the task IDs its prompt named. Never throws. */
+async function afterAgentLaunch($: EngineInterface, result: unknown, plan: LaunchPlan): Promise<void> {
+  try {
+    const record = result as { agentId?: unknown } | undefined
+    const agentId = record && typeof record.agentId === 'string' ? record.agentId : undefined
+    if (agentId && plan.ids.length > 0) {
+      await update($, spawned, old => ({ ...old, [agentId]: plan.ids }))
+      if (plan.isExecutor) await remember($, agentId, plan.kind, plan.live)
+    }
+  } catch {
+    // A launch that could not be recorded still ran.
+  }
+  void refresh($)
+}
+
+/** Whether a Bash command launches an Orca worker past the limits. Never throws. */
+async function planOrcaLaunch($: EngineInterface, command: string): Promise<LaunchPlan> {
+  const plan: LaunchPlan = { isLaunch: false, ids: [], isExecutor: false, kind: 'build', live: [] }
+  try {
+    if (!mentionsOrcaLaunch(command) || !(await runActive($))) return plan
+  } catch {
+    return plan
+  }
+  let orcaIds: string[]
+  try {
+    orcaIds = await orcaLiveIds($)
+  } catch {
+    plan.isLaunch = true
+    plan.refusal =
+      'aeprogress launch limit: the live Orca workers could not be counted (orca orchestration ' +
+      'worker-list failed), so this worker is not launched. Turn "Launch limit" off in /config ' +
+      'to launch without it.'
+    return plan
+  }
+  try {
+    if (!orcaLaunch(command, new Set(orcaIds))) return plan
+    plan.isLaunch = true
+    const spec = specFile(command)
+    const specText = spec ? ((await $.fs.read(spec).catch(() => '')) as string) : ''
+    plan.kind = isDocsOnly(command) || isDocsOnly(specText) ? 'docs' : 'build'
+    plan.live = await liveExecutors($, orcaIds)
+    plan.refusal = await judgeLaunch($, plan.kind, plan.live)
+  } catch {
+    plan.refusal = 'aeprogress launch limit: the live workers could not be counted, so this worker is not launched.'
+  }
+  return plan
+}
+
+/** After an Orca launch: keep the dispatch id it printed, with what it builds. Never throws. */
+async function afterOrcaLaunch($: EngineInterface, result: unknown, plan: LaunchPlan): Promise<void> {
+  try {
+    const dispatch = dispatchIdIn(JSON.stringify(result ?? ''))
+    if (dispatch) await remember($, dispatch, plan.kind, plan.live)
+  } catch {
+    // A launch that could not be recorded still ran.
+  }
+  void refresh($)
+}
+
+/** The owner typed a prompt: a scheduled compaction gives way. Never throws. */
+async function ownerTookOver($: EngineInterface): Promise<void> {
+  try {
+    if (await pendingJob($)) await cancel($)
+  } catch {
+    // Nothing scheduled, or nothing to drop.
+  }
+}
+
+/** The owner runs /compact by hand: drop the countdown and hand back the resume text, if any. */
+async function manualCompaction($: EngineInterface): Promise<string | undefined> {
+  try {
+    const job = await pendingJob($)
+    if (!job) return undefined
+    await cancel($)
+    return job.resume
+  } catch {
+    return undefined
+  }
+}
+
+/** After a manual /compact, the Auditor's resume message, once. */
+async function resumeAfterManual($: EngineInterface, text: string): Promise<void> {
+  try {
+    await $.prompt.submit({ text })
+  } catch {
+    $.ui.toast('aeprogress could not resume the Auditor after /compact.')
+  }
+}
+
 export const register: Register = (on, rawOptions) => {
   options = optionsOf(rawOptions)
 
@@ -684,67 +795,27 @@ export const register: Register = (on, rawOptions) => {
   // call goes through untouched. After it starts, the subagent's id is kept with the task
   // IDs its prompt named, so the pane can show it in progress.
   on('tool.call', { tool: 'Agent' }, async ($, e, next) => {
-    const input = e as unknown as { prompt?: unknown; description?: unknown }
-    const prompt = typeof input.prompt === 'string' ? input.prompt : ''
-    const description = typeof input.description === 'string' ? input.description : ''
-    const ids = taskIdsIn(`${description} ${prompt}`)
-    const snap = await read($, snapshot)
-    const runIds = new Set(snap.items.map(i => i.id.toUpperCase()))
-    const isExecutor = ids.some(id => runIds.size === 0 || runIds.has(id))
-    const kind: Kind = isDocsOnly(prompt) ? 'docs' : 'build'
-    let live: LiveWorker[] = []
-    if (isExecutor && (await runActive($))) {
-      live = await liveExecutors($)
-      const refusal = await judgeLaunch($, kind, live)
-      if (refusal) return { deny: refusal }
-    }
+    const plan = await planAgentLaunch($, e as unknown as { prompt?: unknown; description?: unknown })
+    if (plan.refusal) return { deny: plan.refusal }
     const ran = await next(e)
-    const record = ran.result as { agentId?: unknown } | undefined
-    const agentId = record && typeof record.agentId === 'string' ? record.agentId : undefined
-    if (agentId && ids.length > 0) {
-      await update($, spawned, old => ({ ...old, [agentId]: ids }))
-      if (isExecutor) await remember($, agentId, kind, live)
-    }
-    void refresh($)
+    await afterAgentLaunch($, ran.result, plan)
     return ran
-  }).catch(($, e, next) =>
-    next.called
-      ? next(e)
-      : { deny: 'aeprogress launch limit: the live workers could not be counted, so this Executor is not launched.' },
-  )
+  })
 
   // Orca: a worker-start, or a send that reopens a worker, goes through the same limit.
   on('tool.call', { tool: 'Bash' }, async ($, e, next) => {
-    if (!mentionsOrcaLaunch(e.command) || !(await runActive($))) return next(e)
-    const orcaIds = await orcaLiveIds($)
-    if (!orcaLaunch(e.command, new Set(orcaIds))) return next(e)
-    const spec = specFile(e.command)
-    const specText = spec ? ((await $.fs.read(spec).catch(() => '')) as string) : ''
-    const kind: Kind = isDocsOnly(e.command) || isDocsOnly(specText) ? 'docs' : 'build'
-    const live = await liveExecutors($, orcaIds)
-    const refusal = await judgeLaunch($, kind, live)
-    if (refusal) return { deny: refusal }
+    const plan = await planOrcaLaunch($, e.command)
+    if (plan.refusal) return { deny: plan.refusal }
     const ran = await next(e)
-    const dispatch = dispatchIdIn(JSON.stringify(ran.result ?? ''))
-    if (dispatch) await remember($, dispatch, kind, live)
-    void refresh($)
+    if (plan.isLaunch) await afterOrcaLaunch($, ran.result, plan)
     return ran
-  }).catch(($, e, next) =>
-    next.called
-      ? next(e)
-      : {
-          deny:
-            'aeprogress launch limit: the live Orca workers could not be counted (orca orchestration ' +
-            'worker-list failed), so this worker is not launched. Turn "Launch limit" off in /config ' +
-            'to launch without it.',
-        },
-  )
+  })
 
   on('classic.SubagentStop', async ($, e, next) => {
     const result = await next(e)
     void refresh($)
     return result
-  }).catch(($, e, next) => next(e))
+  })
 
   // A verdict or a report lands when the log is edited, so read it again after a turn.
   // The main loop's turn ending also starts a scheduled compaction's countdown; an
@@ -769,34 +840,32 @@ export const register: Register = (on, rawOptions) => {
     if (!interactive) {
       return { result: 'Not scheduled: this session is not interactive, so nothing would resume it.' }
     }
-    await schedule($, resume, instructions || undefined)
+    try {
+      await schedule($, resume, instructions || undefined)
+    } catch {
+      return { result: 'Not scheduled: aeprogress failed to keep the compaction. Nothing will happen.' }
+    }
     return {
       result:
         `Compaction scheduled. End your turn now: a ${options.compactSeconds}-second countdown starts ` +
         'when it ends, the owner may cancel it, and then the session is compacted and resumed with your ' +
         '`resume` message.',
     }
-  }).catch(() => ({ result: 'Not scheduled: aeprogress failed to keep the compaction. Nothing will happen.' }))
+  })
 
   // The owner typing a prompt takes over: the countdown is dropped.
   on('prompt.submit', async ($, e, next) => {
-    if (e.origin.kind === 'composer' && (await pendingJob($))) await cancel($)
+    if (e.origin.kind === 'composer') await ownerTookOver($)
     return next(e)
-  }).catch(($, e, next) => next(e))
+  })
 
   // The owner compacting by hand (/compact) does the work: clear the countdown and resume once.
   on('session.compact', async ($, e, next) => {
-    const job = e.trigger === 'manual' && !e.agentId ? await pendingJob($) : null
-    if (!job) return next(e)
-    await cancel($)
+    const resume = e.trigger === 'manual' && !e.agentId ? await manualCompaction($) : undefined
     const result = await next(e)
-    if (!result.skip) {
-      void $.prompt.submit({ text: job.resume }).catch(() => {
-        $.ui.toast('aeprogress could not resume the Auditor after /compact.')
-      })
-    }
+    if (resume && !result.skip) void resumeAfterManual($, resume)
     return result
-  }).catch(($, e, next) => next(e))
+  })
 
   // One line: the countdown and its two buttons, the words shortened to fit the band.
   on('ui.render', { component: 'AbovePrompt' }, async ($, e, next) => {
