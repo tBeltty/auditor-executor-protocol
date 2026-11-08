@@ -14,6 +14,7 @@ import {
 } from './limit'
 import type { Kind, Limits, LiveWorker } from './limit'
 import { readMachine } from './machine'
+import { TOOL, cancel, compactNow, countdownLeft, pendingJob, resumeCountdown, schedule, startCountdown } from './compact'
 import {
   ATTENTION,
   bar,
@@ -60,6 +61,8 @@ type Options = {
   limits: Limits
   spotlightTip: boolean
   spotlightCpu: number
+  compactOnClose: boolean
+  compactSeconds: number
 }
 
 function optionsOf(raw: Readonly<Record<string, unknown>>): Options {
@@ -83,6 +86,8 @@ function optionsOf(raw: Readonly<Record<string, unknown>>): Options {
     },
     spotlightTip: raw.spotlightTip !== false,
     spotlightCpu: count('spotlightCpuPercent', 50),
+    compactOnClose: raw.compactOnClose !== false,
+    compactSeconds: Math.max(1, Math.round(count('compactCountdownSeconds', 40))),
   }
 }
 
@@ -128,6 +133,7 @@ let aepkit: string[] | undefined
 let orcaRepo: { dir: string; repoId: string | undefined } | undefined
 let reading: Promise<void> | undefined
 let lastRead = 0
+let interactive = true
 
 async function runAepkit($: EngineInterface, dir: string) {
   const home = (await $.env.get('HOME')) ?? (await $.env.get('USERPROFILE')) ?? ''
@@ -376,6 +382,29 @@ export const register: Register = (on, rawOptions) => {
       description: 'Open the Auditor/Executor progress pane (optional: the run folder)',
       argumentHint: '[run folder]',
     })
+    interactive = e.isInteractive
+    // A refused registration costs this feature alone, never the pane or the launch limit.
+    if (options.compactOnClose) {
+      await $.tool.register({
+        name: TOOL,
+        description:
+          'Auditor/Executor protocol, Autonomous mode: call this when a phase has just closed (its gate ' +
+          'APPROVED, the work pushed, and the Auditor brief up to date on disk), then end your turn. ' +
+          `When the turn ends, a ${options.compactSeconds}-second countdown lets the owner cancel; then ` +
+          'the session is compacted and `resume` is sent as the next message, which resumes you. Put in ' +
+          '`resume` what to do next (for example: "Resume the plan from the brief: launch the first task ' +
+          'of P2"), and in `instructions` what the summary must keep.',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            resume: { type: 'string', description: 'The message that resumes the Auditor after compacting.' },
+            instructions: { type: 'string', description: 'What the compaction summary must keep.' },
+          },
+          required: ['resume'],
+        },
+      }).catch(() => undefined)
+      await resumeCountdown($)
+    }
     await refresh($, true)
     // Read again on a timer only while the pane is open: a closed pane costs nothing.
     $.clock.every(REFRESH_MS, async () => {
@@ -465,10 +494,74 @@ export const register: Register = (on, rawOptions) => {
   }).catch(($, e, next) => next(e))
 
   // A verdict or a report lands when the log is edited, so read it again after a turn.
+  // The main loop's turn ending also starts a scheduled compaction's countdown; an
+  // aborted turn (the owner pressed Esc) cancels it.
   on('turn.complete', async ($, e, next) => {
     const result = await next(e)
     if (await isOpen($)) void refresh($)
+    if (!e.agentId && (await pendingJob($))) {
+      if (e.isAborted) await cancel($)
+      else await startCountdown($, options.compactSeconds)
+    }
     return result
+  })
+
+  // The Auditor schedules the compaction; it runs once its turn ends.
+  on('tool.call', { tool: 'mcp__aeprogress__compact_and_resume' }, async ($, e, next) => {
+    if (!options.compactOnClose) return next(e)
+    const input = e as unknown as { resume?: unknown; instructions?: unknown }
+    const resume = typeof input.resume === 'string' ? input.resume.trim() : ''
+    const instructions = typeof input.instructions === 'string' ? input.instructions.trim() : ''
+    if (!resume) return { result: 'Not scheduled: `resume` is required, the message that resumes you.' }
+    if (!interactive) {
+      return { result: 'Not scheduled: this session is not interactive, so nothing would resume it.' }
+    }
+    await schedule($, resume, instructions || undefined)
+    return {
+      result:
+        `Compaction scheduled. End your turn now: a ${options.compactSeconds}-second countdown starts ` +
+        'when it ends, the owner may cancel it, and then the session is compacted and resumed with your ' +
+        '`resume` message.',
+    }
+  }).catch(() => ({ result: 'Not scheduled: aeprogress failed to keep the compaction. Nothing will happen.' }))
+
+  // The owner typing a prompt takes over: the countdown is dropped.
+  on('prompt.submit', async ($, e, next) => {
+    if (e.origin.kind === 'composer' && (await pendingJob($))) await cancel($)
+    return next(e)
+  }).catch(($, e, next) => next(e))
+
+  // The owner compacting by hand (/compact) does the work: clear the countdown and resume once.
+  on('session.compact', async ($, e, next) => {
+    const job = e.trigger === 'manual' && !e.agentId ? await pendingJob($) : null
+    if (!job) return next(e)
+    await cancel($)
+    const result = await next(e)
+    if (!result.skip) {
+      void $.prompt.submit({ text: job.resume }).catch(() => {
+        $.ui.toast('aeprogress could not resume the Auditor after /compact.')
+      })
+    }
+    return result
+  }).catch(($, e, next) => next(e))
+
+  on('ui.render', { component: 'AbovePrompt' }, async ($, e, next) => {
+    const job = await pendingJob($)
+    if (!job || e.props.hasSurvey) return next(e)
+    const { Box, Button, Text } = $.ui.resolve(e)
+    const left = await countdownLeft($)
+    return (
+      <Box>
+        <Text>
+          {job.deadline === null ? 'Compaction scheduled for the end of this turn ' : `Compacting in ${left}s `}
+        </Text>
+        <Button key="compact-cancel" label="Cancel" onPress={() => cancel($)} />
+        <Text> </Text>
+        {job.deadline !== null && (
+          <Button key="compact-now" label="Compact now" variant="primary" onPress={() => compactNow($)} />
+        )}
+      </Box>
+    )
   })
 
   on('ui.render', { component: 'Pane', requestId: PANE }, async ($, e) => {

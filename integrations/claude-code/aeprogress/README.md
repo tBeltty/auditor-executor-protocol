@@ -13,6 +13,9 @@ Auditor/Executor run. The protocol does not depend on it. It reads the run's
 - **Needs attention**: `CONDITIONAL`, `REJECTED`, `CONFLICT`, `BLOCKED` and `FAILED` items;
 - the machine's load, with a colored dot, and how full the launch limit is.
 
+When a phase closes, the Auditor can also **compact its own session and resume itself**,
+after a countdown the owner can cancel.
+
 It also carries a **launch limit**: while a run is found, it holds back launching another
 Executor past a worker count or a machine load, with a message saying why. And on macOS
 it recommends excluding the project from Spotlight when indexing keeps the machine busy.
@@ -151,6 +154,38 @@ The mod only recommends. It never changes a setting, runs `mdutil` or writes int
 folder. Turn it off with **Spotlight recommendation** in `/config`, or change its
 threshold. Other systems never show it.
 
+## Compacting when a phase closes
+
+In Autonomous mode the Auditor waits on its workers for long stretches, and a session
+that carries every earlier phase gets expensive whenever its prompt cache expires.
+When a phase closes (gate `APPROVED`, work pushed, Auditor brief up to date on disk),
+everything needed to go on is on disk, so the session can be compacted.
+
+The mod gives the Auditor a tool, `compact_and_resume` (`mcp__aeprogress__compact_and_resume`):
+
+| Input | What it is |
+|---|---|
+| `resume` (required) | The message that resumes the Auditor after compacting, such as `Resume the plan from the brief: launch the first task of P2` |
+| `instructions` | What the compaction summary must keep |
+
+The Auditor calls it and ends its turn. When the turn ends, a band above the prompt
+counts down 40 seconds with **Cancel** and **Compact now**. At zero the session is
+compacted, as `/compact` does, and the `resume` message is sent, which opens the
+Auditor's next turn.
+
+The owner can always step in:
+
+- **Cancel**: nothing is compacted or resumed.
+- **Typing a prompt** during the countdown takes over: the countdown is dropped.
+- **Pressing Esc** on the Auditor's turn drops it too.
+- **`/compact` by hand** while the countdown runs: the countdown is cleared and the
+  `resume` message is sent once, after that compaction.
+
+If the compaction is refused (a turn is running) or another plugin vetoes it, the
+Auditor is not resumed: a toast says so and the owner decides. A countdown survives a
+reload of the mod. The tool is offered only in interactive sessions, where something
+can resume; turn it off, or change the seconds, in `/config`.
+
 ## How the percentage is computed
 
 - Each phase weighs 1, unless the plan's phase table has a `Weight` column:
@@ -200,6 +235,8 @@ threshold. Other systems never show it.
 | Busiest machine for a build (%) | 75 | No building launch above this load |
 | Spotlight recommendation (macOS) | on | Recommend excluding the project from Spotlight |
 | Spotlight CPU that triggers the recommendation (%) | 50 | Indexing CPU held on two reads in a row |
+| Compact on phase close | on | Offer the Auditor the `compact_and_resume` tool |
+| Compaction countdown (seconds) | 40 | How long the band waits before compacting |
 
 ## Develop
 

@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.7.2] - 2026-11-08
+
+### Added
+- `references/autonomous-mode.md`: an optional step at a phase's close. Once the gate is
+  `APPROVED`, the work is pushed and the Auditor brief is up to date, the Auditor may compact
+  its own session and resume itself from the brief.
+- `aeprogress` 0.3.0: a `compact_and_resume` tool for the Auditor. After its turn ends, a band
+  counts down 40 seconds with Cancel and Compact now; at zero the session is compacted and the
+  Auditor resumed with its own `resume` message. A prompt typed by the owner, Esc on the turn,
+  or Cancel drops it; a manual `/compact` during the countdown resumes once; a refused or vetoed
+  compaction resumes nothing. Options for the seconds and to turn it off.
+
 ## [0.7.1] - 2026-11-08
 
 ### Added
@@ -334,7 +346,8 @@ Fixes from an independent review of 0.3.0.
 - Multi-framework agent installation support for Antigravity, Claude Code, and Cursor.
 - Zero-dependency test runner (`tests/run.py`).
 
-[Unreleased]: https://github.com/tBeltty/auditor-executor-protocol/compare/v0.7.1...HEAD
+[Unreleased]: https://github.com/tBeltty/auditor-executor-protocol/compare/v0.7.2...HEAD
+[0.7.2]: https://github.com/tBeltty/auditor-executor-protocol/compare/v0.7.1...v0.7.2
 [0.7.1]: https://github.com/tBeltty/auditor-executor-protocol/compare/v0.7.0...v0.7.1
 [0.7.0]: https://github.com/tBeltty/auditor-executor-protocol/compare/v0.6.0...v0.7.0
 [0.6.0]: https://github.com/tBeltty/auditor-executor-protocol/compare/v0.5.1...v0.6.0

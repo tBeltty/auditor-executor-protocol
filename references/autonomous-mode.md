@@ -94,6 +94,12 @@ each handoff. The shape that has worked here:
    yet expanded, expand it (tasks, gate, model per task, log sections) before launching
    its first task.
 
+Optional, at a phase's close: once the gate is `APPROVED`, the work is pushed and the
+Auditor brief is up to date on disk, the Auditor may compact its own session and resume
+itself from the brief, so a long run does not carry every earlier phase in its context.
+On Claude Code the optional `aeprogress` mod offers this as a tool that waits out a short
+countdown the owner can cancel. The protocol does not depend on it.
+
 Do not end a turn between a verdict and the next launch unless something on the
 critical-risk list is open. A run that stops to report an `APPROVED` and wait is Guided
 mode by accident.

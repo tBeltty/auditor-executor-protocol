@@ -1,7 +1,7 @@
 {
   "name": "aeprogress",
-  "version": "0.2.0",
-  "description": "Optional progress pane and launch limit for an Auditor/Executor protocol run: overall %, a bar per phase, who is working on what (Claude Code subagents, Orca workers or any harness), the machine's load, and a limit that holds back worker launches past a worker count or a load. Opens with /aeprogress. Early access API.",
+  "version": "0.3.0",
+  "description": "Optional progress pane and launch limit for an Auditor/Executor protocol run: overall %, a bar per phase, who is working on what (Claude Code subagents, Orca workers or any harness), the machine's load, and a limit that holds back worker launches past a worker count or a load. When a phase closes, the Auditor can compact its session and resume itself after a countdown the owner can cancel. Opens with /aeprogress. Early access API.",
   "author": {
     "name": "tBeltty"
   },
@@ -81,6 +81,18 @@
       "title": "Spotlight CPU that triggers the recommendation (%)",
       "description": "Indexing CPU, added up over Spotlight's processes, held on two reads in a row.",
       "default": 50
+    },
+    "compactOnClose": {
+      "type": "boolean",
+      "title": "Compact on phase close",
+      "description": "Give the Auditor a tool that, when a phase closes, compacts the session after a countdown and resumes the Auditor with its own message. The owner can cancel, compact at once, type a prompt, or compact by hand. Off: the tool is not offered.",
+      "default": true
+    },
+    "compactCountdownSeconds": {
+      "type": "number",
+      "title": "Compaction countdown (seconds)",
+      "description": "How long the band waits, after the Auditor's turn ends, before compacting.",
+      "default": 40
     }
   }
 }

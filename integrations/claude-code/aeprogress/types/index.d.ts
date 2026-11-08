@@ -39,6 +39,16 @@ export type Machine = {
 /** Whether a launched worker builds, by Orca dispatch id or subagent id. */
 export type Kinds = Record<string, 'build' | 'docs'>
 
+/** A compaction the Auditor scheduled when a phase closed. */
+export type PendingCompaction = {
+  /** The message that resumes the Auditor once the session is compacted. */
+  resume: string
+  /** What the summary must keep, passed to the compaction. */
+  instructions?: string
+  /** When the countdown ends (ms since the epoch); null until the Auditor's turn ends. */
+  deadline: number | null
+}
+
 export type Snapshot = {
   /** The run folder read, as resolved; empty when none was found. */
   runDir: string
@@ -69,6 +79,9 @@ declare module 'claude-code' {
       projectRoot: string
       /** Whether the Spotlight recommendation was toasted this session. */
       spotlightToasted: boolean
+      pendingCompaction: Shaped<PendingCompaction | null>
+      /** Seconds left in the compaction countdown, for the band. */
+      compactSecondsLeft: number
     }
   }
 }
