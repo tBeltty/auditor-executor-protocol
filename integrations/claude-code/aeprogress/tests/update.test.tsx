@@ -5,7 +5,7 @@ import type { On, ProcessRunResult } from 'claude-code'
 import { REMOTE_MANIFEST, installKind, isNewer, marketplaceDir, versionParts } from '../hooks/update'
 
 const PANE = {
-  plugin: 'aeprogress',
+  plugin: 'auditor-executor-protocol',
   component: 'Pane',
   requestId: 'aeprogress',
   props: {
@@ -32,7 +32,7 @@ function engine(on: On, given: Given = {}) {
   const toasts: string[] = []
   const clock = mock.clock(on)
   on('command.register', () => ({ value: { command: 'aeprogress' } }))
-  on('tool.register', () => ({ value: { tool: 'mcp__aeprogress__compact_and_resume' } }))
+  on('tool.register', () => ({ value: { tool: 'mcp__auditor-executor-protocol__compact_and_resume' } }))
   on('ui.open', () => ({ value: { isPlaced: true } }))
   on('ui.panes', () => ({ value: [] }))
   on('ui.toast', (_, e) => {

@@ -18,6 +18,25 @@ def test_packaged_skill_matches_repo_root():
     assert _skill_files(PACKAGED) == _skill_files(REPO), SYNC_HINT
 
 
+def test_claude_code_plugin_skill_matches_repo_root():
+    """The plugin brings the protocol as a skill: its copy must be the repo root's."""
+    bundled = (
+        REPO
+        / "integrations"
+        / "claude-code"
+        / "aeprogress"
+        / "skills"
+        / "auditor-executor-protocol"
+    )
+    if not bundled.exists():
+        return  # the sdist ships no integrations/; the repository checkout always has it
+    assert _skill_files(bundled) == _skill_files(REPO), (
+        "the plugin's skill is out of sync with the repo root; run: "
+        "cp SKILL.md integrations/claude-code/aeprogress/skills/auditor-executor-protocol/ && "
+        "cp references/*.md integrations/claude-code/aeprogress/skills/auditor-executor-protocol/references/"
+    )
+
+
 def test_every_reference_is_linked_and_every_link_resolves():
     text = (REPO / "SKILL.md").read_text(encoding="utf-8")
     linked = set(re.findall(r"\]\(references/([\w.-]+\.md)\)", text))

@@ -13,7 +13,7 @@ A two-role protocol for running multi-phase work through AI agents without the p
 
 The **Auditor** defines what "done" means and proves it independently. The **Executor** implements one numbered task at a time and logs command output. Neither role crosses into the other.
 
-[`SKILL.md`](https://github.com/tBeltty/auditor-executor-protocol/blob/main/SKILL.md) specifies the protocol core; [`references/`](https://github.com/tBeltty/auditor-executor-protocol/tree/main/references) holds the parts an agent loads only when it reaches that step (task and gate writing, handoff templates, Autonomous mode, failure modes and a worked example). `aepkit` is a zero-dependency Python CLI that automates scaffolding, drift linting, negative controls, status tallies, and installing the skill into your agent. On Claude Code, the optional [`aeprogress`](#6-optional-aeprogress-for-claude-code) mod shows a run's progress beside the chat, holds back Executor launches when the machine is busy, and compacts the Auditor's session when a phase closes.
+[`SKILL.md`](https://github.com/tBeltty/auditor-executor-protocol/blob/main/SKILL.md) specifies the protocol core; [`references/`](https://github.com/tBeltty/auditor-executor-protocol/tree/main/references) holds the parts an agent loads only when it reaches that step (task and gate writing, handoff templates, Autonomous mode, failure modes and a worked example). `aepkit` is a zero-dependency Python CLI that automates scaffolding, drift linting, negative controls, status tallies, and installing the skill into your agent. On Claude Code, the optional [`aeprogress`](#6-optional-the-claude-code-plugin) mod shows a run's progress beside the chat, holds back Executor launches when the machine is busy, and compacts the Auditor's session when a phase closes.
 
 ---
 
@@ -97,6 +97,8 @@ aepkit install-skill --dest <path>       # explicit destination; a non-SKILL.md 
 
 Auto-detection checks the target directory for `.agents/` or `.gemini/`, `.claude/`, and `.cursor/`, then agent environment variables, and falls back to Antigravity. With `--global`, the skill goes to `~/.gemini/config/skills/`, `~/.claude/skills/`, or `~/.cursor/rules/`. An existing install is skipped unless you pass `--force`.
 
+On Claude Code you can install the plugin in [section 6](#6-optional-the-claude-code-plugin) instead: it brings the same skill and the `aeprogress` pane.
+
 ### 3. Scaffold a Phased Project
 
 ```bash
@@ -141,13 +143,13 @@ The `sed -i ''` form above is BSD/macOS sed; on GNU/Linux use `sed -i 's/.../...
 
 A failure only proves something if it is the failure you meant. A syntax error, a missing import or a mistyped test command also makes the test exit non-zero. `--expect` takes a regular expression that the failing run's output must match, and the control fails if it does not. Without `--expect`, output that looks like a syntax, import, collection or command-not-found error is flagged with a `WARNING` next to the `OK`, and you need to read the transcript to confirm the reason.
 
-### 6. Optional: `aeprogress` for Claude Code
+### 6. Optional: the Claude Code plugin
 
-`aeprogress` is a Claude Code mod for runs where the Auditor launches Executors as subagents or as workers of a harness such as Orca. The protocol does not depend on it, and it reads the run only through `aepkit status --json`.
+On Claude Code, one plugin, `auditor-executor-protocol`, brings the protocol as a skill (the same `SKILL.md` and `references/` that `aepkit install-skill --agent claude` installs) together with `aeprogress`, a mod for runs where the Auditor launches Executors as subagents or as workers of a harness such as Orca. The protocol does not depend on the mod. The mod reads a run made with the protocol, only through `aepkit status --json`, so it needs `aepkit` and a run (sections 1 and 3); without one it shows nothing.
 
 <img src="https://raw.githubusercontent.com/tBeltty/auditor-executor-protocol/main/integrations/claude-code/aeprogress/assets/pane.png" alt="The aeprogress pane: 43.3% overall, a bar per phase, the active phase P2 open with its task chips, P2-T3 in progress on a subagent, P2-T4 awaiting audit and P2-T2 conditional" width="420">
 
-It does three things:
+The mod does three things:
 
 1. **A pane beside the chat** with the overall percentage, one bar per phase (weighted by an optional `Weight` column in the plan), who is working on which task ID (Claude Code subagents, Orca workers, or any harness through a command of your own), what awaits audit, what needs attention, and the machine's load. It refreshes after each turn, and every 20 seconds while it is open.
 2. **A launch limit.** While a run is found, it refuses to launch another Executor past 2 live workers, 1 building worker, or a machine more than 75% busy for a build, and the refusal says which limit was hit. A handoff that builds nothing carries the line `Load: docs-only` ([`references/handoffs.md`](https://github.com/tBeltty/auditor-executor-protocol/blob/main/references/handoffs.md)) and only answers to the worker count. On macOS it also recommends excluding the project from Spotlight when indexing keeps the machine busy.
@@ -158,10 +160,10 @@ It does three things:
 
    <img src="https://raw.githubusercontent.com/tBeltty/auditor-executor-protocol/main/integrations/claude-code/aeprogress/assets/compact-countdown.png" alt="The countdown band: Compacting in 33s, with Cancel and Compact now">
 
-Install it at the prompt of a Claude Code terminal session, then open it:
+Install the plugin at the prompt of a Claude Code terminal session, then open the pane on a run:
 
 ```
-/plugin install aeprogress --marketplace tBeltty/auditor-executor-protocol
+/plugin install auditor-executor-protocol --marketplace tBeltty/auditor-executor-protocol
 /aeprogress docs/<task-name>
 ```
 

@@ -4,13 +4,13 @@
     "name": "tBeltty"
   },
   "metadata": {
-    "description": "Optional Claude Code add-ons for the Auditor/Executor protocol."
+    "description": "The Auditor/Executor protocol for Claude Code: the method as a skill, and the aeprogress pane for its runs."
   },
   "plugins": [
     {
-      "name": "aeprogress",
+      "name": "auditor-executor-protocol",
       "source": "./integrations/claude-code/aeprogress",
-      "description": "Optional progress pane for an Auditor/Executor protocol run, opened with /aeprogress."
+      "description": "The Auditor/Executor protocol as a skill, plus the aeprogress pane, launch limit and phase-close compaction for a run."
     }
   ]
 }

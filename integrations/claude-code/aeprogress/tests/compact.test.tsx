@@ -4,9 +4,9 @@ import type { On } from 'claude-code'
 
 import { linesOf, overflowing } from './rows'
 
-const TOOL = 'mcp__aeprogress__compact_and_resume'
+const TOOL = 'mcp__auditor-executor-protocol__compact_and_resume'
 const BAND = {
-  plugin: 'aeprogress',
+  plugin: 'auditor-executor-protocol',
   component: 'AbovePrompt',
   props: {
     hasSurvey: false,

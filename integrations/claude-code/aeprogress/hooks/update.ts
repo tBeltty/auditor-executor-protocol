@@ -51,6 +51,6 @@ export function versionIn(text: string): string | undefined {
 
 export function howToUpdate(kind: InstallKind): string {
   return kind === 'marketplace'
-    ? 'Update it from /plugin, Installed, aeprogress, Update now.'
+    ? 'Update it from /plugin, Installed, auditor-executor-protocol, Update now.'
     : 'Pull the new version where you load it from.'
 }

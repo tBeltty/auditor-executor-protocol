@@ -1,7 +1,8 @@
 {
-  "name": "aeprogress",
-  "version": "0.4.1",
-  "description": "Optional progress pane and launch limit for an Auditor/Executor protocol run: overall %, a bar per phase, who is working on what (Claude Code subagents, Orca workers or any harness), the machine's load, and a limit that holds back worker launches past a worker count or a load. When a phase closes, the Auditor can compact its session and resume itself after a countdown the owner can cancel. Opens with /aeprogress.",
+  "name": "auditor-executor-protocol",
+  "displayName": "Auditor/Executor Protocol",
+  "version": "0.5.0",
+  "description": "The Auditor/Executor protocol for multi-phase work with agents, as a skill, plus the aeprogress pane that follows a run. The Auditor writes numbered tasks with gates and audits each delivery by re-running it; Executors implement one task at a time and log their evidence. The pane (/aeprogress) shows progress per phase and who works on what, holds back Executor launches when the machine is busy, and compacts the Auditor's session when a phase closes. The pane needs a run made with the protocol and the aepkit CLI (pipx install aepkit); it does nothing on its own.",
   "author": {
     "name": "tBeltty"
   },

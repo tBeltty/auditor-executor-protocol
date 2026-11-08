@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.7.5] - 2026-11-08
+
+### Changed
+- The Claude Code plugin is now `auditor-executor-protocol` (it was `aeprogress`) and brings the
+  protocol itself as a skill, the same `SKILL.md` and `references/` as the repository root (a
+  test keeps the copy in sync), together with the `aeprogress` pane. Its listing and README start
+  with what the protocol is, what the plugin brings, and the steps to start a run, and say that
+  the pane does nothing without one. Install it with
+  `/plugin install auditor-executor-protocol --marketplace tBeltty/auditor-executor-protocol`; a
+  copy installed as `aeprogress` has to be uninstalled and installed again under the new name.
+  The `/aeprogress` command is unchanged. Plugin version 0.5.0.
+- README: section 6 describes the plugin, and section 2 points Claude Code users to it.
+- `references/autonomous-mode.md`: the plugin update command uses the new name.
+
 ### Changed
 - `aeprogress` 0.4.1, for the plugin directory's checks:
   - The launch limit for Claude Code subagents moves from the `agent.spawn` event, which the
@@ -407,7 +421,8 @@ Fixes from an independent review of 0.3.0.
 - Multi-framework agent installation support for Antigravity, Claude Code, and Cursor.
 - Zero-dependency test runner (`tests/run.py`).
 
-[Unreleased]: https://github.com/tBeltty/auditor-executor-protocol/compare/v0.7.4...HEAD
+[Unreleased]: https://github.com/tBeltty/auditor-executor-protocol/compare/v0.7.5...HEAD
+[0.7.5]: https://github.com/tBeltty/auditor-executor-protocol/compare/v0.7.4...v0.7.5
 [0.7.4]: https://github.com/tBeltty/auditor-executor-protocol/compare/v0.7.3...v0.7.4
 [0.7.3]: https://github.com/tBeltty/auditor-executor-protocol/compare/v0.7.2...v0.7.3
 [0.7.2]: https://github.com/tBeltty/auditor-executor-protocol/compare/v0.7.1...v0.7.2

@@ -76,7 +76,7 @@ export type Snapshot = {
 
 declare module 'claude-code' {
   interface PluginState {
-    aeprogress: {
+    'auditor-executor-protocol': {
       snapshot: Shaped<Snapshot>
       /** Phases the owner opened (true) or closed (false) in the pane, by phase ID. */
       phaseToggles: Shaped<Record<string, boolean>>

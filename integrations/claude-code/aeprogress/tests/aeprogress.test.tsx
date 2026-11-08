@@ -11,7 +11,7 @@ import { cardsOf, linesOf, overflowing } from './rows'
 
 const RUN = 'docs/run'
 const PANE = {
-  plugin: 'aeprogress',
+  plugin: 'auditor-executor-protocol',
   component: 'Pane',
   requestId: 'aeprogress',
   props: {

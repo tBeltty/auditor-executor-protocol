@@ -1,10 +1,20 @@
-# aeprogress: progress pane and launch limit for Claude Code
+# Auditor/Executor Protocol for Claude Code
 
 ![The aeprogress pane on a five-phase run: 43.3% overall, a bar per phase, the active phase P2 open with its full title and task chips, P2-T3 in progress on a subagent, P2-T4 awaiting audit and P2-T2 conditional](assets/pane.png)
 
-An optional Claude Code mod that keeps a pane beside the chat with the progress of an
-Auditor/Executor run. The protocol does not depend on it. It reads the run's
-`compliance-log.md` through `aepkit status --json` and shows:
+This plugin brings two things, and the second one only works with the first:
+
+1. **The Auditor/Executor protocol, as a skill.** A method for work large enough to span
+   several phases or sessions with agents. An **Auditor** writes the plan of record, an
+   execution guide of numbered tasks with gates, and the verdicts, and audits every
+   delivery by re-running it. **Executors** implement one task at a time and log literal
+   command output in a compliance log. The skill is the protocol's `SKILL.md` and
+   `references/`, the same files as in the
+   [repository](https://github.com/tBeltty/auditor-executor-protocol). Claude loads it when
+   you ask for phased work, an audit or a handoff, and
+   `/auditor-executor-protocol:auditor-executor-protocol` calls it by name.
+2. **aeprogress, a pane that follows a run of that protocol.** It reads the run's documents
+   and shows, beside the chat:
 
 - the overall percentage and a bar for the whole run;
 - one bar per phase, with approved items over the total, and phases the plan declares
@@ -29,8 +39,27 @@ it recommends excluding the project from Spotlight when indexing keeps the machi
 In Autonomous mode the owner only gets a report per phase; the pane lets them follow
 the run without interrupting the Auditor.
 
+> **The pane needs a run.** aeprogress reads a run made with the protocol, through the
+> `aepkit` CLI. Without one it shows "No compliance-log.md under this folder", and its
+> launch limit and its compaction stay off. Start with the steps in
+> [Start here](#start-here).
+
 > **Claude Code versions.** Mods need Claude Code 2.1.287 or later. The mods API can still
 > change between Claude Code releases; this mod is tested on 2.1.319, which CI pins.
+
+## Start here
+
+1. Install this plugin (see [Install](#install)).
+2. Install the CLI the pane reads runs with: `pipx install aepkit`.
+3. Start a run. Ask Claude, for example: "Use the Auditor/Executor protocol to plan this:
+   <your goal>". As the Auditor, Claude scaffolds the documents with
+   `aepkit init docs/<task-name>`, fills the plan of record and the execution guide, and
+   asks whether to run Guided (you hand each task to an Executor) or Autonomous (it
+   launches Executors as subagents and reports once per phase).
+4. Open the pane on the run: `/aeprogress docs/<task-name>`.
+
+If you already installed the protocol with `aepkit install-skill`, Claude sees it twice;
+keep one of the two.
 
 ## Requirements
 
@@ -44,14 +73,14 @@ the run without interrupting the Auditor.
 At the prompt of a Claude Code terminal session:
 
 ```
-/plugin install aeprogress --marketplace tBeltty/auditor-executor-protocol
+/plugin install auditor-executor-protocol --marketplace tBeltty/auditor-executor-protocol
 ```
 
 Answer `y` to add the marketplace, then pick a scope (user scope loads it in every
 session). From a shell:
 
 ```bash
-claude plugin install aeprogress --marketplace tBeltty/auditor-executor-protocol
+claude plugin install auditor-executor-protocol --marketplace tBeltty/auditor-executor-protocol
 ```
 
 In the desktop app, where `/plugin` does not run: click **+** next to the prompt box,
@@ -185,7 +214,7 @@ that carries every earlier phase gets expensive whenever its prompt cache expire
 When a phase closes (gate `APPROVED`, work pushed, Auditor brief up to date on disk),
 everything needed to go on is on disk, so the session can be compacted.
 
-The mod gives the Auditor a tool, `compact_and_resume` (`mcp__aeprogress__compact_and_resume`):
+The mod gives the Auditor a tool, `compact_and_resume` (`mcp__auditor-executor-protocol__compact_and_resume`):
 
 | Input | What it is |
 |---|---|
@@ -307,7 +336,7 @@ you type.
 | `command.run`, for `/aeprogress` only | Reads the run, opens the pane, and answers with a one-line summary | Nothing else; it answers only its own command |
 | `tool.call`, for `Agent` | Reads the call's prompt and description for task IDs of the run; for an Executor launch past the limits, answers with a refusal; after a launch, keeps the new subagent's id with those task IDs | Only the refusal; otherwise the call and its result pass unchanged |
 | `tool.call`, for `Bash` | Looks only for `orca orchestration worker-start`, or `orca orchestration send` to a dispatch that is not live; past the limits, answers with a refusal; after a launch, keeps the dispatch id it printed | Only the refusal; every other command, and every result, passes unchanged |
-| `tool.call`, for `mcp__aeprogress__compact_and_resume` | Its own tool: keeps the compaction to run when the turn ends and answers with a sentence asking Claude to end its turn | Nothing outside its own tool |
+| `tool.call`, for `mcp__auditor-executor-protocol__compact_and_resume` | Its own tool: keeps the compaction to run when the turn ends and answers with a sentence asking Claude to end its turn | Nothing outside its own tool |
 | `classic.SubagentStop` | Reads the run again, so the pane drops the finished subagent | Nothing |
 | `turn.complete` | Reads the run again while the pane is open; at the end of the main conversation's turn starts a scheduled compaction's countdown, or drops it if you pressed Esc | Nothing |
 | `prompt.submit` | When you type a prompt while a compaction is scheduled, drops the countdown, since you took over | Nothing: your prompt passes as you typed it |

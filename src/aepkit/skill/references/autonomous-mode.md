@@ -108,7 +108,7 @@ mode by accident.
 
 Before launching the first task, the Auditor updates the tools the run depends on (`aepkit`
 with `pipx upgrade aepkit`; any plugin or harness the run uses, such as the optional
-`aeprogress` mod with `claude plugin update aeprogress@auditor-executor-protocol`) and
+`aeprogress` mod with `claude plugin update auditor-executor-protocol@auditor-executor-protocol`) and
 records the versions it ends up on as a governance decision in the plan of record. A run
 then uses one set of tools from its first task to its last, and whoever reads the log
 later knows which `aepkit lint` rules and which launch limits judged it. Updating mid-run

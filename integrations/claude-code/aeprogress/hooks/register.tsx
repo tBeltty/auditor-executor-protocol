@@ -60,20 +60,20 @@ const INDEXER_HISTORY = 5
 const LIVE_AGENT = new Set(['pending', 'running', 'waiting'])
 
 const snapshot = atom(
-  { plugin: 'aeprogress', key: 'snapshot' } as const,
+  { plugin: 'auditor-executor-protocol', key: 'snapshot' } as const,
   { runDir: '', items: [], phases: [], workers: [], readAt: 0 } as Snapshot,
   { shape: 'snapshot-1' },
 )
 // The owner's own toggles of the pane's phases, written only by a press; a phase with
 // none is open while it is the active one.
-const phaseToggles = atom({ plugin: 'aeprogress', key: 'phaseToggles' } as const, {} as Record<string, boolean>, {
+const phaseToggles = atom({ plugin: 'auditor-executor-protocol', key: 'phaseToggles' } as const, {} as Record<string, boolean>, {
   shape: 'phase-toggles-1',
 })
-const chosenDir = atom({ plugin: 'aeprogress', key: 'chosenDir' } as const, '')
-const spawned = atom({ plugin: 'aeprogress', key: 'spawned' } as const, {} as Record<string, string[]>)
-const kinds = atom({ plugin: 'aeprogress', key: 'kinds' } as const, {} as Kinds, { shape: 'kinds-1' })
-const projectRoot = atom({ plugin: 'aeprogress', key: 'projectRoot' } as const, '')
-const spotlightToasted = atom({ plugin: 'aeprogress', key: 'spotlightToasted' } as const, false)
+const chosenDir = atom({ plugin: 'auditor-executor-protocol', key: 'chosenDir' } as const, '')
+const spawned = atom({ plugin: 'auditor-executor-protocol', key: 'spawned' } as const, {} as Record<string, string[]>)
+const kinds = atom({ plugin: 'auditor-executor-protocol', key: 'kinds' } as const, {} as Kinds, { shape: 'kinds-1' })
+const projectRoot = atom({ plugin: 'auditor-executor-protocol', key: 'projectRoot' } as const, '')
+const spotlightToasted = atom({ plugin: 'auditor-executor-protocol', key: 'spotlightToasted' } as const, false)
 
 type Options = {
   runDir: string
@@ -440,11 +440,11 @@ async function readMachine($: EngineInterface): Promise<Machine | undefined> {
 const TOOL = 'compact_and_resume'
 
 const pending = atom(
-  { plugin: 'aeprogress', key: 'pendingCompaction' } as const,
+  { plugin: 'auditor-executor-protocol', key: 'pendingCompaction' } as const,
   null as PendingCompaction | null,
   { shape: 'pending-1' },
 )
-const secondsLeft = atom({ plugin: 'aeprogress', key: 'compactSecondsLeft' } as const, 0)
+const secondsLeft = atom({ plugin: 'auditor-executor-protocol', key: 'compactSecondsLeft' } as const, 0)
 
 // Module state: a reload drops the timer, and `resumeCountdown` arms it again.
 let ticker: { cancel: () => void } | undefined
@@ -546,7 +546,7 @@ const FETCH_TIMEOUT_MS = 8_000
 const STORE_KEY = 'updateCheck'
 
 const available = atom(
-  { plugin: 'aeprogress', key: 'updateAvailable' } as const,
+  { plugin: 'auditor-executor-protocol', key: 'updateAvailable' } as const,
   null as UpdateInfo | null,
   { shape: 'update-1' },
 )
@@ -759,7 +759,7 @@ export const register: Register = (on, rawOptions) => {
   })
 
   // The Auditor schedules the compaction; it runs once its turn ends.
-  on('tool.call', { tool: 'mcp__aeprogress__compact_and_resume' }, async ($, e, next) => {
+  on('tool.call', { tool: 'mcp__auditor-executor-protocol__compact_and_resume' }, async ($, e, next) => {
     if (!options.compactOnClose) return next(e)
     const input = e as unknown as { resume?: unknown; instructions?: unknown }
     const resume = typeof input.resume === 'string' ? input.resume.trim() : ''
