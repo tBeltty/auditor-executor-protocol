@@ -7,14 +7,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.7.4] - 2026-11-08
+
 ### Added
-- `aeprogress` 0.3.4: an icon, a gauge with a part sliding into it, in soft geometry on a
-  squircle tile (`.claude-plugin/icon.png`, source in `assets/icon.svg`), and
-  `documentationUrl`, `supportUrl` and `privacyPolicyUrl` in `plugin.json`, ready for the
-  plugin directory. The mod's README gains "What it does on your machine", every process it
-  starts, the files and variables it reads and what it can refuse, and "Privacy": no network
-  requests, no telemetry.
-  Its README shows the three screenshots with Markdown image paths inside the plugin.
+- `references/autonomous-mode.md`: "Tool versions at the start of a run". Before the first task
+  the Auditor updates the tools the run depends on (`aepkit`, any plugin or harness) and records
+  their versions in the plan of record; the Auditor brief gains a `TOOLS` field for it.
+- `aeprogress` 0.4.0:
+  - Expandable phases: each phase row opens its full title, its bar and count, and its tasks and
+    gate as state chips (approved, conditional, in progress with the worker, awaiting audit,
+    pending, rejected). The active phase opens by itself; a phase the owner closes stays closed.
+    Where the surface reports hover (desktop app, fullscreen terminal), a closed phase shows the
+    same in a card.
+  - Update check: the pane and `/aeprogress` say when a newer version exists, from the
+    marketplace catalog Claude Code keeps on disk and, at most once a day, from the version
+    published on GitHub (one request for a public file; option **Update check**: `daily`,
+    `offline` or `off`; skipped for copies from the claude.ai directory and when
+    `CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC` is set). The README explains how to turn on
+    auto-update for this marketplace.
+  - An icon (`.claude-plugin/icon.png`, source in `assets/icon.svg`), and `documentationUrl`,
+    `supportUrl` and `privacyPolicyUrl` in `plugin.json`, for the plugin directory. The README
+    gains "What it does on your machine" (every process it starts, the files and variables it
+    reads, the one network request, and what it can refuse) and "Privacy", and shows its
+    screenshots as Markdown images inside the plugin.
 
 ## [0.7.3] - 2026-11-08
 
@@ -378,7 +393,8 @@ Fixes from an independent review of 0.3.0.
 - Multi-framework agent installation support for Antigravity, Claude Code, and Cursor.
 - Zero-dependency test runner (`tests/run.py`).
 
-[Unreleased]: https://github.com/tBeltty/auditor-executor-protocol/compare/v0.7.3...HEAD
+[Unreleased]: https://github.com/tBeltty/auditor-executor-protocol/compare/v0.7.4...HEAD
+[0.7.4]: https://github.com/tBeltty/auditor-executor-protocol/compare/v0.7.3...v0.7.4
 [0.7.3]: https://github.com/tBeltty/auditor-executor-protocol/compare/v0.7.2...v0.7.3
 [0.7.2]: https://github.com/tBeltty/auditor-executor-protocol/compare/v0.7.1...v0.7.2
 [0.7.1]: https://github.com/tBeltty/auditor-executor-protocol/compare/v0.7.0...v0.7.1

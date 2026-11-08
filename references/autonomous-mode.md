@@ -104,6 +104,16 @@ Do not end a turn between a verdict and the next launch unless something on the
 critical-risk list is open. A run that stops to report an `APPROVED` and wait is Guided
 mode by accident.
 
+### Tool versions at the start of a run
+
+Before launching the first task, the Auditor updates the tools the run depends on (`aepkit`
+with `pipx upgrade aepkit`; any plugin or harness the run uses, such as the optional
+`aeprogress` mod with `claude plugin update aeprogress@auditor-executor-protocol`) and
+records the versions it ends up on as a governance decision in the plan of record. A run
+then uses one set of tools from its first task to its last, and whoever reads the log
+later knows which `aepkit lint` rules and which launch limits judged it. Updating mid-run
+is a decision like any other: record it, with the reason.
+
 ### Starting the Auditor (the Auditor brief)
 
 An autonomous run is started by giving a fresh Auditor session a brief, the same way an
@@ -131,6 +141,9 @@ using the forbidden tier = process finding>.
 DOCUMENTS: <plan of record, guide, log — what each contains and who writes where>.
 
 STATE: <local/pushed commits, clean tree or not, first task and its model>.
+
+TOOLS: <the tools the run depends on and the versions to update to and record before task 1
+(aepkit; any plugin or harness), per "Tool versions at the start of a run">.
 
 GOAL (non-negotiable): <the owner's objective, in their own words>. Splitting into
 phases, yes; shrinking it, no. RUN COMPLETE only with <final gate> APPROVED.

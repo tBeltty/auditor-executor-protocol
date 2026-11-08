@@ -145,7 +145,7 @@ A failure only proves something if it is the failure you meant. A syntax error, 
 
 `aeprogress` is a Claude Code mod for runs where the Auditor launches Executors as subagents or as workers of a harness such as Orca. The protocol does not depend on it, and it reads the run only through `aepkit status --json`.
 
-<img src="https://raw.githubusercontent.com/tBeltty/auditor-executor-protocol/main/integrations/claude-code/aeprogress/assets/pane.png" alt="The aeprogress pane: 43.3% overall, a bar per phase, P2-T3 in progress on a subagent, P2-T4 awaiting audit, P2-T2 conditional, and the machine at 31% with 1 of 2 workers live" width="420">
+<img src="https://raw.githubusercontent.com/tBeltty/auditor-executor-protocol/main/integrations/claude-code/aeprogress/assets/pane.png" alt="The aeprogress pane: 43.3% overall, a bar per phase, the active phase P2 open with its task chips, P2-T3 in progress on a subagent, P2-T4 awaiting audit and P2-T2 conditional" width="420">
 
 It does three things:
 
@@ -165,7 +165,7 @@ Install it at the prompt of a Claude Code terminal session, then open it:
 /aeprogress docs/<task-name>
 ```
 
-It works in the terminal and in the desktop app's local sessions (in the app: **+** next to the prompt, **Plugins**, **Add marketplace**). Every limit and feature is an option in `/config`. It needs Claude Code 2.1.287 or later, makes no network requests and sends no data anywhere; its README lists every process it starts and everything it can refuse. Setup, options and how each number is computed: [integrations/claude-code/aeprogress](https://github.com/tBeltty/auditor-executor-protocol/tree/main/integrations/claude-code/aeprogress).
+It works in the terminal and in the desktop app's local sessions (in the app: **+** next to the prompt, **Plugins**, **Add marketplace**). Every limit and feature is an option in `/config`. It needs Claude Code 2.1.287 or later and sends no data about you anywhere (its one network request, a daily version check, can be turned off); its README lists every process it starts and everything it can refuse. To get new versions on their own, turn on auto-update once: `/plugin`, **Marketplaces**, `auditor-executor-protocol`, **Enable auto-update**. Setup, options and how each number is computed: [integrations/claude-code/aeprogress](https://github.com/tBeltty/auditor-executor-protocol/tree/main/integrations/claude-code/aeprogress).
 
 ---
 

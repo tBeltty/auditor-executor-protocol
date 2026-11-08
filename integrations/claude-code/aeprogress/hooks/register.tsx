@@ -14,6 +14,8 @@ import {
 } from './limit'
 import type { Kind, Limits, LiveWorker } from './limit'
 import { readMachine } from './machine'
+import { checkForUpdate, howToUpdate, updateNotice } from './update'
+import type { UpdateMode } from './update'
 import { TOOL, cancel, compactNow, countdownLeft, pendingJob, resumeCountdown, schedule, startCountdown } from './compact'
 import {
   bandLayout,
@@ -86,6 +88,7 @@ type Options = {
   spotlightCpu: number
   compactOnClose: boolean
   compactSeconds: number
+  updateCheck: UpdateMode
 }
 
 function optionsOf(raw: Readonly<Record<string, unknown>>): Options {
@@ -111,6 +114,7 @@ function optionsOf(raw: Readonly<Record<string, unknown>>): Options {
     spotlightCpu: count('spotlightCpuPercent', 50),
     compactOnClose: raw.compactOnClose !== false,
     compactSeconds: Math.max(1, Math.round(count('compactCountdownSeconds', 40))),
+    updateCheck: (['daily', 'offline', 'off'] as const).find(m => m === raw.updateCheck) ?? 'daily',
   }
 }
 
@@ -435,6 +439,8 @@ export const register: Register = (on, rawOptions) => {
     })
     const snap = await read($, snapshot)
     if (options.autoOpen && snap.runDir && !snap.error && e.isInteractive) void open($)
+    // In the background: a slow or failed check never holds the session up.
+    void checkForUpdate($, options.updateCheck)
     return next(e)
   })
 
@@ -452,7 +458,9 @@ export const register: Register = (on, rawOptions) => {
     if (snap.error) return { text: `Progress pane opened: ${snap.error}` }
     const whole = percent(overall(phaseShares(snap.phases, snap.items)))
     const approved = snap.items.filter(i => i.state === 'APPROVED').length
-    return { text: `${whole} of ${snap.runDir}: ${approved}/${snap.items.length} approved. Progress pane opened.` }
+    const found = await updateNotice($)
+    const later = found ? ` aeprogress ${found.latest} is available (you have ${found.installed}).` : ''
+    return { text: `${whole} of ${snap.runDir}: ${approved}/${snap.items.length} approved. Progress pane opened.${later}` }
   })
 
   // A subagent's spawn prompt names the task it executes: that makes it an Executor, which
@@ -622,6 +630,13 @@ export const register: Register = (on, rawOptions) => {
     )
     const blank = <Text> </Text>
 
+    const notice = await updateNotice($)
+    const noticeLine = notice && (
+      <Text color="suggestion" wrap="wrap">
+        {`aeprogress ${notice.latest} is available (you have ${notice.installed}). ${howToUpdate(notice.kind)}`}
+      </Text>
+    )
+
     if (snap.phases.length === 0) {
       return (
         <Box flexDirection="column" paddingX={PAD}>
@@ -631,6 +646,7 @@ export const register: Register = (on, rawOptions) => {
           <Text dimColor wrap="wrap">
             {snap.error ?? 'The run has no phases or tasks yet.'}
           </Text>
+          {noticeLine}
         </Box>
       )
     }
@@ -777,6 +793,7 @@ export const register: Register = (on, rawOptions) => {
         {(snap.workers.length > 0 || awaiting.length > 0 || attention.length > 0) && blank}
         {footer.lines.map((line, n) => row(n === 0 ? [{ text: '● ', color: dot }, { text: line }] : [{ text: `  ${line}` }]))}
         {footer.detail && row([{ text: `  ${footer.detail}`, dim: true }])}
+        {noticeLine}
         {tip && (
           <Text color="warning" wrap="wrap">
             {tip}

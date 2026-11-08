@@ -49,6 +49,14 @@ export type PendingCompaction = {
   deadline: number | null
 }
 
+/** A newer aeprogress than the one running, as the last check found it. */
+export type UpdateInfo = {
+  installed: string
+  latest: string
+  /** How this copy was installed: decides how the pane says to update it. */
+  kind: 'marketplace' | 'local'
+}
+
 export type Snapshot = {
   /** The run folder read, as resolved; empty when none was found. */
   runDir: string
@@ -84,6 +92,7 @@ declare module 'claude-code' {
       pendingCompaction: Shaped<PendingCompaction | null>
       /** Seconds left in the compaction countdown, for the band. */
       compactSecondsLeft: number
+      updateAvailable: Shaped<UpdateInfo | null>
     }
   }
 }

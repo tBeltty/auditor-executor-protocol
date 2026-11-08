@@ -1,6 +1,6 @@
 {
   "name": "aeprogress",
-  "version": "0.3.4",
+  "version": "0.4.0",
   "description": "Optional progress pane and launch limit for an Auditor/Executor protocol run: overall %, a bar per phase, who is working on what (Claude Code subagents, Orca workers or any harness), the machine's load, and a limit that holds back worker launches past a worker count or a load. When a phase closes, the Auditor can compact its session and resume itself after a countdown the owner can cancel. Opens with /aeprogress.",
   "author": {
     "name": "tBeltty"
@@ -97,6 +97,17 @@
       "title": "Compaction countdown (seconds)",
       "description": "How long the band waits, after the Auditor's turn ends, before compacting.",
       "default": 40
+    },
+    "updateCheck": {
+      "type": "string",
+      "title": "Update check",
+      "description": "daily: compare this copy with the catalog Claude Code keeps on disk, and at most once a day ask GitHub for the plugin's published version (one request for a public file; nothing of yours is sent). offline: only the catalog on disk, no network. off: no check. Copies installed from the claude.ai directory update themselves and are never checked.",
+      "default": "daily",
+      "options": [
+        "daily",
+        "offline",
+        "off"
+      ]
     }
   }
 }

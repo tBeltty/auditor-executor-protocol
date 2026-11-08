@@ -1,6 +1,6 @@
 # aeprogress: progress pane and launch limit for Claude Code
 
-![The aeprogress pane on a five-phase run: 43.3% overall, a bar per phase, one Executor in progress on a subagent, one task awaiting audit, one conditional, and the machine at 31% with 1 of 2 workers live](assets/pane.png)
+![The aeprogress pane on a five-phase run: 43.3% overall, a bar per phase, the active phase P2 open with its full title and task chips, P2-T3 in progress on a subagent, P2-T4 awaiting audit and P2-T2 conditional](assets/pane.png)
 
 An optional Claude Code mod that keeps a pane beside the chat with the progress of an
 Auditor/Executor run. The protocol does not depend on it. It reads the run's
@@ -59,6 +59,19 @@ In the desktop app, where `/plugin` does not run: click **+** next to the prompt
 then **Plugins**, **Add marketplace** with `tBeltty/auditor-executor-protocol`, then
 **Add plugin**. A mod installed from a terminal at user scope also loads in the desktop
 app's local sessions.
+
+### Keep it up to date
+
+Claude Code updates plugins from a third-party marketplace like this one only when you
+turn that on, once: run `/plugin`, open **Marketplaces**, select
+`auditor-executor-protocol`, and choose **Enable auto-update**. From then on Claude Code
+fetches new versions in the background during a session and offers `/reload-plugins`.
+A copy installed from the claude.ai directory updates itself at every start, with nothing
+to turn on.
+
+Either way, the pane says when a newer `aeprogress` exists (see **Update check** in
+[Options](#options-config)): it compares the running copy with the marketplace catalog
+Claude Code keeps on disk, and at most once a day with the version published on GitHub.
 
 ## Use
 
@@ -238,6 +251,16 @@ PowerShell, 3 for the load readings), runs without a shell, and is never left ru
 | `orca worktree current --json`, `orca worktree ps --json`, `orca orchestration worker-list --json` | Inside an Orca terminal, or with **External workers** set to `orca` | Orca workers in progress, and the live count for the limit |
 | The **Workers command** you set, in the run folder | Each refresh, only if you set one | Workers of another harness |
 
+**The one network request it makes.** With **Update check** on `daily` (the default), at
+most once a day, at session start, it asks GitHub for
+`https://raw.githubusercontent.com/tBeltty/auditor-executor-protocol/main/integrations/claude-code/aeprogress/.claude-plugin/plugin.json`
+and reads only its `version`. The request carries nothing of yours, it goes through
+Claude Code (which applies your organization's web-fetch policy), and it is skipped when
+`CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC` is set, for a copy installed from the claude.ai
+directory, and with **Update check** on `offline` or `off`. The date of the last check and
+the version it found are kept in the plugin's own storage, so the next session knows
+whether a day has passed.
+
 Refreshes happen at session start, when `/aeprogress` runs, after each turn, when a
 subagent starts or stops, and every 20 seconds only while the pane is open.
 
@@ -270,9 +293,12 @@ toasts for a refused launch, a vetoed compaction and the Spotlight recommendatio
 
 ## Privacy
 
-`aeprogress` makes no network requests and sends nothing anywhere: no telemetry, no
-analytics, no data to the author or to any service. What it reads stays in your Claude
-Code session, in memory, and is gone when the session ends. The processes above run on
+`aeprogress` sends nothing about you anywhere: no telemetry, no analytics, no data to the
+author or to any service. Its only network request is the daily version check above, a
+plain request for a public file, which you can turn off. What it reads stays in your
+Claude Code session, in memory, and is gone when the session ends; the version check
+alone keeps two values between sessions, the date of the last check and the version it
+found. The processes above run on
 your machine. Two can reach beyond it, both under your control: Orca's CLI talks to the
 Orca app on your machine and to any Orca servers you paired yourself, and a **Workers
 command** does whatever you wrote it to do.
@@ -294,6 +320,7 @@ command** does whatever you wrote it to do.
 | Spotlight CPU that triggers the recommendation (%) | 50 | Indexing CPU held on two reads in a row |
 | Compact on phase close | on | Offer the Auditor the `compact_and_resume` tool |
 | Compaction countdown (seconds) | 40 | How long the band waits before compacting |
+| Update check | `daily` | `daily`: the catalog on disk, and GitHub at most once a day. `offline`: the catalog on disk only. `off`: no check |
 
 ## Develop
 
