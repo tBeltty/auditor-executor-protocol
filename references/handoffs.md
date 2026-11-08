@@ -32,6 +32,8 @@ ROLE: Executor. Work from <EXECUTION_GUIDE> (Phase <n>, `<TASK-ID>`) only; repor
 [Autonomous mode only:] You are the Auditor's subagent. Questions go as BLOCKED in the
 log and in your final report; you do not address the owner.
 
+[Optional, only when the run uses a launch limit:] Load: docs-only
+
 REPORTED STATE: <what is already DONE in the log, and whether it was audited or only
 self-reported — do not conflate the two>. Do not reopen <prior tasks>.
 
@@ -70,6 +72,13 @@ mid-task.
 
 Do not paste a rules-of-engagement block from one project's run into another's handoff
 without re-confirming it applies. It is a per-run artifact, not part of this skill.
+
+`Load: docs-only` is for runs where a tool holds back Executor launches while the machine
+is busy, such as the optional `aeprogress` mod for Claude Code. Put it on its own line in
+a handoff whose task compiles, builds and tests nothing (documentation, a plan, a review),
+so it can run beside a task that builds. Leave it out when unsure: a handoff without it
+counts as a build, which is the safe side. The protocol does not require the line, and a
+run with no such tool ignores it.
 
 ## Remediation handoff (Auditor)
 

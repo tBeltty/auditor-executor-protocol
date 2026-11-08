@@ -7,6 +7,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.7.1] - 2026-11-08
+
+### Added
+- `references/handoffs.md`: an optional `Load: docs-only` line in the handoff template, for
+  runs where a tool holds back Executor launches while the machine is busy. It marks a task
+  that builds nothing, so it may run beside one that builds; a handoff without it counts as
+  a build. The protocol does not require it.
+- `aeprogress` 0.2.0 (`integrations/claude-code/aeprogress/`): a launch limit that, while a
+  run is found, refuses launching another Executor past 2 live workers, 1 building worker,
+  or a machine more than 75% busy for a build (each a `/config` option), with the reason in
+  the refusal. It sees Claude Code subagents whose prompt names a task of the run, and Orca
+  `worker-start` and `send` to a dispatch that is not live; it counts both together, and
+  refuses when Orca cannot be asked. The pane shows the machine's load (Linux `/proc`,
+  macOS and BSD `sysctl`, Windows PowerShell) and how full the limit is. On macOS, when
+  Spotlight's indexing stays busy, it recommends excluding the project folder in System
+  Settings; it never changes a setting.
+- `aeprogress`: Windows fallbacks for finding aepkit (`python -m`, `py -m`,
+  `%USERPROFILE%\.local\bin`).
+
 ## [0.7.0] - 2026-11-08
 
 ### Added
@@ -315,7 +334,8 @@ Fixes from an independent review of 0.3.0.
 - Multi-framework agent installation support for Antigravity, Claude Code, and Cursor.
 - Zero-dependency test runner (`tests/run.py`).
 
-[Unreleased]: https://github.com/tBeltty/auditor-executor-protocol/compare/v0.7.0...HEAD
+[Unreleased]: https://github.com/tBeltty/auditor-executor-protocol/compare/v0.7.1...HEAD
+[0.7.1]: https://github.com/tBeltty/auditor-executor-protocol/compare/v0.7.0...v0.7.1
 [0.7.0]: https://github.com/tBeltty/auditor-executor-protocol/compare/v0.6.0...v0.7.0
 [0.6.0]: https://github.com/tBeltty/auditor-executor-protocol/compare/v0.5.1...v0.6.0
 [0.5.1]: https://github.com/tBeltty/auditor-executor-protocol/compare/v0.5.0...v0.5.1

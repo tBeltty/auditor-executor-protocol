@@ -27,6 +27,18 @@ export type Worker = {
   source: 'subagent' | 'orca' | 'command'
 }
 
+/** How busy the machine is: `busy` 1 means every core busy (Unix load over cores, Windows CPU % / 100). */
+export type Machine = {
+  busy: number
+  detail: string
+  os: 'linux' | 'macos' | 'bsd' | 'windows'
+  /** CPU % of Spotlight's indexing processes, added up; 0 off macOS. */
+  indexerCpu: number
+}
+
+/** Whether a launched worker builds, by Orca dispatch id or subagent id. */
+export type Kinds = Record<string, 'build' | 'docs'>
+
 export type Snapshot = {
   /** The run folder read, as resolved; empty when none was found. */
   runDir: string
@@ -34,6 +46,12 @@ export type Snapshot = {
   phases: Phase[]
   workers: Worker[]
   readAt: number
+  /** The machine's load at the last read; absent when no source answered. */
+  machine?: Machine
+  /** Spotlight's indexing CPU at the last few reads, newest last (macOS). */
+  indexerHistory?: number[]
+  /** Live Executors the launch limit counts, and how many of them build. */
+  launches?: { live: number; builds: number }
   /** Why the last read failed, in words for the person. */
   error?: string
 }
@@ -46,6 +64,11 @@ declare module 'claude-code' {
       chosenDir: string
       /** Subagent id -> task IDs its spawn prompt named. */
       spawned: Record<string, string[]>
+      kinds: Shaped<Kinds>
+      /** The repository root of the run, for the Spotlight recommendation. */
+      projectRoot: string
+      /** Whether the Spotlight recommendation was toasted this session. */
+      spotlightToasted: boolean
     }
   }
 }

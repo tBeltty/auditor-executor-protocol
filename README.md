@@ -140,7 +140,7 @@ A failure only proves something if it is the failure you meant. A syntax error, 
 
 ### Optional: Progress Pane for Claude Code
 
-`aeprogress` is a Claude Code mod that keeps a pane beside the chat with the run's overall percentage, a bar per phase, who is working on which task ID (Claude Code subagents, Orca workers, or any other harness through a command of your own), what awaits audit and what needs attention. It reads the log through `aepkit status --json` and refreshes after each turn, and every 20 seconds while the pane is open. The protocol does not depend on it.
+`aeprogress` is a Claude Code mod that keeps a pane beside the chat with the run's overall percentage, a bar per phase, who is working on which task ID (Claude Code subagents, Orca workers, or any other harness through a command of your own), what awaits audit, what needs attention, and the machine's load. It reads the log through `aepkit status --json` and refreshes after each turn, and every 20 seconds while the pane is open. While a run is found it also holds back launching another Executor past a worker count or a machine load (2 workers, 1 building, 75% busy by default; a handoff marked `Load: docs-only` does not count as a build), and on macOS it recommends excluding the project from Spotlight when indexing keeps the machine busy. The protocol does not depend on it.
 
 ```
 /plugin install aeprogress --marketplace tBeltty/auditor-executor-protocol

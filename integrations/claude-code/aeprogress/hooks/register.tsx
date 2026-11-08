@@ -1,7 +1,19 @@
 import { atom, read, update } from 'claude-code'
 import type { EngineInterface, ProcessRunResult, Register } from 'claude-code'
 
-import type { Snapshot, Worker } from '../types'
+import type { Kinds, Machine, Snapshot, Worker } from '../types'
+import {
+  dispatchIdIn,
+  isDocsOnly,
+  mentionsOrcaLaunch,
+  orcaLaunch,
+  orcaLive,
+  refusals,
+  specFile,
+  spotlightBusy,
+} from './limit'
+import type { Kind, Limits, LiveWorker } from './limit'
+import { readMachine } from './machine'
 import {
   ATTENTION,
   bar,
@@ -23,6 +35,9 @@ const MIN_GAP_MS = 2_000
 const RUN_TIMEOUT_MS = 15_000
 const SEARCH_DEPTH = 3
 const SKIP_DIRS = new Set(['node_modules', 'venv', 'dist', 'build', 'target', '__pycache__'])
+// Spotlight's indexing CPU is kept for this many reads, newest last.
+const INDEXER_HISTORY = 5
+const LIVE_AGENT = new Set(['pending', 'running', 'waiting'])
 
 const snapshot = atom(
   { plugin: 'aeprogress', key: 'snapshot' } as const,
@@ -31,6 +46,9 @@ const snapshot = atom(
 )
 const chosenDir = atom({ plugin: 'aeprogress', key: 'chosenDir' } as const, '')
 const spawned = atom({ plugin: 'aeprogress', key: 'spawned' } as const, {} as Record<string, string[]>)
+const kinds = atom({ plugin: 'aeprogress', key: 'kinds' } as const, {} as Kinds, { shape: 'kinds-1' })
+const projectRoot = atom({ plugin: 'aeprogress', key: 'projectRoot' } as const, '')
+const spotlightToasted = atom({ plugin: 'aeprogress', key: 'spotlightToasted' } as const, false)
 
 type Options = {
   runDir: string
@@ -38,17 +56,33 @@ type Options = {
   workersCommand: string
   aepkitCommand: string
   autoOpen: boolean
+  launchLimit: boolean
+  limits: Limits
+  spotlightTip: boolean
+  spotlightCpu: number
 }
 
 function optionsOf(raw: Readonly<Record<string, unknown>>): Options {
   const text = (key: string, fallback: string): string =>
     typeof raw[key] === 'string' ? (raw[key] as string).trim() || fallback : fallback
+  const count = (key: string, fallback: number): number =>
+    typeof raw[key] === 'number' && Number.isFinite(raw[key]) && (raw[key] as number) >= 0
+      ? (raw[key] as number)
+      : fallback
   return {
     runDir: text('runDir', ''),
     externalWorkers: text('externalWorkers', 'auto'),
     workersCommand: text('workersCommand', ''),
     aepkitCommand: text('aepkitCommand', ''),
     autoOpen: raw.autoOpen !== false,
+    launchLimit: raw.launchLimit !== false,
+    limits: {
+      maxWorkers: count('maxWorkers', 2),
+      maxBuilds: count('maxBuilds', 1),
+      maxBusy: count('maxBusyPercent', 75) / 100,
+    },
+    spotlightTip: raw.spotlightTip !== false,
+    spotlightCpu: count('spotlightCpuPercent', 50),
   }
 }
 
@@ -96,12 +130,19 @@ let reading: Promise<void> | undefined
 let lastRead = 0
 
 async function runAepkit($: EngineInterface, dir: string) {
-  const home = (await $.env.get('HOME')) ?? ''
+  const home = (await $.env.get('HOME')) ?? (await $.env.get('USERPROFILE')) ?? ''
+  // pipx puts aepkit in ~/.local/bin on every system; Windows names Python `python` or `py`.
   const candidates = aepkit
     ? [aepkit]
     : options.aepkitCommand
       ? [splitCommand(options.aepkitCommand)]
-      : [['aepkit'], [`${home}/.local/bin/aepkit`], ['python3', '-m', 'aepkit']]
+      : [
+          ['aepkit'],
+          [`${home}/.local/bin/aepkit`],
+          ['python3', '-m', 'aepkit'],
+          ['python', '-m', 'aepkit'],
+          ['py', '-m', 'aepkit'],
+        ]
   let tooOld: ProcessRunResult | undefined
   for (const argv of candidates) {
     const ran = await $.process
@@ -122,7 +163,7 @@ async function runAepkit($: EngineInterface, dir: string) {
 
 async function orcaBinary($: EngineInterface): Promise<string | undefined> {
   const binDir = await $.env.get('ORCA_CLI_BIN_DIR')
-  if (binDir) return `${binDir}/orca`
+  if (binDir) return `${binDir.replace(/[\\/]+$/, '')}/orca`
   if (options.externalWorkers === 'orca') return 'orca'
   // auto: only inside an Orca terminal, so no session spawns a binary it lacks.
   return (await $.env.get('ORCA_WORKTREE_ID')) ? 'orca' : undefined
@@ -162,9 +203,48 @@ async function externalWorkers($: EngineInterface, dir: string, known: Set<strin
   }
 }
 
+/** The machine's load and Spotlight's history into the snapshot, and the tip once. */
+async function readLoad($: EngineInterface, dir: string): Promise<void> {
+  const machine = await readMachine($)
+  await update($, snapshot, old => ({
+    ...old,
+    machine,
+    indexerHistory: machine?.os === 'macos' ? [...(old.indexerHistory ?? []), machine.indexerCpu].slice(-INDEXER_HISTORY) : [],
+  }))
+  const snap = await read($, snapshot)
+  if (!options.spotlightTip || !spotlightBusy(snap.indexerHistory ?? [], options.spotlightCpu)) return
+  await rootOf($, dir)
+  if (!(await read($, spotlightToasted))) {
+    await update($, spotlightToasted, () => true)
+    $.ui.toast(`Spotlight keeps indexing (${Math.round(machine?.indexerCpu ?? 0)}% CPU). See the progress pane.`)
+  }
+}
+
+/** The repository root of the run folder, or the session's folder outside git. */
+async function rootOf($: EngineInterface, dir: string): Promise<string> {
+  const known = await read($, projectRoot)
+  if (known) return known
+  const git = await $.process
+    .run(['git', 'rev-parse', '--show-toplevel'], { cwd: dir || '.', timeoutMs: RUN_TIMEOUT_MS })
+    .catch(() => undefined)
+  const root = git?.exitCode === 0 && git.stdout.trim() ? git.stdout.trim() : await $.session.cwd()
+  await update($, projectRoot, () => root)
+  return root
+}
+
+function spotlightAdvice(machine: Machine | undefined, root: string): string {
+  return (
+    `Spotlight is indexing at ${Math.round(machine?.indexerCpu ?? 0)}% CPU. If it is indexing build ` +
+    `output, exclude ${root || 'the project folder'} in System Settings > Spotlight > Search Privacy ` +
+    '(Spotlight > Privacy on older macOS).'
+  )
+}
+
 async function readRun($: EngineInterface): Promise<void> {
   const readAt = await $.clock.now()
   const dir = await resolveRun($, options)
+  if (dir !== (await read($, snapshot)).runDir) await update($, projectRoot, () => '')
+  await readLoad($, dir)
   const fail = async (error: string): Promise<void> => {
     await update($, snapshot, old => ({ ...old, runDir: dir, readAt, error }))
   }
@@ -201,7 +281,64 @@ async function readRun($: EngineInterface): Promise<void> {
     ...subagentWorkers(agents, await read($, spawned), known),
     ...(await externalWorkers($, dir, known)),
   ]
-  await update($, snapshot, () => ({ runDir: dir, ...parsed, workers, readAt }))
+  const executors = options.launchLimit ? await liveExecutors($).catch(() => []) : []
+  const launches = { live: executors.length, builds: executors.filter(w => w.kind === 'build').length }
+  await update($, snapshot, old => ({ ...old, runDir: dir, ...parsed, workers, readAt, launches, error: undefined }))
+}
+
+/** Live Orca workers, by dispatch id; throws when Orca cannot be asked. */
+async function orcaLiveIds($: EngineInterface): Promise<string[]> {
+  const orca = (await orcaBinary($)) ?? 'orca'
+  const ran = await $.process.run([orca, 'orchestration', 'worker-list', '--json'], { timeoutMs: RUN_TIMEOUT_MS })
+  if (ran.exitCode !== 0) throw new Error(ran.stderr.trim() || `orca exited with ${ran.exitCode}`)
+  return orcaLive(ran.stdout)
+}
+
+/**
+ * The Executors live now: subagents whose spawn prompt named a task, and Orca workers.
+ * `orcaIds` is the Orca count when the caller has it; otherwise Orca is asked only
+ * inside an Orca terminal, and a failure there counts no Orca workers.
+ */
+async function liveExecutors($: EngineInterface, orcaIds?: readonly string[]): Promise<LiveWorker[]> {
+  const known = await read($, kinds)
+  const executors = await read($, spawned)
+  const agents = await $.agent.list()
+  const live: LiveWorker[] = agents
+    .filter(a => LIVE_AGENT.has(a.status) && a.id in executors)
+    .map(a => ({ id: a.id, kind: known[a.id] ?? 'build' }))
+  let orca = orcaIds
+  if (!orca && (await orcaBinary($))) orca = await orcaLiveIds($).catch(() => [])
+  for (const id of orca ?? []) live.push({ id, kind: known[id] ?? 'build' })
+  return live
+}
+
+async function remember($: EngineInterface, id: string, kind: Kind, live: readonly LiveWorker[]): Promise<void> {
+  const keep = new Set([id, ...live.map(w => w.id)])
+  await update($, kinds, old => ({
+    ...Object.fromEntries(Object.entries(old).filter(([k]) => keep.has(k))),
+    [id]: kind,
+  }))
+}
+
+/** The refusal a held-back launch answers with, or undefined when it may go. */
+async function judgeLaunch($: EngineInterface, kind: Kind, live: readonly LiveWorker[]): Promise<string | undefined> {
+  const machine = await readMachine($)
+  const reasons = refusals(kind, live, machine, options.limits)
+  if (reasons.length === 0) return undefined
+  let advice = ''
+  if (options.spotlightTip && machine?.os === 'macos' && machine.indexerCpu >= options.spotlightCpu) {
+    advice = ` ${spotlightAdvice(machine, await rootOf($, (await read($, snapshot)).runDir))}`
+  }
+  $.ui.toast('aeprogress held back a worker launch: see why in the transcript')
+  return (
+    `aeprogress launch limit: this worker is not launched because ${reasons.join('; ')}. ` +
+    `Wait for a worker to finish or for the load to drop, or change the limits in /config.${advice}`
+  )
+}
+
+/** Whether the session has a run, so the launch limit applies. */
+async function runActive($: EngineInterface): Promise<boolean> {
+  return options.launchLimit && (await read($, snapshot)).runDir !== ''
 }
 
 async function refresh($: EngineInterface, force = false): Promise<void> {
@@ -266,17 +403,60 @@ export const register: Register = (on, rawOptions) => {
     return { text: `${whole} of ${snap.runDir}: ${approved}/${snap.items.length} approved. Progress pane opened.` }
   })
 
-  // A subagent's spawn prompt names the task it executes; keep the ID by agent id.
+  // A subagent's spawn prompt names the task it executes: that makes it an Executor, which
+  // the launch limit holds back past the limits. Any other subagent goes untouched.
   on('agent.spawn', async ($, e, next) => {
-    const result = await next(e)
     const ids = taskIdsIn(`${e.description} ${e.prompt}`)
+    const snap = await read($, snapshot)
+    const runIds = new Set(snap.items.map(i => i.id.toUpperCase()))
+    const isExecutor = ids.some(id => runIds.size === 0 || runIds.has(id)) && !e.workflow
+    const kind: Kind = isDocsOnly(e.prompt) ? 'docs' : 'build'
+    let live: LiveWorker[] = []
+    if (isExecutor && (await runActive($))) {
+      live = await liveExecutors($)
+      const refusal = await judgeLaunch($, kind, live)
+      if (refusal) return { deny: refusal }
+    }
+    const result = await next(e)
     if ('agentId' in result && result.agentId && ids.length > 0) {
       const agentId = result.agentId
       await update($, spawned, old => ({ ...old, [agentId]: ids }))
+      if (isExecutor) await remember($, agentId, kind, live)
     }
     void refresh($)
     return result
-  }).catch(($, e, next) => next(e))
+  }).catch(($, e, next) =>
+    next.called
+      ? next(e)
+      : { deny: 'aeprogress launch limit: the live workers could not be counted, so this Executor is not launched.' },
+  )
+
+  // Orca: a worker-start, or a send that reopens a worker, goes through the same limit.
+  on('tool.call', { tool: 'Bash' }, async ($, e, next) => {
+    if (!mentionsOrcaLaunch(e.command) || !(await runActive($))) return next(e)
+    const orcaIds = await orcaLiveIds($)
+    if (!orcaLaunch(e.command, new Set(orcaIds))) return next(e)
+    const spec = specFile(e.command)
+    const specText = spec ? ((await $.fs.read(spec).catch(() => '')) as string) : ''
+    const kind: Kind = isDocsOnly(e.command) || isDocsOnly(specText) ? 'docs' : 'build'
+    const live = await liveExecutors($, orcaIds)
+    const refusal = await judgeLaunch($, kind, live)
+    if (refusal) return { deny: refusal }
+    const ran = await next(e)
+    const dispatch = dispatchIdIn(JSON.stringify(ran.result ?? ''))
+    if (dispatch) await remember($, dispatch, kind, live)
+    void refresh($)
+    return ran
+  }).catch(($, e, next) =>
+    next.called
+      ? next(e)
+      : {
+          deny:
+            'aeprogress launch limit: the live Orca workers could not be counted (orca orchestration ' +
+            'worker-list failed), so this worker is not launched. Turn "Launch limit" off in /config ' +
+            'to launch without it.',
+        },
+  )
 
   on('classic.SubagentStop', async ($, e, next) => {
     const result = await next(e)
@@ -306,6 +486,14 @@ export const register: Register = (on, rawOptions) => {
     const attention = snap.items.filter(i => ATTENTION.has(i.state))
     const time = snap.readAt ? new Date(snap.readAt).toTimeString().slice(0, 5) : '--:--'
     const sourceLabel = { subagent: 'subagent', orca: 'Orca', command: 'worker' } as const
+    const m = snap.machine
+    const limitOn = options.launchLimit && snap.runDir !== ''
+    const liveCount = snap.launches?.live ?? 0
+    const buildCount = snap.launches?.builds ?? 0
+    const tip =
+      options.spotlightTip && spotlightBusy(snap.indexerHistory ?? [], options.spotlightCpu)
+        ? spotlightAdvice(m, await read($, projectRoot))
+        : undefined
 
     if (snap.phases.length === 0) {
       return (
@@ -361,6 +549,20 @@ export const register: Register = (on, rawOptions) => {
             {i.executor ? ` · ${i.executor}` : ''}
           </Text>
         ))}
+        {m && (
+          <Text>
+            <Text color={m.busy > options.limits.maxBusy ? 'error' : m.busy > 0.4 ? 'warning' : 'success'}>●</Text>{' '}
+            Machine {Math.round(m.busy * 100)}% busy <Text dimColor>({m.detail})</Text>
+          </Text>
+        )}
+        {!m && <Text dimColor>Machine load unknown on this system</Text>}
+        {limitOn && (
+          <Text dimColor>
+            Launch limit: {liveCount}/{options.limits.maxWorkers} workers · {buildCount}/{options.limits.maxBuilds}{' '}
+            building · builds held above {Math.round(options.limits.maxBusy * 100)}%
+          </Text>
+        )}
+        {tip && <Text color="warning">{tip}</Text>}
         <Text dimColor>
           {snap.error
             ? `Last read failed: ${snap.error}`

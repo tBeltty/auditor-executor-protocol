@@ -1,4 +1,4 @@
-# aeprogress: progress pane for Claude Code
+# aeprogress: progress pane and launch limit for Claude Code
 
 An optional Claude Code mod that keeps a pane beside the chat with the progress of an
 Auditor/Executor run. The protocol does not depend on it. It reads the run's
@@ -10,7 +10,12 @@ Auditor/Executor run. The protocol does not depend on it. It reads the run's
 - **In progress**: who is working on which task ID right now, whether a Claude Code
   subagent, an Orca worker or a worker of any other harness;
 - **Awaiting audit**: items reported `DONE` that have no verdict yet;
-- **Needs attention**: `CONDITIONAL`, `REJECTED`, `CONFLICT`, `BLOCKED` and `FAILED` items.
+- **Needs attention**: `CONDITIONAL`, `REJECTED`, `CONFLICT`, `BLOCKED` and `FAILED` items;
+- the machine's load, with a colored dot, and how full the launch limit is.
+
+It also carries a **launch limit**: while a run is found, it holds back launching another
+Executor past a worker count or a machine load, with a message saying why. And on macOS
+it recommends excluding the project from Spotlight when indexing keeps the machine busy.
 
 In Autonomous mode the owner only gets a report per phase; the pane lets them follow
 the run without interrupting the Auditor.
@@ -84,6 +89,68 @@ shown next to items awaiting audit or needing attention.
 A workers command for a harness that writes one JSON object per running job could be
 as small as `sh -c "my-harness jobs --running"`, as long as each line names the task ID.
 
+## The launch limit
+
+Several Executors that compile at once can saturate a machine, and a saturated machine
+makes every one of them slower and flakier. While the session has a run, the mod holds
+back an Executor launch that would pass any of these limits (each one a `/config` option):
+
+| Limit | Default | Applies to |
+|---|---|---|
+| Most live workers | 2 | Every launch |
+| Most building workers | 1 | A launch that builds |
+| Busiest machine for a build | 75% | A launch that builds |
+
+A refused launch never runs. The Auditor gets the reason back, such as
+`2 workers are live (limit 2)` or `the machine is 90% busy (load 7.2 of 8 cores; limit 75%
+for a build)`, and can wait for a worker to finish.
+
+**Which launches it sees:**
+
+| Launcher | What counts as a launch | How live workers are counted |
+|---|---|---|
+| Claude Code subagents | A subagent whose prompt names a task ID of the run (an Executor handoff). Exploration, review and workflow subagents are never held back | The session's own agent list |
+| Orca | `orca orchestration worker-start`, and `orca orchestration send --to dispatch:<id>` when that dispatch is not live (it reopens the worker). A message to a live worker or to the coordinator, such as a worker's own report, is never held back. `orca` must be the command itself: the same words inside an `echo` or a commit message are not a launch | `orca orchestration worker-list --json`: workers `live` and `in_progress`. Without a bound Run that is every Orca worker on the machine, which is what a machine-wide limit wants. If Orca cannot be asked, the launch is refused, the safe side |
+| Any other harness | Not seen: its launches go through without the limit. Its workers still show in the pane through the workers command | |
+
+Claude Code subagents and Orca workers are counted together.
+
+**Builds or not.** A handoff that compiles, builds and tests nothing (documentation, a
+plan, a review) carries the line `Load: docs-only`, as `references/handoffs.md` describes.
+The mod looks for it in the subagent's prompt, in the Orca command (`--spec "..."`), or in
+the file `--spec-file` names (read from the session's working directory). Anything without
+it counts as a build. A docs-only launch only answers to the worker count.
+
+Turn the limit off with **Launch limit** in `/config`; without a run it does nothing.
+
+## Machine load
+
+The mod API does not say which system it runs on, so the mod tries each source by what
+exists, and turns it into one number, the busy fraction:
+
+| System | Source | Busy fraction | Tested |
+|---|---|---|---|
+| Linux | `/proc/loadavg` over the processors in `/proc/cpuinfo` (`nproc` when cpuinfo lists none) | 1-minute load / cores | Parser checked against a real kernel's output (arm64 container); not yet run inside Claude Code on Linux |
+| macOS, BSD | `sysctl -n vm.loadavg` over `sysctl -n hw.ncpu` | 1-minute load / cores | macOS: run for real |
+| Windows | PowerShell, `Win32_Processor` `LoadPercentage` averaged | CPU % / 100 | Simulated output only |
+
+A system where no source answers shows "Machine load unknown", and the limit then
+applies only its worker counts.
+
+## Spotlight recommendation (macOS)
+
+Spotlight indexes new files as they appear, and a build that writes thousands of them
+can keep `mds_stores` and `mdworker` busy for minutes. When their CPU, added up, stays at
+or above 50% on two reads in a row (20 seconds apart while the pane is open), the pane
+recommends excluding the project folder (the run's git repository root) in
+**System Settings > Spotlight > Search Privacy** (**Spotlight > Privacy** on older
+macOS), shows the exact path, and toasts once per session. A launch the limit refuses
+while Spotlight is busy says so too.
+
+The mod only recommends. It never changes a setting, runs `mdutil` or writes into the
+folder. Turn it off with **Spotlight recommendation** in `/config`, or change its
+threshold. Other systems never show it.
+
 ## How the percentage is computed
 
 - Each phase weighs 1, unless the plan's phase table has a `Weight` column:
@@ -108,6 +175,9 @@ as small as `sh -c "my-harness jobs --running"`, as long as each line names the 
 - `aepkit status --json <run>` (and, with Orca or a workers command, that command),
   each one a short process with a 15-second limit. Nothing keeps running in the
   background.
+- The machine load: on macOS `sysctl` twice and `ps` once (for Spotlight), on Linux two
+  file reads, on Windows one PowerShell call. Again before every launch the limit judges.
+- With the launch limit on and Orca around, `orca orchestration worker-list --json`.
 - At session start, when `/aeprogress` runs, after each turn, when a subagent starts
   or stops, and every 20 seconds **only while the pane is open**. A closed pane costs
   nothing.
@@ -124,6 +194,12 @@ as small as `sh -c "my-harness jobs --running"`, as long as each line names the 
 | Workers command | empty | The command for any other harness |
 | aepkit command | empty | How to run aepkit, such as a full path |
 | Open at session start | on | Open the pane when a run is found |
+| Launch limit | on | Hold back Executor launches past the limits below, while a run is found |
+| Most live workers | 2 | Subagents and Orca workers together |
+| Most building workers | 1 | Live Executors without `Load: docs-only` |
+| Busiest machine for a build (%) | 75 | No building launch above this load |
+| Spotlight recommendation (macOS) | on | Recommend excluding the project from Spotlight |
+| Spotlight CPU that triggers the recommendation (%) | 50 | Indexing CPU held on two reads in a row |
 
 ## Develop
 

@@ -1,7 +1,10 @@
 import { describe, expect, mock, test } from 'claude-code/testing'
 import type { AgentInfo, On, ProcessRunResult } from 'claude-code'
 
+import { orcaLaunch, refusals, spotlightBusy } from '../hooks/limit'
+import { indexerCpu, linuxMachine, sysctlMachine, windowsMachine } from '../hooks/machine'
 import { commandWorkers, orcaWorkers, overall, percent, phaseShares, taskIdsIn } from '../hooks/progress'
+import { CPUINFO, LOADAVG } from './fixtures/linux'
 import { STATUS } from './fixtures/status'
 
 const RUN = 'docs/run'
@@ -30,21 +33,55 @@ type Engine = {
   orcaPs?: unknown
   orcaRepo?: string
   workersOut?: string
+  /** Files the machine reading finds (`/proc/loadavg`, `/usr/sbin/sysctl`, ...). */
+  files?: Record<string, string>
+  /** Answers for commands, by argv joined with spaces; checked before the defaults. */
+  commands?: Record<string, string>
+  /** Live Orca dispatch ids for `worker-list`, or 'fail' when Orca cannot be asked. */
+  orcaLive?: string[] | 'fail'
+  /** No run found under the working directory. */
+  noRun?: boolean
 }
 
 /** Hooks standing for the engine beneath the plugin, aepkit and the harnesses. */
 function engine(on: On, given: Engine = {}): string[][] {
   const calls: string[][] = []
   mock.clock(on)
+  // The shell beneath the plugin: what reaches it is recorded, as `SHELL <command>`.
+  on('tool.call', (_, e) => {
+    calls.push(['SHELL', String((e as { command?: string }).command)])
+    return { result: 'Started worker dispatchId=ctx_new1' } as never
+  })
   on('command.register', () => ({ value: { command: 'aeprogress' } }))
   on('ui.open', () => ({ value: { isPlaced: true } }))
   on('ui.panes', () => ({ value: [] }))
   on('session.start', (_, e) => ({ cwd: e.cwd }))
   on('env.get', (_, e) => ({ value: given.env?.[e.name] }))
   on('agent.list', () => ({ value: given.agents ?? [] }))
+  on('ui.toast', () => ({ value: undefined }))
+  on('session.cwd', () => ({ value: '/work/session' }))
+  on('fs.list', () => ({ value: [] }))
+  // The engine hands a relative path over already resolved to an absolute one.
+  const file = (path: string) =>
+    given.files?.[path] ??
+    Object.entries(given.files ?? {}).find(([name]) => !name.startsWith('/') && path.endsWith(`/${name}`))?.[1]
+  on('fs.exists', (_, e) => ({ value: file(e.path) !== undefined }))
+  on('fs.read', (_, e) => {
+    const text = file(e.path)
+    if (text === undefined) throw new Error(`ENOENT: ${e.path}`)
+    return { value: text }
+  })
   on('process.run', (_, e) => {
     const argv = [...e.argv]
     calls.push(argv)
+    const answer = given.commands?.[argv.join(' ')]
+    if (answer !== undefined) return ran(answer)
+    if (argv.includes('worker-list')) {
+      if (given.orcaLive === 'fail') return ran('', 1, 'orca: runtime not reachable')
+      const workers = (given.orcaLive ?? []).map(dispatchId => ({ dispatchId, liveness: 'live', outcome: 'in_progress' }))
+      return ran(JSON.stringify({ ok: true, result: { workers } }))
+    }
+    if (argv.includes('rev-parse')) return ran('/work/proj\n')
     if (argv.includes('status')) return given.aepkit ? given.aepkit(argv) : ran(JSON.stringify(STATUS))
     if (argv.includes('current')) {
       return ran(JSON.stringify({ result: { worktree: { repoId: given.orcaRepo ?? 'repo-1' } } }))
@@ -218,4 +255,286 @@ test('an old aepkit on the PATH does not hide a newer one', { options: { runDir:
   const ui = await $.ui.mount({ ...PANE, surface: 'terminal' })
   expect((await ui.find({ type: 'Text', text: /^43\.8%$/ }))?.text).toBe('43.8%')
   await ui.unmount()
+})
+
+const MAC = {
+  '/usr/sbin/sysctl': '',
+  '/System/Library/CoreServices': '',
+}
+const macCommands = (load: string, ps = '') => ({
+  '/usr/sbin/sysctl -n vm.loadavg': `{ ${load} 1.00 1.00 }\n`,
+  '/usr/sbin/sysctl -n hw.ncpu': '8\n',
+  '/bin/ps -A -o %cpu=,comm=': ps,
+})
+const START = 'orca orchestration worker-start --spec-file handoff.md --agent claude'
+
+type Engine$ = { tool: { call: (input: never) => Promise<unknown> } }
+
+/** Runs a Bash command through the plugin: what reached the shell, and the answer. */
+async function bash($: Engine$, calls: string[][], command: string) {
+  const before = calls.length
+  const result = await $.tool.call({ tool: 'Bash', command } as never)
+  const reached = calls.slice(before).filter(c => c[0] === 'SHELL').map(c => c[1])
+  return { reached, text: JSON.stringify(result) }
+}
+
+describe('the machine readings', () => {
+  test('Linux: load over the processors /proc/cpuinfo lists', async () => {
+    const m = linuxMachine('1.52 1.20 1.01 2/345 6789\n', 'processor\t: 0\nprocessor\t: 1\nprocessor\t: 2\nprocessor\t: 3\n')
+    expect(m).toEqual({ busy: 0.38, detail: 'load 1.5 of 4 cores', os: 'linux', indexerCpu: 0 })
+  })
+
+  test('Linux: what a real kernel prints', async () => {
+    expect(linuxMachine(LOADAVG, CPUINFO)).toEqual({ busy: 0.06, detail: 'load 0.1 of 2 cores', os: 'linux', indexerCpu: 0 })
+  })
+
+  test('macOS: sysctl load over hw.ncpu, and Spotlight added up from ps', async () => {
+    const ps = ' 60.1 /System/Library/Frameworks/CoreServices.framework/mds_stores\n 12.0 /usr/libexec/mdworker_shared\n 30.0 /usr/bin/clang\n'
+    expect(Math.round(indexerCpu(ps) * 10)).toBe(721)
+    expect(sysctlMachine('{ 6.40 5.10 4.20 }', '8', 'macos', ps)).toEqual({
+      busy: 0.8,
+      detail: 'load 6.4 of 8 cores',
+      os: 'macos',
+      indexerCpu: 72.1,
+    })
+  })
+
+  test('Windows: the processors\' LoadPercentage', async () => {
+    expect(windowsMachine('37\r\n')).toEqual({ busy: 0.37, detail: 'CPU at 37%', os: 'windows', indexerCpu: 0 })
+    expect(windowsMachine('')).toBeUndefined()
+  })
+
+  for (const [name, given, line] of [
+    [
+      'Linux',
+      { files: { '/proc/loadavg': '3.00 2.00 1.00 1/2 3\n', '/proc/cpuinfo': 'processor : 0\nprocessor : 1\nprocessor : 2\nprocessor : 3\n' } },
+      /Machine 75% busy \(load 3\.0 of 4 cores\)/,
+    ],
+    ['macOS', { files: MAC, commands: macCommands('2.00') }, /Machine 25% busy \(load 2\.0 of 8 cores\)/],
+    [
+      'Windows',
+      {
+        env: { SystemRoot: 'C:\\Windows' },
+        commands: {
+          'powershell -NoProfile -Command (Get-CimInstance Win32_Processor | Measure-Object LoadPercentage -Average).Average': '42\r\n',
+        },
+      },
+      /Machine 42% busy \(CPU at 42%\)/,
+    ],
+    ['an unknown system', {}, /Machine load unknown/],
+  ] as const) {
+    test(`the pane shows the load on ${name}`, { options: { runDir: RUN } }, async ($, on) => {
+      engine(on, given as Engine)
+      await $.session.start({ cwd: '/', surface: 'terminal', isInteractive: true })
+      const ui = await $.ui.mount({ ...PANE, surface: 'terminal' })
+      expect(await ui.find({ type: 'Text', text: line })).toBeDefined()
+      await ui.unmount()
+    })
+  }
+})
+
+describe('the launch limit rules', () => {
+  const limits = { maxWorkers: 2, maxBuilds: 1, maxBusy: 0.75 }
+  test('count, builds and load each refuse on their own', async () => {
+    const one = [{ id: 'a', kind: 'build' as const }]
+    expect(refusals('build', [], undefined, limits)).toEqual([])
+    expect(refusals('docs', one, undefined, { ...limits, maxWorkers: 1 })[0]).toBe('1 worker is live (limit 1)')
+    expect(refusals('docs', one, undefined, limits)).toEqual([])
+    expect(refusals('build', one, undefined, limits)[0]).toMatch(/1 building worker is live/)
+    expect(refusals('docs', [...one, { id: 'b', kind: 'docs' }], undefined, limits)[0]).toMatch(/2 workers are live/)
+    const busy = { busy: 0.9, detail: 'load 7.2 of 8 cores', os: 'macos' as const, indexerCpu: 0 }
+    expect(refusals('build', [], busy, limits)[0]).toMatch(/90% busy/)
+    expect(refusals('docs', [], busy, limits)).toEqual([])
+  })
+
+  test('a send is a launch only when it reopens a dispatch that is not live', async () => {
+    const live = new Set(['ctx_live'])
+    expect(orcaLaunch('orca orchestration worker-start --spec x', live)).toBe(true)
+    expect(orcaLaunch('orca orchestration send --to dispatch:ctx_old --subject go', live)).toBe(true)
+    expect(orcaLaunch('orca orchestration send --to dispatch:ctx_live --subject more', live)).toBe(false)
+    expect(orcaLaunch('orca orchestration send --type worker_done --subject done', live)).toBe(false)
+    expect(orcaLaunch('git status', live)).toBe(false)
+    expect(orcaLaunch('cd w && orca orchestration worker-start --spec x', live)).toBe(true)
+    expect(orcaLaunch('"$ORCA_CLI_BIN_DIR/orca" orchestration worker-start --spec x', live)).toBe(true)
+    expect(orcaLaunch('ORCA_ENV=1 orca --json orchestration worker-start --spec x', live)).toBe(true)
+    expect(orcaLaunch('echo orca orchestration worker-start --spec x', live)).toBe(false)
+    expect(orcaLaunch('git commit -m "docs: how orca orchestration worker-start works"', live)).toBe(false)
+  })
+
+  test('Spotlight counts as busy only when it stays busy', async () => {
+    expect(spotlightBusy([72], 50)).toBe(false)
+    expect(spotlightBusy([72, 10], 50)).toBe(false)
+    expect(spotlightBusy([10, 72, 64], 50)).toBe(true)
+  })
+})
+
+describe('the launch limit on Orca', () => {
+  test('a worker-start under the limits goes through', { options: { runDir: RUN } }, async ($, on) => {
+    const calls = engine(on, { files: { ...MAC, 'handoff.md': 'TASK: P1-G1' }, commands: macCommands('1.00'), orcaLive: [] })
+    await $.session.start({ cwd: '/', surface: 'terminal', isInteractive: true })
+    const { reached } = await bash($, calls, START)
+    expect(reached).toEqual([START])
+  })
+
+  test('a third worker is refused by count', { options: { runDir: RUN } }, async ($, on) => {
+    const calls = engine(on, { files: { ...MAC, 'handoff.md': 'Load: docs-only' }, commands: macCommands('1.00'), orcaLive: ['ctx_a', 'ctx_b'] })
+    await $.session.start({ cwd: '/', surface: 'terminal', isInteractive: true })
+    const { reached, text } = await bash($, calls, START)
+    expect(reached).toEqual([])
+    expect(text).toMatch(/2 workers are live \(limit 2\)/)
+  })
+
+  test('a build is refused while the machine is busy', { options: { runDir: RUN } }, async ($, on) => {
+    const calls = engine(on, { files: { ...MAC, 'handoff.md': 'TASK: P1-G1' }, commands: macCommands('7.20'), orcaLive: [] })
+    await $.session.start({ cwd: '/', surface: 'terminal', isInteractive: true })
+    const { reached, text } = await bash($, calls, START)
+    expect(reached).toEqual([])
+    expect(text).toMatch(/the machine is 90% busy/)
+  })
+
+  test('a "Load: docs-only" handoff goes beside a live build', { options: { runDir: RUN } }, async ($, on) => {
+    const calls = engine(on, {
+      files: { ...MAC, 'handoff.md': 'ROLE: Executor.\nLoad: docs-only\nTASK: P1-G1' },
+      commands: macCommands('7.20'),
+      orcaLive: ['ctx_build'],
+    })
+    await $.session.start({ cwd: '/', surface: 'terminal', isInteractive: true })
+    const { reached } = await bash($, calls, START)
+    expect(reached).toEqual([START])
+  })
+
+  test('an inline --spec carrying "Load: docs-only" goes beside a live build', { options: { runDir: RUN } }, async ($, on) => {
+    const calls = engine(on, { files: MAC, commands: macCommands('7.20'), orcaLive: ['ctx_build'] })
+    await $.session.start({ cwd: '/', surface: 'terminal', isInteractive: true })
+    const inline = 'orca orchestration worker-start --spec "ROLE: Executor. Load: docs-only. TASK: P1-G1" --agent claude'
+    expect((await bash($, calls, inline)).reached).toEqual([inline])
+  })
+
+  test('a message to a live worker is never held back', { options: { runDir: RUN } }, async ($, on) => {
+    const calls = engine(on, { files: MAC, commands: macCommands('7.20'), orcaLive: ['ctx_a', 'ctx_b'] })
+    await $.session.start({ cwd: '/', surface: 'terminal', isInteractive: true })
+    const send = 'orca orchestration send --to dispatch:ctx_a --subject "one more check"'
+    expect((await bash($, calls, send)).reached).toEqual([send])
+  })
+
+  test('when Orca cannot count its workers, the launch is refused', { options: { runDir: RUN } }, async ($, on) => {
+    const calls = engine(on, { files: MAC, commands: macCommands('1.00'), orcaLive: 'fail' })
+    await $.session.start({ cwd: '/', surface: 'terminal', isInteractive: true })
+    const { reached, text } = await bash($, calls, START)
+    expect(reached).toEqual([])
+    expect(text).toMatch(/could not be counted/)
+  })
+
+  test('without a run, nothing is held back', { options: {} }, async ($, on) => {
+    const calls = engine(on, { files: MAC, commands: macCommands('7.20'), orcaLive: ['ctx_a', 'ctx_b'] })
+    await $.session.start({ cwd: '/', surface: 'terminal', isInteractive: true })
+    expect((await bash($, calls, START)).reached).toEqual([START])
+  })
+
+  test('with the limit off, nothing is held back', { options: { runDir: RUN, launchLimit: false } }, async ($, on) => {
+    const calls = engine(on, { files: MAC, commands: macCommands('7.20'), orcaLive: ['ctx_a', 'ctx_b'] })
+    await $.session.start({ cwd: '/', surface: 'terminal', isInteractive: true })
+    expect((await bash($, calls, START)).reached).toEqual([START])
+  })
+})
+
+describe('the launch limit on Claude Code subagents', () => {
+  const spawnInput = (prompt: string) => ({
+    tool_use_id: 't',
+    prompt,
+    description: 'Executor',
+    subagentType: 'general-purpose',
+    provider: { plugin: 'engine', tier: 'core' as const },
+    parentModel: 'opus',
+    background: true,
+    fork: false,
+  })
+  const agent = (id: string): AgentInfo => ({ id, description: 'Executor', type: 'general-purpose', status: 'running' })
+
+  test('a third Executor is refused; a subagent with no task of the run is not', { options: { runDir: RUN } }, async ($, on) => {
+    const agents: AgentInfo[] = []
+    engine(on, { files: MAC, commands: macCommands('1.00'), agents })
+    let n = 0
+    on('agent.spawn', () => {
+      n += 1
+      agents.push(agent(`a${n}`))
+      return { model: 'haiku', agentId: `a${n}` }
+    })
+    await $.session.start({ cwd: '/', surface: 'terminal', isInteractive: true })
+
+    expect(await $.agent.spawn(spawnInput('ROLE: Executor, reporting on P1-T3.\nLoad: docs-only'))).toMatchObject({ agentId: 'a1' })
+    expect(await $.agent.spawn(spawnInput('ROLE: Executor, reporting on P1-G1.\nLoad: docs-only'))).toMatchObject({ agentId: 'a2' })
+    const third = await $.agent.spawn(spawnInput('ROLE: Executor, reporting on P1-T2.'))
+    expect(JSON.stringify(third)).toMatch(/2 workers are live \(limit 2\)/)
+    expect(await $.agent.spawn(spawnInput('Find where the parser is defined.'))).toMatchObject({ agentId: 'a3' })
+  })
+
+  test('a building Executor waits for the live build; a docs-only one does not', { options: { runDir: RUN } }, async ($, on) => {
+    const agents: AgentInfo[] = []
+    engine(on, { files: MAC, commands: macCommands('1.00'), agents })
+    let n = 0
+    on('agent.spawn', () => {
+      n += 1
+      agents.push(agent(`a${n}`))
+      return { model: 'haiku', agentId: `a${n}` }
+    })
+    await $.session.start({ cwd: '/', surface: 'terminal', isInteractive: true })
+
+    await $.agent.spawn(spawnInput('ROLE: Executor, reporting on P1-T3.'))
+    expect(JSON.stringify(await $.agent.spawn(spawnInput('ROLE: Executor, reporting on P1-G1.')))).toMatch(
+      /1 building worker is live/,
+    )
+    expect(await $.agent.spawn(spawnInput('ROLE: Executor, reporting on P1-G1.\nLoad: docs-only'))).toMatchObject({
+      agentId: 'a2',
+    })
+  })
+})
+
+describe('the Spotlight recommendation', () => {
+  const ps = ' 64.0 /System/Library/Frameworks/CoreServices.framework/mds_stores\n 9.0 /usr/libexec/mdworker_shared\n'
+  const reopen = { command: 'aeprogress', args: '', origin: { kind: 'composer' as const }, presentation: { isFullscreen: true, columns: 160 } }
+
+  test('recommends excluding the project after two busy reads', { options: { runDir: RUN } }, async ($, on) => {
+    engine(on, { files: MAC, commands: macCommands('1.00', ps) })
+    await $.session.start({ cwd: '/', surface: 'terminal', isInteractive: true })
+    const first = await $.ui.mount({ ...PANE, surface: 'terminal' })
+    expect(await first.find({ type: 'Text', text: /Spotlight/ })).toBeUndefined()
+    await first.unmount()
+
+    await $.command.run(reopen)
+    const second = await $.ui.mount({ ...PANE, surface: 'desktop' })
+    const tip = await second.find({ type: 'Text', text: /Spotlight is indexing at 73% CPU/ })
+    expect(tip?.text).toMatch(/exclude \/work\/proj in System Settings > Spotlight > Search Privacy/)
+    await second.unmount()
+  })
+
+  test('says nothing off macOS', { options: { runDir: RUN } }, async ($, on) => {
+    engine(on, {
+      files: { '/proc/loadavg': '0.50 0.40 0.30 1/2 3\n', '/proc/cpuinfo': 'processor : 0\nprocessor : 1\n' },
+      commands: { '/bin/ps -A -o %cpu=,comm=': ps },
+    })
+    await $.session.start({ cwd: '/', surface: 'terminal', isInteractive: true })
+    await $.command.run(reopen)
+    const ui = await $.ui.mount({ ...PANE, surface: 'terminal' })
+    expect(await ui.find({ type: 'Text', text: /Machine 25% busy/ })).toBeDefined()
+    expect(await ui.find({ type: 'Text', text: /Spotlight/ })).toBeUndefined()
+    await ui.unmount()
+  })
+
+  test('says nothing when it is off', { options: { runDir: RUN, spotlightTip: false } }, async ($, on) => {
+    engine(on, { files: MAC, commands: macCommands('1.00', ps) })
+    await $.session.start({ cwd: '/', surface: 'terminal', isInteractive: true })
+    await $.command.run(reopen)
+    const ui = await $.ui.mount({ ...PANE, surface: 'terminal' })
+    expect(await ui.find({ type: 'Text', text: /Spotlight/ })).toBeUndefined()
+    await ui.unmount()
+  })
+
+  test('a refused build names Spotlight when it is part of the load', { options: { runDir: RUN } }, async ($, on) => {
+    const calls = engine(on, { files: { ...MAC, 'handoff.md': 'TASK: P1-G1' }, commands: macCommands('7.20', ps), orcaLive: [] })
+    await $.session.start({ cwd: '/', surface: 'terminal', isInteractive: true })
+    const { text } = await bash($, calls, START)
+    expect(text).toMatch(/90% busy/)
+    expect(text).toMatch(/Spotlight is indexing at 73% CPU/)
+  })
 })

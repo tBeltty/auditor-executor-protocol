@@ -1,8 +1,10 @@
 {
   "name": "aeprogress",
-  "version": "0.1.0",
-  "description": "Optional progress pane for an Auditor/Executor protocol run: overall %, a bar per phase, who is working on what (Claude Code subagents, Orca workers or any harness), what awaits audit and what needs attention. Opens with /aeprogress. Early access API.",
-  "author": { "name": "tBeltty" },
+  "version": "0.2.0",
+  "description": "Optional progress pane and launch limit for an Auditor/Executor protocol run: overall %, a bar per phase, who is working on what (Claude Code subagents, Orca workers or any harness), the machine's load, and a limit that holds back worker launches past a worker count or a load. Opens with /aeprogress. Early access API.",
+  "author": {
+    "name": "tBeltty"
+  },
   "homepage": "https://github.com/tBeltty/auditor-executor-protocol/tree/main/integrations/claude-code/aeprogress",
   "repository": "https://github.com/tBeltty/auditor-executor-protocol",
   "license": "MIT",
@@ -19,7 +21,12 @@
       "title": "External workers",
       "description": "Where to look for workers outside this session. auto: Orca when the session runs inside an Orca terminal, or the workers command when one is set. orca: always ask Orca. command: only the workers command. off: only this session's subagents and the status board.",
       "default": "auto",
-      "options": ["auto", "orca", "command", "off"]
+      "options": [
+        "auto",
+        "orca",
+        "command",
+        "off"
+      ]
     },
     "workersCommand": {
       "type": "string",
@@ -38,6 +45,42 @@
       "title": "Open at session start",
       "description": "Open the pane when a session starts in a workspace that has a run. Off: only /aeprogress opens it.",
       "default": true
+    },
+    "launchLimit": {
+      "type": "boolean",
+      "title": "Launch limit",
+      "description": "While a run is found, refuse launching an Executor (a Claude Code subagent whose prompt names a task of the run, or an Orca worker-start) past the limits below, with a message saying why. Off: the pane only watches.",
+      "default": true
+    },
+    "maxWorkers": {
+      "type": "number",
+      "title": "Most live workers",
+      "description": "Live Executors (subagents and Orca workers together) above which no other is launched.",
+      "default": 2
+    },
+    "maxBuilds": {
+      "type": "number",
+      "title": "Most building workers",
+      "description": "Live Executors that build at once. A handoff with the line \"Load: docs-only\" does not count as building.",
+      "default": 1
+    },
+    "maxBusyPercent": {
+      "type": "number",
+      "title": "Busiest machine for a build (%)",
+      "description": "No building Executor is launched while the machine is busier than this: Unix load over cores, or Windows CPU %.",
+      "default": 75
+    },
+    "spotlightTip": {
+      "type": "boolean",
+      "title": "Spotlight recommendation (macOS)",
+      "description": "When Spotlight's indexing stays busy, recommend excluding the project folder in System Settings > Spotlight > Search Privacy. It only recommends; it never changes a setting.",
+      "default": true
+    },
+    "spotlightCpuPercent": {
+      "type": "number",
+      "title": "Spotlight CPU that triggers the recommendation (%)",
+      "description": "Indexing CPU, added up over Spotlight's processes, held on two reads in a row.",
+      "default": 50
     }
   }
 }
