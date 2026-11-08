@@ -110,6 +110,8 @@ Inspect open tasks and tallied verdicts:
 aepkit status docs/<task-name>
 ```
 
+`aepkit status --json docs/<task-name>` prints the same reading as JSON, with each ID's phase, effective state and executor, and the phases with their titles from `execution-guide.md` (and weights from an optional `Weight` column in the plan's phase table), for scripts and tools to use instead of parsing the log.
+
 Cross-check document consistency:
 
 ```bash
@@ -136,6 +138,17 @@ The `sed -i ''` form above is BSD/macOS sed; on GNU/Linux use `sed -i 's/.../...
 
 A failure only proves something if it is the failure you meant. A syntax error, a missing import or a mistyped test command also makes the test exit non-zero. `--expect` takes a regular expression that the failing run's output must match, and the control fails if it does not. Without `--expect`, output that looks like a syntax, import, collection or command-not-found error is flagged with a `WARNING` next to the `OK`, and you need to read the transcript to confirm the reason.
 
+### Optional: Progress Pane for Claude Code
+
+`aeprogress` is a Claude Code mod that keeps a pane beside the chat with the run's overall percentage, a bar per phase, who is working on which task ID (Claude Code subagents, Orca workers, or any other harness through a command of your own), what awaits audit and what needs attention. It reads the log through `aepkit status --json` and refreshes after each turn, and every 20 seconds while the pane is open. The protocol does not depend on it.
+
+```
+/plugin install aeprogress --marketplace tBeltty/auditor-executor-protocol
+/aeprogress docs/<task-name>
+```
+
+It works in the terminal and in the desktop app's local sessions. Claude Code's mod API is early access, so a Claude Code release can break it. Setup, options and how the percentage is computed: [integrations/claude-code/aeprogress](https://github.com/tBeltty/auditor-executor-protocol/tree/main/integrations/claude-code/aeprogress).
+
 ---
 
 ## CLI Reference
@@ -146,7 +159,7 @@ A failure only proves something if it is the failure you meant. A syntax error, 
 | `aepkit install-skill [dir]` | `--agent`, `--global`, `--dest`, `--force` | Provision `SKILL.md` and `references/` into Antigravity, Claude Code, or Cursor |
 | `aepkit lint <dir>` | `--annex-threshold` | Cross-check IDs both ways, flag `DONE` without evidence, detect missing negative controls, and flag log rot |
 | `aepkit negcontrol` | `--test-cmd` (required), `--file`, `--break-cmd`, `--restore-cmd`, `--expect`, `--timeout` | Run automated backup, break, fail, restore, and pass cycle |
-| `aepkit status <dir>` | | Combine status board verdicts with reports; list everything not `APPROVED` |
+| `aepkit status <dir>` | `--json` | Combine status board verdicts with reports; list everything not `APPROVED` |
 
 `python -m aepkit` works the same as `aepkit`. Errors go to stderr.
 

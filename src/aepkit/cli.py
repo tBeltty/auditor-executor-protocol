@@ -89,6 +89,12 @@ def build_parser() -> argparse.ArgumentParser:
         "status", help="tally verdicts and reports in the compliance log; only APPROVED closes"
     )
     p_status.add_argument("target_dir", help="directory holding compliance-log.md")
+    p_status.add_argument(
+        "--json",
+        dest="as_json",
+        action="store_true",
+        help="print the reading as JSON, with phases from the execution guide and the plan",
+    )
 
     p_install = sub.add_parser(
         "install-skill", help="provision SKILL.md and references/ into an agent skills directory"
@@ -141,7 +147,7 @@ def main(argv: list[str] | None = None) -> int:
             expect=args.expect,
         )
     if args.command == "status":
-        return status.run(args.target_dir)
+        return status.run(args.target_dir, as_json=args.as_json)
     return install_skill.run(
         target_dir=args.target_dir,
         agent=args.agent,

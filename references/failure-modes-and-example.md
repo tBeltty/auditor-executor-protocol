@@ -23,7 +23,7 @@ this file.
 - **Silent model inheritance.** A subagent launched without an explicit model runs on
   the Auditor's own model. Nothing fails; the rule is just broken on every task. Pass
   it every time.
-- **Guided by habit.** In Autonomous mode, the Auditor ends a turn after a `PASS` to
+- **Guided by habit.** In Autonomous mode, the Auditor ends a turn after an `APPROVED` to
   "report," or asks the owner a question the charter already lets it decide. Each one
   costs the owner a message and adds nothing.
 - **A defect ships and nobody owns re-checking its blast radius.** A task changes what

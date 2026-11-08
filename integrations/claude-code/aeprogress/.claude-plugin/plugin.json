@@ -1,0 +1,43 @@
+{
+  "name": "aeprogress",
+  "version": "0.1.0",
+  "description": "Optional progress pane for an Auditor/Executor protocol run: overall %, a bar per phase, who is working on what (Claude Code subagents, Orca workers or any harness), what awaits audit and what needs attention. Opens with /aeprogress. Early access API.",
+  "author": { "name": "tBeltty" },
+  "homepage": "https://github.com/tBeltty/auditor-executor-protocol/tree/main/integrations/claude-code/aeprogress",
+  "repository": "https://github.com/tBeltty/auditor-executor-protocol",
+  "license": "MIT",
+  "types": "./types/index.d.ts",
+  "userConfig": {
+    "runDir": {
+      "type": "string",
+      "title": "Run folder",
+      "description": "The folder holding compliance-log.md, relative to the workspace or absolute. Empty: the newest compliance-log.md found up to three levels under the working directory. /aeprogress <folder> overrides it for the session.",
+      "default": ""
+    },
+    "externalWorkers": {
+      "type": "string",
+      "title": "External workers",
+      "description": "Where to look for workers outside this session. auto: Orca when the session runs inside an Orca terminal, or the workers command when one is set. orca: always ask Orca. command: only the workers command. off: only this session's subagents and the status board.",
+      "default": "auto",
+      "options": ["auto", "orca", "command", "off"]
+    },
+    "workersCommand": {
+      "type": "string",
+      "title": "Workers command",
+      "description": "For any other harness: a command (no shell; quotes group words) that prints the workers running now, one per line. Every line that names a task ID such as P1-T3 shows that task as in progress, with the line as who. Runs in the run folder.",
+      "default": ""
+    },
+    "aepkitCommand": {
+      "type": "string",
+      "title": "aepkit command",
+      "description": "How to run aepkit, when it is not on the PATH Claude Code sees (the desktop app's PATH is often shorter than a terminal's): a full path, or for example `python3 -m aepkit`. Empty tries aepkit, ~/.local/bin/aepkit, then python3 -m aepkit.",
+      "default": ""
+    },
+    "autoOpen": {
+      "type": "boolean",
+      "title": "Open at session start",
+      "description": "Open the pane when a session starts in a workspace that has a run. Off: only /aeprogress opens it.",
+      "default": true
+    }
+  }
+}
