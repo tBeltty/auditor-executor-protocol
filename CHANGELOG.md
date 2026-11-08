@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+- `aeprogress` 0.3.1: a worker's name in the pane no longer repeats the task ID it carries
+  (`P2-T3  Executor P2-T3` is now `P2-T3  Executor`), for subagents, Orca workers and lines
+  from a workers command. README screenshots of the pane, the launch limit and the
+  compaction countdown.
+
 ## [0.7.2] - 2026-11-08
 
 ### Added

@@ -1,5 +1,7 @@
 # aeprogress: progress pane and launch limit for Claude Code
 
+<img src="https://raw.githubusercontent.com/tBeltty/auditor-executor-protocol/main/integrations/claude-code/aeprogress/assets/pane.png" alt="The aeprogress pane on a five-phase run" width="420">
+
 An optional Claude Code mod that keeps a pane beside the chat with the progress of an
 Auditor/Executor run. The protocol does not depend on it. It reads the run's
 `compliance-log.md` through `aepkit status --json` and shows:
@@ -85,6 +87,9 @@ run, so a worker of another project never shows. It looks in three places:
 | Claude Code subagents | The session's own agent list, plus the task ID the spawn prompt named (`ROLE: Executor, reporting on P1-T3`), so an Auditor in Autonomous mode is followed with no setup | Always |
 | Orca workers | `orca worktree ps --json`: a worktree whose name, branch or folder names the task ID and whose agent has not finished. Only worktrees of the run's repository count | **External workers** `auto` inside an Orca terminal, or `orca` |
 | Any other harness | **Workers command**: a command that prints the workers running now, one per line. Every line that names a task ID of the run marks it in progress, and the line is shown as who | **External workers** `auto` or `command`, when the command is set |
+
+A worker's name shows without the task IDs it carries (a subagent described as
+`Executor P2-T3` shows as `P2-T3  Executor`), since the row already names the task.
 
 A status board column named `Executor` (or `Worker`, `Agent`, `Owner`, `Assignee`) is
 shown next to items awaiting audit or needing attention.

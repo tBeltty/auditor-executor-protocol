@@ -3,6 +3,15 @@ import type { Item, Phase, Worker } from '../types'
 
 const TASK_ID_RE = /\bP(\d+)-([TG])(\d+)\b/gi
 
+/** A worker's name without the task IDs it carries, which the pane already shows. */
+export function withoutIds(text: string, fallback: string): string {
+  const rest = text
+    .replace(TASK_ID_RE, ' ')
+    .replace(/[\s|·,;:-]+/g, ' ')
+    .trim()
+  return rest || fallback
+}
+
 /** Task and gate IDs (P<n>-T<m>, P<n>-G<m>) named anywhere in a text, upper-cased. */
 export function taskIdsIn(text: string): string[] {
   const found = new Set<string>()
@@ -89,7 +98,7 @@ export function subagentWorkers(
     if (!LIVE_AGENT.has(a.status)) continue
     const fromText = taskIdsIn(`${a.description} ${a.name ?? ''}`).filter(id => known.has(id))
     const ids = fromText.length > 0 ? fromText : (spawned[a.id] ?? []).filter(id => known.has(id))
-    const who = a.name || a.description || a.type
+    const who = withoutIds(a.name || a.description || '', a.type)
     for (const taskId of ids) workers.push({ taskId, who, source: 'subagent' })
   }
   return workers
@@ -120,20 +129,22 @@ export function orcaWorkers(stdout: string, repoId: string | undefined, known: R
     const names = [w.displayName, w.branch, folder, ...live.flatMap(a => [a.taskTitle, a.displayName])]
     const ids = taskIdsIn(names.filter(Boolean).join(' ')).filter(id => known.has(id))
     const state = live[0]!.state
-    const who = (w.displayName || folder) + (state === 'working' ? '' : ` (${state})`)
+    const who = withoutIds(w.displayName || folder, 'worker') + (state === 'working' ? '' : ` (${state})`)
     for (const taskId of ids) workers.push({ taskId, who, source: 'orca' })
   }
   return workers
 }
 
-/** Workers from any other harness: each output line that names a known ID marks it. */
+/**
+ * Workers from any other harness: each output line that names a known ID marks it. The
+ * line, without the task IDs it names, is who; a line that is only an ID shows as "worker".
+ */
 export function commandWorkers(stdout: string, known: ReadonlySet<string>): Worker[] {
   const workers: Worker[] = []
   for (const line of stdout.split('\n')) {
-    const who = line.trim()
-    for (const taskId of taskIdsIn(who).filter(id => known.has(id))) {
-      workers.push({ taskId, who: who.slice(0, 80), source: 'command' })
-    }
+    const ids = taskIdsIn(line).filter(id => known.has(id))
+    if (ids.length === 0) continue
+    for (const taskId of ids) workers.push({ taskId, who: withoutIds(line, 'worker').slice(0, 80), source: 'command' })
   }
   return workers
 }

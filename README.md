@@ -12,7 +12,7 @@ A two-role protocol for running multi-phase work through AI agents without the p
 
 The **Auditor** defines what "done" means and proves it independently. The **Executor** implements one numbered task at a time and logs command output. Neither role crosses into the other.
 
-[`SKILL.md`](https://github.com/tBeltty/auditor-executor-protocol/blob/main/SKILL.md) specifies the protocol core; [`references/`](https://github.com/tBeltty/auditor-executor-protocol/tree/main/references) holds the parts an agent loads only when it reaches that step (task and gate writing, handoff templates, Autonomous mode, failure modes and a worked example). `aepkit` is a zero-dependency Python CLI that automates scaffolding, drift linting, negative controls, status tallies, and installing the skill into your agent.
+[`SKILL.md`](https://github.com/tBeltty/auditor-executor-protocol/blob/main/SKILL.md) specifies the protocol core; [`references/`](https://github.com/tBeltty/auditor-executor-protocol/tree/main/references) holds the parts an agent loads only when it reaches that step (task and gate writing, handoff templates, Autonomous mode, failure modes and a worked example). `aepkit` is a zero-dependency Python CLI that automates scaffolding, drift linting, negative controls, status tallies, and installing the skill into your agent. On Claude Code, the optional [`aeprogress`](#6-optional-aeprogress-for-claude-code) mod shows a run's progress beside the chat, holds back Executor launches when the machine is busy, and compacts the Auditor's session when a phase closes.
 
 ---
 
@@ -45,6 +45,8 @@ The Auditor/Executor Protocol prevents both using a strict four-document paper t
 The Auditor never takes the Executor's word for a result: it re-runs every verify command and gate itself before giving a verdict. That is what stops a pasted "tested and working" from closing a task.
 
 One person can run this workflow alone by switching hats between two isolated agent sessions. Keep them isolated, so the Auditor is never checking its own work.
+
+The owner picks one of two modes at the start of a run. In **Guided** mode the owner pastes each handoff into a fresh Executor session and sees every verdict. In **Autonomous** mode the Auditor launches Executors as subagents with an explicit model per task, answers their `BLOCKED` questions with a decision entry in the log, and reports once per closed phase, interrupting the owner only for a numbered critical-risk list ([`references/autonomous-mode.md`](https://github.com/tBeltty/auditor-executor-protocol/blob/main/references/autonomous-mode.md)).
 
 ---
 
@@ -138,16 +140,31 @@ The `sed -i ''` form above is BSD/macOS sed; on GNU/Linux use `sed -i 's/.../...
 
 A failure only proves something if it is the failure you meant. A syntax error, a missing import or a mistyped test command also makes the test exit non-zero. `--expect` takes a regular expression that the failing run's output must match, and the control fails if it does not. Without `--expect`, output that looks like a syntax, import, collection or command-not-found error is flagged with a `WARNING` next to the `OK`, and you need to read the transcript to confirm the reason.
 
-### Optional: Progress Pane for Claude Code
+### 6. Optional: `aeprogress` for Claude Code
 
-`aeprogress` is a Claude Code mod that keeps a pane beside the chat with the run's overall percentage, a bar per phase, who is working on which task ID (Claude Code subagents, Orca workers, or any other harness through a command of your own), what awaits audit, what needs attention, and the machine's load. It reads the log through `aepkit status --json` and refreshes after each turn, and every 20 seconds while the pane is open. While a run is found it also holds back launching another Executor past a worker count or a machine load (2 workers, 1 building, 75% busy by default; a handoff marked `Load: docs-only` does not count as a build), and on macOS it recommends excluding the project from Spotlight when indexing keeps the machine busy. The protocol does not depend on it.
+`aeprogress` is a Claude Code mod for runs where the Auditor launches Executors as subagents or as workers of a harness such as Orca. The protocol does not depend on it, and it reads the run only through `aepkit status --json`.
+
+<img src="https://raw.githubusercontent.com/tBeltty/auditor-executor-protocol/main/integrations/claude-code/aeprogress/assets/pane.png" alt="The aeprogress pane: 43.3% overall, a bar per phase, P2-T3 in progress on a subagent, P2-T4 awaiting audit, P2-T2 conditional, and the machine at 31% with 1 of 2 workers live" width="420">
+
+It does three things:
+
+1. **A pane beside the chat** with the overall percentage, one bar per phase (weighted by an optional `Weight` column in the plan), who is working on which task ID (Claude Code subagents, Orca workers, or any harness through a command of your own), what awaits audit, what needs attention, and the machine's load. It refreshes after each turn, and every 20 seconds while it is open.
+2. **A launch limit.** While a run is found, it refuses to launch another Executor past 2 live workers, 1 building worker, or a machine more than 75% busy for a build, and the refusal says which limit was hit. A handoff that builds nothing carries the line `Load: docs-only` ([`references/handoffs.md`](https://github.com/tBeltty/auditor-executor-protocol/blob/main/references/handoffs.md)) and only answers to the worker count. On macOS it also recommends excluding the project from Spotlight when indexing keeps the machine busy.
+
+   <img src="https://raw.githubusercontent.com/tBeltty/auditor-executor-protocol/main/integrations/claude-code/aeprogress/assets/launch-limit.png" alt="A second building Executor refused: 1 building worker is live (limit 1)">
+
+3. **Compaction when a phase closes.** In Autonomous mode, once a gate is `APPROVED` and the Auditor brief is up to date on disk, the Auditor calls the mod's `compact_and_resume` tool. After its turn, a 40-second countdown lets you cancel; then the session is compacted and the Auditor resumes from its own message. Typing a prompt, pressing Esc or running `/compact` yourself takes over.
+
+   <img src="https://raw.githubusercontent.com/tBeltty/auditor-executor-protocol/main/integrations/claude-code/aeprogress/assets/compact-countdown.png" alt="The countdown band: Compacting in 33s, with Cancel and Compact now">
+
+Install it at the prompt of a Claude Code terminal session, then open it:
 
 ```
 /plugin install aeprogress --marketplace tBeltty/auditor-executor-protocol
 /aeprogress docs/<task-name>
 ```
 
-It works in the terminal and in the desktop app's local sessions. Claude Code's mod API is early access, so a Claude Code release can break it. Setup, options and how the percentage is computed: [integrations/claude-code/aeprogress](https://github.com/tBeltty/auditor-executor-protocol/tree/main/integrations/claude-code/aeprogress).
+It works in the terminal and in the desktop app's local sessions (in the app: **+** next to the prompt, **Plugins**, **Add marketplace**). Every limit and feature is an option in `/config`. Claude Code marks its mod API as early access, so a Claude Code release can break it. Setup, options and how each number is computed: [integrations/claude-code/aeprogress](https://github.com/tBeltty/auditor-executor-protocol/tree/main/integrations/claude-code/aeprogress).
 
 ---
 

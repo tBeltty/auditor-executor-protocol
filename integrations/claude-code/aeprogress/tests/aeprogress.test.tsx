@@ -109,10 +109,12 @@ describe('the arithmetic', () => {
     expect(taskIdsIn('ana-p1-t3 | Ana | P1-T3 and P2-G1, not P1-X2')).toEqual(['P1-T3', 'P2-G1'])
   })
 
-  test('a workers command marks only the IDs this run has', async () => {
-    const known = new Set(['P1-T3'])
-    expect(commandWorkers('w1 working on P1-T3\nw2 on P9-T9\n', known)).toEqual([
-      { taskId: 'P1-T3', who: 'w1 working on P1-T3', source: 'command' },
+  test('a workers command marks only the IDs this run has, without repeating the ID', async () => {
+    const known = new Set(['P1-T3', 'P1-G1'])
+    expect(commandWorkers('w1 working on P1-T3\nw2 on P9-T9\nCy | P1-G1 | building\nP1-T3\n', known)).toEqual([
+      { taskId: 'P1-T3', who: 'w1 working on', source: 'command' },
+      { taskId: 'P1-G1', who: 'Cy building', source: 'command' },
+      { taskId: 'P1-T3', who: 'worker', source: 'command' },
     ])
   })
 
@@ -129,8 +131,8 @@ describe('the arithmetic', () => {
     })
     const known = new Set(['P1-T2', 'P1-T3', 'P1-G1'])
     expect(orcaWorkers(ps, 'r', known)).toEqual([
-      { taskId: 'P1-T3', who: 'Cy | P1-T3', source: 'orca' },
-      { taskId: 'P1-G1', who: 'dee-p1-g1 (waiting)', source: 'orca' },
+      { taskId: 'P1-T3', who: 'Cy', source: 'orca' },
+      { taskId: 'P1-G1', who: 'dee (waiting)', source: 'orca' },
     ])
   })
 })
@@ -207,7 +209,7 @@ test('inside Orca, a worker of this repository shows in progress', { options: { 
   expect(calls.some(c => c[0] === '/opt/orca/bin/orca' && c.includes('ps'))).toBe(true)
 
   const ui = await $.ui.mount({ ...PANE, surface: 'terminal' })
-  expect(await ui.find({ type: 'Text', text: /P1-G1 {2}Dee \| P1-G1 · Orca/ })).toBeDefined()
+  expect(await ui.find({ type: 'Text', text: /P1-G1 {2}Dee · Orca/ })).toBeDefined()
   expect(await ui.find({ type: 'Text', text: /Eve/ })).toBeUndefined()
   await ui.unmount()
 })
@@ -227,7 +229,7 @@ test(
     expect(calls.some(c => c.join(' ') === 'my-harness list --running')).toBe(true)
 
     const ui = await $.ui.mount({ ...PANE, surface: 'terminal' })
-    expect(await ui.find({ type: 'Text', text: /P1-G1 {2}job 7 {2}P1-G1 {2}running · worker/ })).toBeDefined()
+    expect(await ui.find({ type: 'Text', text: /P1-G1 {2}job 7 running · worker/ })).toBeDefined()
     await ui.unmount()
   },
 )
