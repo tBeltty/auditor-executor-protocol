@@ -963,9 +963,9 @@ export const register: Register = (on, rawOptions) => {
     // The active phase, open until the owner closes it: the first with items not all APPROVED.
     const toggles = await read($, phaseToggles)
     const active = shares.find(p => p.total > 0 && p.approved < p.total)?.id
-    const isOpen = (id: string) => toggles[id] ?? id === active
+    const isPhaseOpen = (id: string) => toggles[id] ?? id === active
     const toggle = (id: string) => update($, phaseToggles, old => ({ ...old, [id]: !(old[id] ?? id === active) }))
-    const inputs: PhaseInput[] = shares.map(p => ({ ...p, percent: percent(p.fraction), open: isOpen(p.id) }))
+    const inputs: PhaseInput[] = shares.map(p => ({ ...p, percent: percent(p.fraction), open: isPhaseOpen(p.id) }))
     const phases = phaseRows(inputs, width)
     const byId = new Map(snap.items.map(i => [i.id.toUpperCase(), i]))
     const workerOf = new Map<string, string>()
