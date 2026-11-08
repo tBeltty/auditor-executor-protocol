@@ -12,18 +12,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   closes, with the command or the mark on its frame, stays closed for the rest of the
   session, a plugin reload included, until `/aeprogress` opens it again.
 
-### Fixed
-- Claude Code plugin 0.5.5, the run folder:
-  - A relative **Run folder**, or a relative folder given to `/aeprogress`, is read from the
-    project root. It was read from the shell's current folder, which moves with every `cd`
-    the session runs, so a run set as `.run/port` was looked for in `.run/port/.run/port`.
-    The search for a run without one set starts at the project root too.
-  - A **Workers file** given as an absolute path is read as given.
-  - A run folder without `compliance-log.md` is named in the pane, and aepkit is not run in it.
-  - When aepkit cannot start, the pane gives the reason the system gave. It no longer says
-    every failure means aepkit is missing, and no longer points to an "aepkit command" option
-    that 0.5.2 removed.
-
 ### Changed
 - Claude Code plugin 0.5.4, fewer things for the directory's review to hold:
   - No network request at all: the daily version check on GitHub is gone. The pane still says
@@ -48,6 +36,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     option is gone; aepkit must be on the PATH or importable by `python3`.
   - The guarded hooks no longer chain `.catch` on their registration: each asks a function in
     the hooks module whether to refuse, then passes the call on, and handles its own errors.
+
+### Fixed
+- Claude Code plugin 0.5.5, the run folder:
+  - A relative **Run folder**, or a relative folder given to `/aeprogress`, is read from the
+    project root. It was read from the shell's current folder, which moves with every `cd`
+    the session runs, so a run set as `.run/port` was looked for in `.run/port/.run/port`.
+    The search for a run without one set starts at the project root too.
+  - A **Workers file** given as an absolute path is read as given.
+  - A run folder without `compliance-log.md` is named in the pane, and aepkit is not run in it.
+  - When aepkit cannot start, the pane gives the reason the system gave. It no longer says
+    every failure means aepkit is missing, and no longer points to an "aepkit command" option
+    that 0.5.2 removed.
 
 ## [0.7.6] - 2026-11-08
 
