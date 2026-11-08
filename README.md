@@ -9,56 +9,55 @@
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.23633244.svg)](https://doi.org/10.5281/zenodo.23633244)
 [![Zero Dependencies](https://img.shields.io/badge/dependencies-0-brightgreen)](https://github.com/tBeltty/auditor-executor-protocol/blob/main/pyproject.toml)
 
-A two-role protocol for running multi-phase work through AI agents without the plan drifting into open-ended discussion and without "all tests pass" masquerading as verification.
+A protocol for multi-phase work done by AI agents, with two roles. The **Auditor** writes the plan as numbered tasks with gates, defines what "done" means for each, and checks every delivery by running it again. The **Executor** does one task at a time and pastes the command output that shows it works.
 
-The **Auditor** defines what "done" means and proves it independently. The **Executor** implements one numbered task at a time and logs command output. Neither role crosses into the other.
+[`SKILL.md`](https://github.com/tBeltty/auditor-executor-protocol/blob/main/SKILL.md) holds the core of the protocol. [`references/`](https://github.com/tBeltty/auditor-executor-protocol/tree/main/references) holds the parts an agent reads only when it reaches that step: writing tasks and gates, handoff templates, Autonomous mode, failure modes and a worked example.
 
-[`SKILL.md`](https://github.com/tBeltty/auditor-executor-protocol/blob/main/SKILL.md) specifies the protocol core; [`references/`](https://github.com/tBeltty/auditor-executor-protocol/tree/main/references) holds the parts an agent loads only when it reaches that step (task and gate writing, handoff templates, Autonomous mode, failure modes and a worked example). `aepkit` is a zero-dependency Python CLI that automates scaffolding, drift linting, negative controls, status tallies, and installing the skill into your agent. On Claude Code, the optional [`aeprogress`](#6-optional-the-claude-code-plugin) mod shows a run's progress beside the chat, holds back Executor launches when the machine is busy, and compacts the Auditor's session when a phase closes.
-
----
-
-## When to Reach for This
-
-Prompting an agent, scanning a diff, and shipping when it looks right works well for exploratory scripts and prototypes.
-
-That approach fails when late mistakes carry real costs:
-* Financial calculations and balance transfers
-* Authorization, tenant isolation, and permission boundaries
-* Destructive database schema migrations
-* Automated background workers that run without human supervision
-
-In these environments, plausible diffs are not evidence. Two failure modes break multi-session work:
-
-1. **Silent Plan Drift:** Implementing agents quietly resolve ambiguities with assumptions instead of stopping to ask.
-2. **Superficial Verification:** Reports like "reviewed and looks correct" mask unexecuted checks. Suites stay green because test fixtures bypass the assertion, not because the boundary holds.
-
-The Auditor/Executor Protocol prevents both using a strict four-document paper trail and mandatory negative controls: a security check is not verified until you watch it fail with the protection removed.
+`aepkit` is a Python CLI with no dependencies. It scaffolds the documents, lints them for drift, runs negative controls, tallies status, and installs the skill into your agent. On Claude Code, an optional [plugin](#6-optional-the-claude-code-plugin) also shows a run's progress beside the chat, holds back Executor launches when the machine is busy, and compacts the Auditor's session when a phase closes.
 
 ---
 
-## The Two Roles
+## When to use it
+
+For a script or a prototype, prompting an agent, reading the diff and shipping when it looks right is enough. It stops being enough where a mistake found late is expensive:
+
+- financial calculations and balance transfers;
+- authorization, tenant isolation and permission boundaries;
+- destructive database migrations;
+- background workers that run with nobody watching.
+
+There, a diff that looks right proves little, and two failures come back session after session:
+
+1. **The plan drifts.** The implementing agent meets an ambiguity, picks an answer and moves on without saying so. A few sessions later the work no longer matches the plan.
+2. **The checks never ran.** A report says "reviewed and looks correct" about a check nobody executed, or a suite stays green because its fixtures skip the assertion that guards the boundary.
+
+The protocol answers the first with four separate documents and the second with negative controls: a security check counts as verified once you have watched it fail with the protection removed.
+
+---
+
+## The two roles
 
 | Role | Owns | Never | Output |
 |---|---|---|---|
 | **Auditor** | Instructions, gates, verdicts | Writes feature code | Task expansions, verdicts, remediation orders |
 | **Executor** | Implementation, terminal evidence | Redesigns architecture, expands scope | Working code, unedited terminal output |
 
-The Auditor never takes the Executor's word for a result: it re-runs every verify command and gate itself before giving a verdict. That is what stops a pasted "tested and working" from closing a task.
+Before giving a verdict, the Auditor runs every verify command and gate again itself, so a pasted "tested and working" closes nothing on its own.
 
-One person can run this workflow alone by switching hats between two isolated agent sessions. Keep them isolated, so the Auditor is never checking its own work.
+One person can hold both roles, in two separate agent sessions. Keep them separate, so the Auditor never checks its own work.
 
 The owner picks one of two modes at the start of a run. In **Guided** mode the owner pastes each handoff into a fresh Executor session and sees every verdict. In **Autonomous** mode the Auditor launches Executors as subagents with an explicit model per task, answers their `BLOCKED` questions with a decision entry in the log, and reports once per closed phase, interrupting the owner only for a numbered critical-risk list ([`references/autonomous-mode.md`](https://github.com/tBeltty/auditor-executor-protocol/blob/main/references/autonomous-mode.md)).
 
 ---
 
-## The Four-Document Paper Trail
+## The four documents
 
-`aepkit init` generates the first three documents and an empty `annexes/` directory for the fourth. Keeping them separate prevents instructions from turning back into a discussion:
+`aepkit init` creates the first three, and an empty `annexes/` folder for the fourth. They stay separate so the instructions an Executor follows never mix with the discussion behind them.
 
-1. **Plan of Record (`plan-of-record.md`):** Explains the *what* and the *why*. Opportunity framing (target outcome, problem/friction, cost of doing nothing), set-based shaping (three evaluated options or an explicit `N/A (Deterministic Fix/Compliance)` bypass), riskiest-assumption prioritization for the first phase, architecture decisions, explicit non-goals, phase roadmaps, and the deferred items ledger. Nobody implements directly from this file.
-2. **Execution Guide (`execution-guide.md`):** Explains the *how*. Numbered tasks (`P0-T1`) with target files, steps, literal verify commands, and phase gates (`P0-G1`).
-3. **Compliance Log (`compliance-log.md`):** Records evidence. Holds a status board and one report entry per task and gate ID; the template starts with `P0-T1` and `P0-G1`, and you add an entry for each task you write. The Executor pastes verbatim command output here.
-4. **Remediation Annexes (`annexes/`):** When an audit yields `CONDITIONAL` or `REJECTED`, the Auditor issues a standalone annex instead of editing tasks in flight. Rapid annex growth signals an under-planned phase.
+1. `plan-of-record.md` holds the what and the why: the opportunity (target outcome, problem, cost of doing nothing), three options compared or an explicit `N/A (Deterministic Fix/Compliance)` bypass, the riskiest assumption for the first phase to test, the decisions, the non-goals, the phases, and the deferred items ledger. Nobody implements from it.
+2. `execution-guide.md` holds the how: numbered tasks (`P0-T1`) with their files, steps and literal verify commands, and a gate (`P0-G1`) that closes each phase.
+3. `compliance-log.md` holds the evidence: a status board and one report entry per task and gate. The template starts with `P0-T1` and `P0-G1`; add an entry for each task you write. The Executor pastes command output here, unedited.
+4. `annexes/` holds the corrections. After a `CONDITIONAL` or `REJECTED` audit, the Auditor writes a standalone annex and leaves the order already in flight untouched. A phase that keeps adding annexes was planned too thinly.
 
 ---
 
@@ -66,7 +65,7 @@ The owner picks one of two modes at the start of a run. In **Guided** mode the o
 
 ### 1. Install `aepkit`
 
-Requires Python 3.11+ with zero third-party dependencies:
+It needs Python 3.11 or later, and nothing else:
 
 ```bash
 pipx install aepkit
@@ -82,9 +81,9 @@ cd auditor-executor-protocol
 pip install -e .
 ```
 
-### 2. Install the Protocol into Your Agent
+### 2. Install the protocol in your agent
 
-Provision `SKILL.md` and its `references/` directory into your workspace or global environment. Cursor rules hold a single file, so Cursor receives one bundled `.mdc` with the references appended:
+This copies `SKILL.md` and its `references/` folder into your agent's skills, for one project or for your user. Cursor rules are a single file, so Cursor gets one `.mdc` with the references appended:
 
 ```bash
 aepkit install-skill                     # auto-detects Antigravity, Claude Code, or Cursor
@@ -99,7 +98,7 @@ Auto-detection checks the target directory for `.agents/` or `.gemini/`, `.claud
 
 On Claude Code you can install the plugin in [section 6](#6-optional-the-claude-code-plugin) instead: it brings the same skill and the `aeprogress` pane.
 
-### 3. Scaffold a Phased Project
+### 3. Start a run
 
 ```bash
 aepkit init docs/<task-name> --name "<Task Name>"
@@ -107,9 +106,9 @@ aepkit init docs/<task-name> --name "<Task Name>"
 
 Creates `plan-of-record.md`, `execution-guide.md`, `compliance-log.md`, and `annexes/`. `--name` defaults to the directory name; existing documents are kept unless you pass `--force`.
 
-### 4. Track Status and Lint Drift
+### 4. Check status and drift
 
-Inspect open tasks and tallied verdicts:
+See what is open and how the verdicts add up:
 
 ```bash
 aepkit status docs/<task-name>
@@ -117,15 +116,15 @@ aepkit status docs/<task-name>
 
 `aepkit status --json docs/<task-name>` prints the same reading as JSON, with each ID's phase, effective state and executor, and the phases with their titles from `execution-guide.md` (and weights from an optional `Weight` column in the plan's phase table), for scripts and tools to use instead of parsing the log.
 
-Cross-check document consistency:
+Check that the documents agree with each other:
 
 ```bash
 aepkit lint docs/<task-name>
 ```
 
-`aepkit lint` catches an empty guide, tasks without a report line, missing report entries, log entries with no matching task, `DONE` reports whose verify output is not pasted in a code block, gates without a stated negative control (hypothetical or waived ones do not count), work reported in a phase before every earlier phase is `APPROVED`, unfilled opportunity/shaping/non-goal fields in `plan-of-record.md` once work is reported `DONE` or audited, open rows in the deferred items ledger for a phase being closed, duplicated log paragraphs, and annex buildup past `--annex-threshold` (default 6 in total, with a per-phase breakdown). It checks that evidence is present and in the right form, not that it is genuine; the Auditor's re-run does that.
+`aepkit lint` catches an empty guide, tasks without a report line, missing report entries, log entries with no matching task, `DONE` reports whose verify output is not pasted in a code block, gates without a stated negative control (hypothetical or waived ones do not count), work reported in a phase before every earlier phase is `APPROVED`, unfilled opportunity/shaping/non-goal fields in `plan-of-record.md` once work is reported `DONE` or audited, open rows in the deferred items ledger for a phase being closed, duplicated log paragraphs, and annex buildup past `--annex-threshold` (default 6 in total, with a per-phase breakdown). It checks that the evidence is there and in the right form. Whether it is genuine is for the Auditor's re-run to establish.
 
-### 5. Run a Negative Control
+### 5. Run a negative control
 
 When validating an authorization, tenant, or schema boundary:
 
@@ -139,24 +138,24 @@ aepkit negcontrol \
 
 The `sed -i ''` form above is BSD/macOS sed; on GNU/Linux use `sed -i 's/.../.../' file`.
 
-`negcontrol` backs up the target file, applies the break mutation, confirms the test fails, restores the file with byte-level verification, confirms the test passes, and outputs a transcript ready for `compliance-log.md`. Without `--file`, pass `--restore-cmd` to undo the break yourself; with both, the backup still wins if the file is not byte-identical afterwards. `--file` needs `--break-cmd`, because the backup must be taken before the break. `--timeout` limits each command in seconds, and a test that times out instead of failing fails the control: a hang is not a caught break.
+`negcontrol` backs up the target file, applies the break mutation, confirms the test fails, restores the file with byte-level verification, confirms the test passes, and outputs a transcript ready for `compliance-log.md`. Without `--file`, pass `--restore-cmd` to undo the break yourself; with both, the backup still wins if the file is not byte-identical afterwards. `--file` needs `--break-cmd`, because the backup must be taken before the break. `--timeout` limits each command in seconds, and a test that hangs fails the control, since a hang catches nothing.
 
-A failure only proves something if it is the failure you meant. A syntax error, a missing import or a mistyped test command also makes the test exit non-zero. `--expect` takes a regular expression that the failing run's output must match, and the control fails if it does not. Without `--expect`, output that looks like a syntax, import, collection or command-not-found error is flagged with a `WARNING` next to the `OK`, and you need to read the transcript to confirm the reason.
+A failing test proves the protection works only when it fails for the reason you broke. A syntax error, a missing import or a mistyped test command also makes the test exit non-zero. `--expect` takes a regular expression that the failing run's output must match, and the control fails if it does not. Without `--expect`, output that looks like a syntax, import, collection or command-not-found error is flagged with a `WARNING` next to the `OK`, and you need to read the transcript to confirm the reason.
 
 ### 6. Optional: the Claude Code plugin
 
-On Claude Code, one plugin, `auditor-executor-protocol`, brings the protocol as a skill (the same `SKILL.md` and `references/` that `aepkit install-skill --agent claude` installs) together with `aeprogress`, a mod for runs where the Auditor launches Executors as subagents or as workers of a harness such as Orca. The protocol does not depend on the mod. The mod reads a run made with the protocol, only through `aepkit status --json`, so it needs `aepkit` and a run (sections 1 and 3); without one it shows nothing.
+On Claude Code, one plugin, `auditor-executor-protocol`, brings the protocol as a skill (the same `SKILL.md` and `references/` that `aepkit install-skill --agent claude` installs) and `aeprogress`, a mod for runs where the Auditor launches Executors as subagents or as workers of a harness such as Orca.
+
+The protocol works without the mod. The mod needs the protocol: it reads a run through `aepkit status --json`, so it needs `aepkit` and a run (steps 1 and 3), and without one it shows nothing.
 
 <img src="https://raw.githubusercontent.com/tBeltty/auditor-executor-protocol/main/integrations/claude-code/aeprogress/assets/pane.png" alt="The aeprogress pane: 43.3% overall, a bar per phase, the active phase P2 open with its task chips, P2-T3 in progress on a subagent, P2-T4 awaiting audit and P2-T2 conditional" width="420">
 
-The mod does three things:
-
-1. **A pane beside the chat** with the overall percentage, one bar per phase (weighted by an optional `Weight` column in the plan), who is working on which task ID (Claude Code subagents, Orca workers, or any harness through a command of your own), what awaits audit, what needs attention, and the machine's load. It refreshes after each turn, and every 20 seconds while it is open.
-2. **A launch limit.** While a run is found, it refuses to launch another Executor past 2 live workers, 1 building worker, or a machine more than 75% busy for a build, and the refusal says which limit was hit. A handoff that builds nothing carries the line `Load: docs-only` ([`references/handoffs.md`](https://github.com/tBeltty/auditor-executor-protocol/blob/main/references/handoffs.md)) and only answers to the worker count. On macOS it also recommends excluding the project from Spotlight when indexing keeps the machine busy.
+1. A pane beside the chat shows the overall percentage, one bar per phase (weighted by an optional `Weight` column in the plan), who is working on which task ID (Claude Code subagents, Orca workers, or any harness through a command of your own), what awaits audit, what needs attention, and the machine's load. It refreshes after each turn, and every 20 seconds while it is open.
+2. A launch limit: while a run is found, the mod refuses to launch another Executor past 2 live workers, 1 building worker, or a machine more than 75% busy for a build, and the refusal says which limit was hit. A handoff that builds nothing carries the line `Load: docs-only` ([`references/handoffs.md`](https://github.com/tBeltty/auditor-executor-protocol/blob/main/references/handoffs.md)) and only answers to the worker count. On macOS it also recommends excluding the project from Spotlight when indexing keeps the machine busy.
 
    <img src="https://raw.githubusercontent.com/tBeltty/auditor-executor-protocol/main/integrations/claude-code/aeprogress/assets/launch-limit.png" alt="A second building Executor refused: 1 building worker is live (limit 1)">
 
-3. **Compaction when a phase closes.** In Autonomous mode, once a gate is `APPROVED` and the Auditor brief is up to date on disk, the Auditor calls the mod's `compact_and_resume` tool. After its turn, a 40-second countdown lets you cancel; then the session is compacted and the Auditor resumes from its own message. Typing a prompt, pressing Esc or running `/compact` yourself takes over.
+3. Compaction when a phase closes: in Autonomous mode, once a gate is `APPROVED` and the Auditor brief is up to date on disk, the Auditor calls the mod's `compact_and_resume` tool. After its turn, a 40-second countdown lets you cancel; then the session is compacted and the Auditor resumes from its own message. Typing a prompt, pressing Esc or running `/compact` yourself takes over.
 
    <img src="https://raw.githubusercontent.com/tBeltty/auditor-executor-protocol/main/integrations/claude-code/aeprogress/assets/compact-countdown.png" alt="The countdown band: Compacting in 33s, with Cancel and Compact now">
 
@@ -167,11 +166,15 @@ Install the plugin at the prompt of a Claude Code terminal session, then open th
 /aeprogress docs/<task-name>
 ```
 
-It works in the terminal and in the desktop app's local sessions (in the app: **+** next to the prompt, **Plugins**, **Add marketplace**). Every limit and feature is an option in `/config`. It needs Claude Code 2.1.287 or later and sends no data about you anywhere (its one network request, a daily version check, can be turned off); its README lists every process it starts and everything it can refuse. To get new versions on their own, turn on auto-update once: `/plugin`, **Marketplaces**, `auditor-executor-protocol`, **Enable auto-update**. Setup, options and how each number is computed: [integrations/claude-code/aeprogress](https://github.com/tBeltty/auditor-executor-protocol/tree/main/integrations/claude-code/aeprogress).
+It works in the terminal and in the desktop app's local sessions (in the app: **+** next to the prompt, **Plugins**, **Add marketplace**). It needs Claude Code 2.1.287 or later, and every limit and feature is an option in `/config`.
+
+It sends no data about you anywhere. Its one network request, a daily version check, can be turned off, and its README lists every process it starts and everything it can refuse. To get new versions automatically, turn on auto-update once: `/plugin`, **Marketplaces**, `auditor-executor-protocol`, **Enable auto-update**.
+
+Setup, options and how each number is computed: [integrations/claude-code/aeprogress](https://github.com/tBeltty/auditor-executor-protocol/tree/main/integrations/claude-code/aeprogress).
 
 ---
 
-## CLI Reference
+## CLI reference
 
 | Command | Options | Description |
 |---|---|---|
@@ -189,15 +192,15 @@ Exit codes: `lint` and `negcontrol` return `0` when clean, `1` when they find a 
 
 ---
 
-## Running Tests
+## Running the tests
 
-Run the test suite using the standard library runner:
+With the standard library runner:
 
 ```bash
 python3 tests/run.py
 ```
 
-Or run with `pytest` by installing test extras:
+Or with `pytest`, after installing the test extras:
 
 ```bash
 pip install -e ".[test]"

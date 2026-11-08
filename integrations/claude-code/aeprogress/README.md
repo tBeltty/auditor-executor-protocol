@@ -2,18 +2,18 @@
 
 ![The aeprogress pane on a five-phase run: 43.3% overall, a bar per phase, the active phase P2 open with its full title and task chips, P2-T3 in progress on a subagent, P2-T4 awaiting audit and P2-T2 conditional](assets/pane.png)
 
-This plugin brings two things, and the second one only works with the first:
+This plugin has two parts, and the second needs the first.
 
-1. **The Auditor/Executor protocol, as a skill.** A method for work large enough to span
-   several phases or sessions with agents. An **Auditor** writes the plan of record, an
-   execution guide of numbered tasks with gates, and the verdicts, and audits every
-   delivery by re-running it. **Executors** implement one task at a time and log literal
-   command output in a compliance log. The skill is the protocol's `SKILL.md` and
+1. The Auditor/Executor protocol, as a skill. It is a method for agent work that spans
+   several phases or sessions. An Auditor writes the plan of record, an execution guide
+   of numbered tasks with gates, and the verdicts, and checks every delivery by running
+   it again. Executors implement one task at a time and paste the command output that
+   proves it into a compliance log. The skill is the protocol's `SKILL.md` and
    `references/`, the same files as in the
    [repository](https://github.com/tBeltty/auditor-executor-protocol). Claude loads it when
    you ask for phased work, an audit or a handoff, and
    `/auditor-executor-protocol:auditor-executor-protocol` calls it by name.
-2. **aeprogress, a pane that follows a run of that protocol.** It reads the run's documents
+2. aeprogress, a pane that follows a run of that protocol. It reads the run's documents
    and shows, beside the chat:
 
 - the overall percentage and a bar for the whole run;
@@ -23,21 +23,20 @@ This plugin brings two things, and the second one only works with the first:
   (✓ approved, ◐ conditional, ● in progress with who, ◌ awaiting audit, ○ pending,
   ✗ rejected, failed, blocked or conflict). The active phase, the first not fully
   approved, opens by itself until you close it;
-- **In progress**: who is working on which task ID right now, whether a Claude Code
+- who is working on which task ID right now (IN PROGRESS), whether a Claude Code
   subagent, an Orca worker or a worker of any other harness;
-- **Awaiting audit**: items reported `DONE` that have no verdict yet;
-- **Needs attention**: `CONDITIONAL`, `REJECTED`, `CONFLICT`, `BLOCKED` and `FAILED` items;
+- the items reported `DONE` that have no verdict yet (AWAITING AUDIT);
+- the `CONDITIONAL`, `REJECTED`, `CONFLICT`, `BLOCKED` and `FAILED` items (NEEDS ATTENTION);
 - the machine's load, with a colored dot, and how full the launch limit is.
 
-When a phase closes, the Auditor can also **compact its own session and resume itself**,
-after a countdown the owner can cancel.
+Three more things come with the pane. A launch limit holds back another Executor when a
+worker count or the machine's load would pass its limit, and says why. When a phase
+closes, the Auditor can compact its own session and resume itself, after a countdown you
+can cancel. On macOS, when Spotlight's indexing keeps the machine busy, the pane
+recommends excluding the project folder.
 
-It also carries a **launch limit**: while a run is found, it holds back launching another
-Executor past a worker count or a machine load, with a message saying why. And on macOS
-it recommends excluding the project from Spotlight when indexing keeps the machine busy.
-
-In Autonomous mode the owner only gets a report per phase; the pane lets them follow
-the run without interrupting the Auditor.
+In Autonomous mode the Auditor reports to you once per phase. The pane lets you follow
+the run in between without interrupting it.
 
 > **The pane needs a run.** aeprogress reads a run made with the protocol, through the
 > `aepkit` CLI. Without one it shows "No compliance-log.md under this folder", and its
@@ -50,7 +49,7 @@ the run without interrupting the Auditor.
 ## Start here
 
 1. Install this plugin (see [Install](#install)).
-2. Install the CLI the pane reads runs with: `pipx install aepkit`.
+2. Install the CLI the pane uses to read runs: `pipx install aepkit`.
 3. Start a run. Ask Claude, for example: "Use the Auditor/Executor protocol to plan this:
    <your goal>". As the Auditor, Claude scaffolds the documents with
    `aepkit init docs/<task-name>`, fills the plan of record and the execution guide, and
@@ -109,7 +108,7 @@ Claude Code keeps on disk, and at most once a day with the version published on 
 ```
 
 The command also answers with a one-line summary (`50% of docs/my-run: 1/2 approved`),
-which helps where no pane is drawn.
+useful where no pane is drawn, such as `claude -p`.
 
 The pane opens by itself when a session starts in a workspace with a run, where the
 surface has room for it as a sidebar (in the terminal, from 144 columns). Turn that off
@@ -161,18 +160,20 @@ A refused launch never runs. The Auditor gets the reason back, such as
 `2 workers are live (limit 2)` or `the machine is 90% busy (load 7.2 of 8 cores; limit 75%
 for a build)`, and can wait for a worker to finish.
 
-**Which launches it sees:**
+### Which launches it sees
 
 | Launcher | What counts as a launch | How live workers are counted |
 |---|---|---|
 | Claude Code subagents | A subagent whose prompt names a task ID of the run (an Executor handoff). Exploration, review and workflow subagents are never held back | The session's own agent list |
-| Orca | `orca orchestration worker-start`, and `orca orchestration send --to dispatch:<id>` when that dispatch is not live (it reopens the worker). A message to a live worker or to the coordinator, such as a worker's own report, is never held back. `orca` must be the command itself: the same words inside an `echo` or a commit message are not a launch | `orca orchestration worker-list --json`: workers `live` and `in_progress`. Without a bound Run that is every Orca worker on the machine, which is what a machine-wide limit wants. If Orca cannot be asked, the launch is refused, the safe side |
+| Orca | `orca orchestration worker-start`, and `orca orchestration send --to dispatch:<id>` when that dispatch is not live (it reopens the worker). A message to a live worker or to the coordinator, such as a worker's own report, is never held back. `orca` must be the command itself: the same words inside an `echo` or a commit message are not a launch | `orca orchestration worker-list --json`: workers `live` and `in_progress`. Without a bound Run that is every Orca worker on the machine, which is what a machine-wide limit wants. If Orca cannot be asked, the launch is refused, to stay on the safe side |
 | Any other harness | Not seen: its launches go through without the limit. Its workers still show in the pane through the workers command | |
 
 Claude Code subagents and Orca workers are counted together.
 
-**Builds or not.** A handoff that compiles, builds and tests nothing (documentation, a
-plan, a review) carries the line `Load: docs-only`, as `references/handoffs.md` describes.
+### Builds and docs-only handoffs
+
+A handoff that compiles, builds and tests nothing (documentation, a plan, a review)
+carries the line `Load: docs-only`, as `references/handoffs.md` describes.
 The mod looks for it in the subagent's prompt, in the Orca command (`--spec "..."`), or in
 the file `--spec-file` names (read from the session's working directory). Anything without
 it counts as a build. A docs-only launch only answers to the worker count.
@@ -228,13 +229,13 @@ counts down 40 seconds with **Cancel** and **Compact now**. At zero the session 
 compacted, as `/compact` does, and the `resume` message is sent, which opens the
 Auditor's next turn.
 
-The owner can always step in:
+You can step in at any point:
 
-- **Cancel**: nothing is compacted or resumed.
-- **Typing a prompt** during the countdown takes over: the countdown is dropped.
-- **Pressing Esc** on the Auditor's turn drops it too.
-- **`/compact` by hand** while the countdown runs: the countdown is cleared and the
-  `resume` message is sent once, after that compaction.
+- Cancel compacts nothing and resumes nothing.
+- Typing a prompt during the countdown drops it, since you took over.
+- Pressing Esc on the Auditor's turn drops it too.
+- Running `/compact` yourself while it counts down clears the countdown, and the
+  `resume` message is sent once, after your compaction.
 
 If the compaction is refused (a turn is running) or another plugin vetoes it, the
 Auditor is not resumed: a toast says so and the owner decides. A countdown survives a
@@ -262,11 +263,13 @@ can resume; turn it off, or change the seconds, in `/config`.
 
 ## What it does on your machine
 
-`aeprogress` is a mod: code that runs inside Claude Code with your permissions. This is
-everything it does, so you can decide whether to trust it. `claude plugin validate` on
+`aeprogress` is a mod: code that runs inside Claude Code with your permissions. This
+section lists everything it does, so you can decide whether to trust it. `claude plugin validate` on
 this folder lists the same events and calls.
 
-**Processes it starts.** Each one is short, has a time limit (15 seconds, 8 for
+### Processes it starts
+
+Each one is short, has a time limit (15 seconds, 8 for
 PowerShell, 3 for the load readings), runs without a shell, and is never left running.
 
 | Command | When | Why |
@@ -279,7 +282,9 @@ PowerShell, 3 for the load readings), runs without a shell, and is never left ru
 | `orca worktree current --json`, `orca worktree ps --json`, `orca orchestration worker-list --json` | Inside an Orca terminal, or with **External workers** set to `orca` | Orca workers in progress, and the live count for the limit |
 | The **Workers command** you set, in the run folder | Each refresh, only if you set one | Workers of another harness |
 
-**The one network request it makes.** With **Update check** on `daily` (the default), at
+### The one network request it makes
+
+With **Update check** on `daily` (the default), at
 most once a day, at session start, it asks GitHub for
 `https://raw.githubusercontent.com/tBeltty/auditor-executor-protocol/main/integrations/claude-code/aeprogress/.claude-plugin/plugin.json`
 and reads only its `version`. The request carries nothing of yours, it goes through
@@ -292,17 +297,23 @@ whether a day has passed.
 Refreshes happen at session start, when `/aeprogress` runs, after each turn, when a
 subagent starts or stops, and every 20 seconds only while the pane is open.
 
-**Files it reads.** The run folder's `compliance-log.md`, `execution-guide.md` and
+### Files it reads
+
+The run folder's `compliance-log.md`, `execution-guide.md` and
 `plan-of-record.md` (through `aepkit`); the working directory's folder names, up to three
 levels, to find a run; the `--spec-file` an Orca `worker-start` names, to look for
 `Load: docs-only`; on Linux, `/proc/loadavg` and `/proc/cpuinfo`. It writes no files.
 
-**Environment variables it reads.** `HOME` and `USERPROFILE` (to find aepkit),
+### Environment variables it reads
+
+`HOME` and `USERPROFILE` (to find aepkit),
 `ORCA_CLI_BIN_DIR` and `ORCA_WORKTREE_ID` (to know it runs inside Orca), `SystemRoot`
 and `WINDIR` (to know it runs on Windows), and `CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC`
 (to skip the version check). It sets none.
 
-**What it can refuse.** While a run is found and **Launch limit** is on, it refuses:
+### What it can refuse
+
+While a run is found and **Launch limit** is on, it refuses:
 
 - a call to Claude Code's `Agent` tool whose prompt or description names a task ID of the
   run (an Executor launch), past the limits in [The launch limit](#the-launch-limit);
@@ -312,23 +323,27 @@ and `WINDIR` (to know it runs on Windows), and `CLAUDE_CODE_DISABLE_NONESSENTIAL
 
 Every refusal says why. The mod answers those two tools' calls itself only to refuse
 them; a launch within the limits goes on unchanged, and the tool's own result comes back
-as it was. Nothing else is held back: any other subagent, command or tool call goes
-through untouched. The limit exists to keep your own machine from being
-saturated by your own run; turn it off with **Launch limit** in `/config`.
+as it was. Any other subagent, command or tool call goes through untouched. The limit
+keeps your own run from saturating your own machine; turn it off with **Launch limit**
+in `/config`.
 
-**What it does to your session.** It registers the `/aeprogress` command and one tool,
+### What it does to your session
+
+It registers the `/aeprogress` command and one tool,
 `compact_and_resume`, that Claude can call. After that tool is called and the turn ends,
 and only if nobody cancels the 40-second countdown, it compacts the session (as
 `/compact` does) and submits the `resume` text Claude gave as the next prompt. It shows
 toasts for a refused launch, a vetoed compaction, a newer version and the Spotlight
 recommendation.
 
-**The prompts it submits.** Only one kind: after a compaction it submits, as the next
+### The prompts it submits
+
+Only one kind: after a compaction it submits, as the next
 prompt, the `resume` text exactly as Claude passed it to `compact_and_resume`, with
 nothing added, removed or rewritten. It submits nothing else, and it never edits a prompt
 you type.
 
-**Every hook it registers, and what each one does with what it sees.**
+### Every hook it registers
 
 | Hook | What it does | What it changes |
 |---|---|---|
@@ -348,13 +363,15 @@ you type.
 
 `aeprogress` sends nothing about you anywhere: no telemetry, no analytics, no data to the
 author or to any service. Its only network request is the daily version check above, a
-plain request for a public file, which you can turn off. What it reads stays in your
-Claude Code session, in memory, and is gone when the session ends; the version check
-alone keeps two values between sessions, the date of the last check and the version it
-found. The processes above run on
-your machine. Two can reach beyond it, both under your control: Orca's CLI talks to the
-Orca app on your machine and to any Orca servers you paired yourself, and a **Workers
-command** does whatever you wrote it to do.
+plain request for a public file, and you can turn it off.
+
+What it reads stays in your Claude Code session, in memory, and is gone when the session
+ends. Only the version check keeps anything between sessions: the date of the last check
+and the version it found.
+
+The processes above run on your machine. Two of them can reach beyond it, and you control
+both: Orca's CLI talks to the Orca app on your machine and to any Orca servers you paired
+yourself, and a Workers command does whatever you wrote it to do.
 
 ## Options (`/config`)
 
