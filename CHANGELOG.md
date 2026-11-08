@@ -8,12 +8,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
-- `aeprogress` 0.3.3: an icon, a gauge with a part sliding into it, in soft geometry on a
+- `aeprogress` 0.3.4: an icon, a gauge with a part sliding into it, in soft geometry on a
   squircle tile (`.claude-plugin/icon.png`, source in `assets/icon.svg`), and
   `documentationUrl`, `supportUrl` and `privacyPolicyUrl` in `plugin.json`, ready for the
   plugin directory. The mod's README gains "What it does on your machine", every process it
   starts, the files and variables it reads and what it can refuse, and "Privacy": no network
   requests, no telemetry.
+  Its README shows the three screenshots with Markdown image paths inside the plugin.
 
 ## [0.7.3] - 2026-11-08
 

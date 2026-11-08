@@ -1,6 +1,6 @@
 # aeprogress: progress pane and launch limit for Claude Code
 
-<img src="https://raw.githubusercontent.com/tBeltty/auditor-executor-protocol/main/integrations/claude-code/aeprogress/assets/pane.png" alt="The aeprogress pane on a five-phase run" width="420">
+![The aeprogress pane on a five-phase run: 43.3% overall, a bar per phase, one Executor in progress on a subagent, one task awaiting audit, one conditional, and the machine at 31% with 1 of 2 workers live](assets/pane.png)
 
 An optional Claude Code mod that keeps a pane beside the chat with the progress of an
 Auditor/Executor run. The protocol does not depend on it. It reads the run's
@@ -109,6 +109,8 @@ back an Executor launch that would pass any of these limits (each one a `/config
 | Most building workers | 1 | A launch that builds |
 | Busiest machine for a build | 75% | A launch that builds |
 
+![A second building Executor refused: 1 building worker is live (limit 1)](assets/launch-limit.png)
+
 A refused launch never runs. The Auditor gets the reason back, such as
 `2 workers are live (limit 2)` or `the machine is 90% busy (load 7.2 of 8 cores; limit 75%
 for a build)`, and can wait for a worker to finish.
@@ -172,6 +174,8 @@ The mod gives the Auditor a tool, `compact_and_resume` (`mcp__aeprogress__compac
 |---|---|
 | `resume` (required) | The message that resumes the Auditor after compacting, such as `Resume the plan from the brief: launch the first task of P2` |
 | `instructions` | What the compaction summary must keep |
+
+![The countdown band above the prompt: Compacting in 33s, with Cancel and Compact now](assets/compact-countdown.png)
 
 The Auditor calls it and ends its turn. When the turn ends, a band above the prompt
 counts down 40 seconds with **Cancel** and **Compact now**. At zero the session is
