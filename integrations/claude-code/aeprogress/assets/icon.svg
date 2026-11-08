@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
+  <title>aeprogress</title>
+  <defs>
+    <style>
+      .tile  { fill: #161a20; }
+      .rim   { fill: none; stroke: #ffffff; stroke-opacity: .09; stroke-width: 12; }
+      .piece { fill: #e8eaed; }
+      .gauge { fill: none; stroke: #7fb4ff; stroke-width: 52; stroke-linecap: butt; stroke-linejoin: miter; }
+    </style>
+  </defs>
+  <rect class="tile" width="1024" height="1024" rx="232"/>
+  <rect class="rim" x="6" y="6" width="1012" height="1012" rx="226"/>
+  <!-- Auditor: the gauge that defines the part before it exists -->
+  <path class="gauge" d="M 386 270 H 758 V 754 H 386"/>
+  <!-- Executor: the part, partway into the gauge -->
+  <rect class="piece" x="256" y="342" width="340" height="340" rx="14"/>
+</svg>

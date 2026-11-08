@@ -1,13 +1,17 @@
 {
   "name": "aeprogress",
-  "version": "0.3.1",
-  "description": "Optional progress pane and launch limit for an Auditor/Executor protocol run: overall %, a bar per phase, who is working on what (Claude Code subagents, Orca workers or any harness), the machine's load, and a limit that holds back worker launches past a worker count or a load. When a phase closes, the Auditor can compact its session and resume itself after a countdown the owner can cancel. Opens with /aeprogress. Early access API.",
+  "version": "0.3.2",
+  "description": "Optional progress pane and launch limit for an Auditor/Executor protocol run: overall %, a bar per phase, who is working on what (Claude Code subagents, Orca workers or any harness), the machine's load, and a limit that holds back worker launches past a worker count or a load. When a phase closes, the Auditor can compact its session and resume itself after a countdown the owner can cancel. Opens with /aeprogress.",
   "author": {
     "name": "tBeltty"
   },
   "homepage": "https://github.com/tBeltty/auditor-executor-protocol/tree/main/integrations/claude-code/aeprogress",
+  "documentationUrl": "https://github.com/tBeltty/auditor-executor-protocol/tree/main/integrations/claude-code/aeprogress#readme",
+  "supportUrl": "https://github.com/tBeltty/auditor-executor-protocol/issues",
+  "privacyPolicyUrl": "https://github.com/tBeltty/auditor-executor-protocol/tree/main/integrations/claude-code/aeprogress#privacy",
   "repository": "https://github.com/tBeltty/auditor-executor-protocol",
   "license": "MIT",
+  "icon": "./.claude-plugin/icon.png",
   "types": "./types/index.d.ts",
   "userConfig": {
     "runDir": {

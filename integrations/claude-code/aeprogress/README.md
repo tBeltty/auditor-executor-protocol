@@ -25,8 +25,8 @@ it recommends excluding the project from Spotlight when indexing keeps the machi
 In Autonomous mode the owner only gets a report per phase; the pane lets them follow
 the run without interrupting the Auditor.
 
-> **Early access.** Claude Code marks its mod API as early access: it can change between
-> Claude Code releases. This mod is tested on Claude Code 2.1.319.
+> **Claude Code versions.** Mods need Claude Code 2.1.287 or later. The mods API can still
+> change between Claude Code releases; this mod is tested on 2.1.319, which CI pins.
 
 ## Requirements
 
@@ -210,20 +210,63 @@ can resume; turn it off, or change the seconds, in `/config`.
   percentage does not jump when a new phase is expanded.
 - Task IDs the guide lists and the log has no row for yet count as `PENDING`.
 
-## What it runs, and when
+## What it does on your machine
 
-- `aepkit status --json <run>` (and, with Orca or a workers command, that command),
-  each one a short process with a 15-second limit. Nothing keeps running in the
-  background.
-- The machine load: on macOS `sysctl` twice and `ps` once (for Spotlight), on Linux two
-  file reads, on Windows one PowerShell call. Again before every launch the limit judges.
-- With the launch limit on and Orca around, `orca orchestration worker-list --json`.
-- At session start, when `/aeprogress` runs, after each turn, when a subagent starts
-  or stops, and every 20 seconds **only while the pane is open**. A closed pane costs
-  nothing.
-- When `aepkit` is not on the `PATH` Claude Code sees (the desktop app's `PATH` is often
-  shorter than a terminal's), the pane tries `~/.local/bin/aepkit` and then
-  `python3 -m aepkit`. **aepkit command** in `/config` names it outright.
+`aeprogress` is a mod: code that runs inside Claude Code with your permissions. This is
+everything it does, so you can decide whether to trust it. `claude plugin validate` on
+this folder lists the same events and calls.
+
+**Processes it starts.** Each one is short, has a time limit (15 seconds, 8 for
+PowerShell, 3 for the load readings), runs without a shell, and is never left running.
+
+| Command | When | Why |
+|---|---|---|
+| `aepkit status --json <run folder>` (or `~/.local/bin/aepkit`, `python3 -m aepkit`, `python -m aepkit`, `py -m aepkit`, or the **aepkit command** you set) | Each refresh | Reads the run's progress |
+| `git rev-parse --show-toplevel` in the run folder | Once, when Spotlight indexing stays busy | The folder to name in the Spotlight recommendation |
+| macOS and BSD: `sysctl -n vm.loadavg`, `sysctl -n hw.ncpu`; macOS also `ps -A -o %cpu=,comm=` | Each refresh, and before each launch the limit judges | The machine's load, and Spotlight's indexing CPU |
+| Linux: `nproc`, only when `/proc/cpuinfo` lists no processors | Same | The machine's load |
+| Windows: `powershell -NoProfile -Command` reading `Win32_Processor.LoadPercentage` | Same | The machine's load |
+| `orca worktree current --json`, `orca worktree ps --json`, `orca orchestration worker-list --json` | Inside an Orca terminal, or with **External workers** set to `orca` | Orca workers in progress, and the live count for the limit |
+| The **Workers command** you set, in the run folder | Each refresh, only if you set one | Workers of another harness |
+
+Refreshes happen at session start, when `/aeprogress` runs, after each turn, when a
+subagent starts or stops, and every 20 seconds only while the pane is open.
+
+**Files it reads.** The run folder's `compliance-log.md`, `execution-guide.md` and
+`plan-of-record.md` (through `aepkit`); the working directory's folder names, up to three
+levels, to find a run; the `--spec-file` an Orca `worker-start` names, to look for
+`Load: docs-only`; on Linux, `/proc/loadavg` and `/proc/cpuinfo`. It writes no files.
+
+**Environment variables it reads.** `HOME` and `USERPROFILE` (to find aepkit),
+`ORCA_CLI_BIN_DIR` and `ORCA_WORKTREE_ID` (to know it runs inside Orca), `SystemRoot`
+and `WINDIR` (to know it runs on Windows). It sets none.
+
+**What it can refuse.** While a run is found and **Launch limit** is on, it refuses:
+
+- a Claude Code subagent launch whose prompt names a task ID of the run (an Executor),
+  past the limits in [The launch limit](#the-launch-limit);
+- a Bash command that runs `orca orchestration worker-start`, or `orca orchestration
+  send` to a dispatch that is not live, past the same limits, or when Orca cannot count
+  its workers.
+
+Every refusal says why. Nothing else is held back: any other subagent, command or tool
+call goes through untouched. The limit exists to keep your own machine from being
+saturated by your own run; turn it off with **Launch limit** in `/config`.
+
+**What it does to your session.** It registers the `/aeprogress` command and one tool,
+`compact_and_resume`, that Claude can call. After that tool is called and the turn ends,
+and only if nobody cancels the 40-second countdown, it compacts the session (as
+`/compact` does) and submits the `resume` text Claude gave as the next prompt. It shows
+toasts for a refused launch, a vetoed compaction and the Spotlight recommendation.
+
+## Privacy
+
+`aeprogress` makes no network requests and sends nothing anywhere: no telemetry, no
+analytics, no data to the author or to any service. What it reads stays in your Claude
+Code session, in memory, and is gone when the session ends. The processes above run on
+your machine. Two can reach beyond it, both under your control: Orca's CLI talks to the
+Orca app on your machine and to any Orca servers you paired yourself, and a **Workers
+command** does whatever you wrote it to do.
 
 ## Options (`/config`)
 

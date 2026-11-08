@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- `aeprogress` 0.3.2: an icon (`.claude-plugin/icon.png`, source in `assets/icon.svg`), and
+  `documentationUrl`, `supportUrl` and `privacyPolicyUrl` in `plugin.json`, ready for the
+  plugin directory. The mod's README gains "What it does on your machine", every process it
+  starts, the files and variables it reads and what it can refuse, and "Privacy": no network
+  requests, no telemetry.
+
 ## [0.7.3] - 2026-11-08
 
 No change to the package's code. This release puts the new README on PyPI: the protocol's

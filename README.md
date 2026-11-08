@@ -165,7 +165,7 @@ Install it at the prompt of a Claude Code terminal session, then open it:
 /aeprogress docs/<task-name>
 ```
 
-It works in the terminal and in the desktop app's local sessions (in the app: **+** next to the prompt, **Plugins**, **Add marketplace**). Every limit and feature is an option in `/config`. Claude Code marks its mod API as early access, so a Claude Code release can break it. Setup, options and how each number is computed: [integrations/claude-code/aeprogress](https://github.com/tBeltty/auditor-executor-protocol/tree/main/integrations/claude-code/aeprogress).
+It works in the terminal and in the desktop app's local sessions (in the app: **+** next to the prompt, **Plugins**, **Add marketplace**). Every limit and feature is an option in `/config`. It needs Claude Code 2.1.287 or later, makes no network requests and sends no data anywhere; its README lists every process it starts and everything it can refuse. Setup, options and how each number is computed: [integrations/claude-code/aeprogress](https://github.com/tBeltty/auditor-executor-protocol/tree/main/integrations/claude-code/aeprogress).
 
 ---
 
