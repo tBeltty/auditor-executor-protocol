@@ -8,6 +8,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Changed
+- CI runs `claude plugin validate` (the mod and the marketplace) and `claude plugin test` for
+  `aeprogress`, on Claude Code 2.1.319, the release the mod is tested against.
+- Dev dependencies: ruff 0.17.3, mypy 2.4.1; GitHub Actions bumped (Dependabot #20, #22).
+- `CITATION.cff` and the README carry the Zenodo concept DOI, 10.5281/zenodo.23633244, which
+  resolves to the latest archived release.
 - `aeprogress` 0.3.1: a worker's name in the pane no longer repeats the task ID it carries
   (`P2-T3  Executor P2-T3` is now `P2-T3  Executor`), for subagents, Orca workers and lines
   from a workers command. README screenshots of the pane, the launch limit and the
@@ -67,6 +72,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   is not a verdict (the verdicts are `APPROVED`, `CONDITIONAL` and `REJECTED`), and a log
   that used it showed the task as awaiting audit in `aepkit status`. The four sentences
   now say `APPROVED`.
+
+## [0.6.1] - 2026-10-25
+
+### Added
+- `CITATION.cff`, so each GitHub release is archived on Zenodo with citation metadata. This
+  release is the first archived one (10.5281/zenodo.23633245). No code changes, and it was not
+  published to PyPI: the package still reported 0.6.0.
 
 ## [0.6.0] - 2026-10-24
 
@@ -356,6 +368,7 @@ Fixes from an independent review of 0.3.0.
 [0.7.2]: https://github.com/tBeltty/auditor-executor-protocol/compare/v0.7.1...v0.7.2
 [0.7.1]: https://github.com/tBeltty/auditor-executor-protocol/compare/v0.7.0...v0.7.1
 [0.7.0]: https://github.com/tBeltty/auditor-executor-protocol/compare/v0.6.0...v0.7.0
+[0.6.1]: https://github.com/tBeltty/auditor-executor-protocol/compare/v0.6.0...v0.6.1
 [0.6.0]: https://github.com/tBeltty/auditor-executor-protocol/compare/v0.5.1...v0.6.0
 [0.5.1]: https://github.com/tBeltty/auditor-executor-protocol/compare/v0.5.0...v0.5.1
 [0.5.0]: https://github.com/tBeltty/auditor-executor-protocol/compare/v0.4.0...v0.5.0

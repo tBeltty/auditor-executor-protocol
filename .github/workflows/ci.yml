@@ -131,3 +131,31 @@ jobs:
           /tmp/wheel-env/bin/aepkit lint smoke
           /tmp/wheel-env/bin/aepkit install-skill smoke --agent claude
           test -f smoke/.claude/skills/auditor-executor-protocol/references/handoffs.md
+
+  mod:
+    name: aeprogress mod (Claude Code)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Set up Node
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: "22"
+
+      # The mod API is early access: pin the Claude Code release the mod is tested against,
+      # and move the pin on purpose when the mod is checked on a newer one.
+      - name: Install Claude Code
+        run: npm install --global @anthropic-ai/claude-code@2.1.319
+
+      - name: Validate the mod and the marketplace
+        run: |
+          claude plugin validate integrations/claude-code/aeprogress
+          claude plugin validate .
+
+      - name: Run the mod's tests
+        run: claude plugin test integrations/claude-code/aeprogress
