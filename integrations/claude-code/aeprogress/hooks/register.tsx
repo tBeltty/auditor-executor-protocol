@@ -68,6 +68,7 @@ const phaseToggles = atom({ plugin: 'auditor-executor-protocol', key: 'phaseTogg
   shape: 'phase-toggles-1',
 })
 const chosenDir = atom({ plugin: 'auditor-executor-protocol', key: 'chosenDir' } as const, '')
+const closedByOwner = atom({ plugin: 'auditor-executor-protocol', key: 'closedByOwner' } as const, false)
 const spawned = atom({ plugin: 'auditor-executor-protocol', key: 'spawned' } as const, {} as Record<string, string[]>)
 const kinds = atom({ plugin: 'auditor-executor-protocol', key: 'kinds' } as const, {} as Kinds, { shape: 'kinds-1' })
 const projectRoot = atom({ plugin: 'auditor-executor-protocol', key: 'projectRoot' } as const, '')
@@ -565,7 +566,7 @@ async function compactNow($: EngineInterface): Promise<void> {
 // ---- Update check ----
 
 /** This copy's version; a test keeps it equal to the manifest's and the marketplace entry's. */
-const VERSION = '0.5.5'
+const VERSION = '0.5.6'
 
 const available = atom(
   { plugin: 'auditor-executor-protocol', key: 'updateAvailable' } as const,
@@ -733,8 +734,8 @@ export const register: Register = (on, rawOptions) => {
   on('session.start', async ($, e, next) => {
     await $.command.register({
       name: 'aeprogress',
-      description: 'Open the Auditor/Executor progress pane (optional: the run folder)',
-      argumentHint: '[run folder]',
+      description: 'Open the Auditor/Executor progress pane (optional: the run folder), or close it',
+      argumentHint: '[run folder | close]',
     })
     interactive = e.isInteractive
     // A refused registration costs this feature alone, never the pane or the launch limit.
@@ -766,14 +767,29 @@ export const register: Register = (on, rawOptions) => {
       if (await isOpen($)) await refresh($, true)
     })
     const snap = await read($, snapshot)
-    if (options.autoOpen && snap.runDir && !snap.error && e.isInteractive) void open($)
+    // A pane the owner closed stays closed, through a reload too, until /aeprogress.
+    const closed = await read($, closedByOwner)
+    if (options.autoOpen && !closed && snap.runDir && !snap.error && e.isInteractive) void open($)
     // In the background: a slow or failed check never holds the session up.
     void checkForUpdate($, options.updateCheck)
     return next(e)
   })
 
+  // The owner's close, by the frame's mark or key or by /aeprogress close, is remembered.
+  on('ui.close', async ($, e, next) => {
+    if (e.id === PANE && e.origin.kind !== 'unload') await update($, closedByOwner, () => true)
+    return next(e)
+  })
+
   on('command.run', { command: 'aeprogress' }, async ($, e) => {
     const given = e.args.trim()
+    if (given.toLowerCase() === 'close') {
+      const wasOpen = await isOpen($)
+      await $.ui.close({ id: PANE })
+      await update($, closedByOwner, () => true)
+      return { text: wasOpen ? 'Progress pane closed. /aeprogress opens it again.' : 'The progress pane is not open.' }
+    }
+    await update($, closedByOwner, () => false)
     if (given) {
       const dir = anchored(await $.session.root(), given)
       if (!(await $.fs.exists(join(dir, 'compliance-log.md')))) {

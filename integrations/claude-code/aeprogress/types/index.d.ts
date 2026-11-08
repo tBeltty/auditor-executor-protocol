@@ -82,6 +82,8 @@ declare module 'claude-code' {
       phaseToggles: Shaped<Record<string, boolean>>
       /** The run folder `/aeprogress <dir>` chose for this session. */
       chosenDir: string
+      /** The owner closed the pane this session: it opens again only on /aeprogress. */
+      closedByOwner: boolean
       /** Subagent id -> task IDs its spawn prompt named. */
       spawned: Record<string, string[]>
       kinds: Shaped<Kinds>

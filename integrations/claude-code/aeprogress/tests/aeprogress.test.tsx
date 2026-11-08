@@ -48,6 +48,8 @@ type Engine = {
   cwd?: string
   /** Filled with the folder each command ran in. */
   cwds?: string[]
+  /** The panes open now, kept by open and close; absent, every open places and none is listed. */
+  panes?: Set<string>
 }
 
 /** Hooks standing for the engine beneath the plugin, aepkit and the harnesses. */
@@ -72,8 +74,17 @@ function engine(on: On, given: Engine = {}): string[][] {
     return { result: 'Started worker dispatchId=ctx_new1' } as never
   })
   on('command.register', () => ({ value: { command: 'aeprogress' } }))
-  on('ui.open', () => ({ value: { isPlaced: true } }))
-  on('ui.panes', () => ({ value: [] }))
+  on('ui.open', (_, e) => {
+    given.panes?.add(e.id)
+    return { value: { isPlaced: true } }
+  })
+  on('ui.panes', () => ({
+    value: [...(given.panes ?? [])].map(id => ({ id, title: '', isShown: true, isFocused: false, isPlaced: true })) as never,
+  }))
+  on('ui.close', (_, e) => {
+    given.panes?.delete(e.id)
+    return { value: undefined }
+  })
   on('session.start', (_, e) => ({ cwd: e.cwd }))
   on('env.get', (_, e) => ({ value: given.env?.[e.name] }))
   on('agent.list', () => ({ value: given.agents ?? [] }))
@@ -255,6 +266,35 @@ test('without aepkit the pane says how to install it, and names no option that d
   expect(await ui.find({ type: 'Text', text: /pipx install aepkit/ })).toBeDefined()
   expect(await ui.find({ type: 'Text', text: /aepkit command/ })).toBeUndefined()
   await ui.unmount()
+})
+
+describe('closing the pane', () => {
+  const run = (args: string) => ({
+    command: 'aeprogress',
+    args,
+    origin: { kind: 'composer' },
+    presentation: { isFullscreen: true, columns: 160 },
+  }) as const
+
+  test('/aeprogress close closes it, and a reload does not open it again', { options: { runDir: RUN } }, async ($, on) => {
+    const open = new Set<string>()
+    engine(on, { panes: open })
+    await $.session.start({ cwd: '/', surface: 'terminal', isInteractive: true })
+    expect(open.has('aeprogress')).toBe(true)
+
+    const answer = await $.command.run(run('close'))
+    expect(answer.text).toBe('Progress pane closed. /aeprogress opens it again.')
+    expect(open.has('aeprogress')).toBe(false)
+
+    // A reload runs session.start again: the closed pane stays closed.
+    await $.session.start({ cwd: '/', surface: 'terminal', isInteractive: true })
+    expect(open.has('aeprogress')).toBe(false)
+
+    await $.command.run(run(''))
+    expect(open.has('aeprogress')).toBe(true)
+    expect((await $.command.run(run('CLOSE'))).text).toMatch(/closed/)
+    expect((await $.command.run(run('close'))).text).toBe('The progress pane is not open.')
+  })
 })
 
 describe('the run folder', () => {

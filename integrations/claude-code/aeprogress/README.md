@@ -109,7 +109,15 @@ The pane makes no network request for it.
 ```
 /aeprogress              # open the pane on the run found under the project root
 /aeprogress docs/my-run  # open it on this run folder for the rest of the session
+/aeprogress close        # close it, to give the transcript the room back
 ```
+
+A pane you close, with `/aeprogress close` or the mark on its frame, stays closed for
+the rest of the session, a plugin reload included, until `/aeprogress` opens it again.
+While it is closed it stops reading the run on its timer, and the launch limit keeps
+working.
+
+To name a run folder called `close`, write it as `./close`.
 
 The command also answers with a one-line summary (`50% of docs/my-run: 1/2 approved`),
 useful where no pane is drawn, such as `claude -p`.

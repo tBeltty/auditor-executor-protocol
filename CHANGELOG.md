@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- Claude Code plugin 0.5.6: `/aeprogress close` closes the progress pane. A pane the owner
+  closes, with the command or the mark on its frame, stays closed for the rest of the
+  session, a plugin reload included, until `/aeprogress` opens it again.
+
 ### Fixed
 - Claude Code plugin 0.5.5, the run folder:
   - A relative **Run folder**, or a relative folder given to `/aeprogress`, is read from the
