@@ -8,7 +8,12 @@ Auditor/Executor run. The protocol does not depend on it. It reads the run's
 
 - the overall percentage and a bar for the whole run;
 - one bar per phase, with approved items over the total, and phases the plan declares
-  that the execution guide has not broken down yet;
+  that the execution guide has not broken down yet. Press a phase (a click, or Tab and
+  Enter) to open it: its full title, its bar, and its tasks and gate with their state
+  (✓ approved, ◐ conditional, ● in progress with who, ◌ awaiting audit, ○ pending,
+  ✗ rejected, failed, blocked or conflict). The active phase, the first not fully
+  approved, opens by itself until you close it. In the desktop app and the fullscreen
+  terminal, hovering a closed phase shows the same in a card;
 - **In progress**: who is working on which task ID right now, whether a Claude Code
   subagent, an Orca worker or a worker of any other harness;
 - **Awaiting audit**: items reported `DONE` that have no verdict yet;

@@ -99,6 +99,8 @@ export type PhaseInput = {
   total: number
   /** The phase's percentage, as the pane prints percentages. */
   percent: string
+  /** Whether the phase is expanded: its disclosure mark points down. */
+  open?: boolean
 }
 
 export type PhaseRow = Seg[]
@@ -109,11 +111,16 @@ const GAP = 2
 const MIN_BAR = 6
 const ROOMY_BAR = 10
 
+/** The disclosure mark of a phase row and the cells it takes. */
+const MARK = 2
+
 /**
- * One row per phase: id and title, a bar, the count right-aligned. Titles, bars and
- * counts line up in columns; the count drops its percentage before a title is cut short.
+ * One row per phase: a disclosure mark, id and title, a bar, the count right-aligned.
+ * Titles, bars and counts line up in columns; the count drops its percentage before a
+ * title is cut short.
  */
-export function phaseRows(phases: readonly PhaseInput[], width: number): PhaseRow[] {
+export function phaseRows(phases: readonly PhaseInput[], fullWidth: number): PhaseRow[] {
+  const width = fullWidth - MARK
   const labels = phases.map(p => `${p.id} ${p.title || 'untitled'}`)
   const longest = Math.max(0, ...labels.map(cells))
   const broken = phases.filter(p => p.total > 0)
@@ -140,7 +147,11 @@ export function phaseRows(phases: readonly PhaseInput[], width: number): PhaseRo
     const label = cut(labels[i]!, titleW)
     const idPart = label.startsWith(`${p.id} `) ? p.id : label
     const titlePart = label.slice(idPart.length)
-    const lead: Seg[] = [{ text: idPart, bold: true }, { text: padEnd(titlePart, titleW - cells(idPart)) }]
+    const lead: Seg[] = [
+      { text: p.open ? '▾ ' : '▸ ', color: 'inactive' },
+      { text: idPart, bold: true },
+      { text: padEnd(titlePart, titleW - cells(idPart)) },
+    ]
     const spacer: Seg = { text: ' '.repeat(GAP) }
     if (p.total === 0) {
       const room = barW + GAP + countW
@@ -159,6 +170,99 @@ export function phaseRows(phases: readonly PhaseInput[], width: number): PhaseRo
       { text: count, dim: !done, color: done ? 'success' : undefined },
       ...(tick ? [{ text: done ? ' ✓' : '  ', color: 'success' as const }] : []),
     ]
+  })
+}
+
+/**
+ * The bar and count of an expanded phase, on a line of their own: the count as long as
+ * leaves the bar its roomy width, the bar the rest.
+ */
+export function phaseBarLine(p: PhaseInput, width: number): Seg[] {
+  if (p.total === 0) return [{ text: fitFirst(['not broken down into tasks yet', 'not broken down', 'no tasks yet'], width), color: 'inactive' }]
+  const done = p.fraction >= 1
+  const count = [
+    `${p.approved}/${p.total} approved · ${p.percent}`,
+    `${p.approved}/${p.total} · ${p.percent}`,
+    `${p.approved}/${p.total}`,
+  ].find(c => width - cells(c) - GAP >= ROOMY_BAR) ?? `${p.approved}/${p.total}`
+  const barW = Math.max(1, width - cells(count) - GAP)
+  const { done: filled, rest } = barParts(p.fraction, barW)
+  return [
+    { text: filled, color: done ? 'success' : 'claude' },
+    { text: rest, color: 'subtle' },
+    { text: ' '.repeat(GAP) },
+    { text: count, dim: !done, color: done ? 'success' : undefined },
+  ]
+}
+
+/** A task or gate as a chip: a state glyph, the short ID, and who works on it when someone does. */
+export type Chip = { glyph: string; color: NonNullable<Seg['color']>; id: string; who?: string }
+
+const WHO_CELLS = 12
+
+/**
+ * The chip of an item: approved ✓, conditional ◐, in progress (a live worker) ●,
+ * awaiting audit ◌, pending ○, rejected, failed, blocked or conflict ✗. Inside its
+ * phase the ID drops the phase (`P2-T3` is `T3`).
+ */
+export function chipOf(id: string, state: string, who: string | undefined): Chip {
+  const short = id.replace(/^P\d+-/i, '')
+  if (state === 'APPROVED') return { glyph: '✓', color: 'success', id: short }
+  if (who !== undefined) return { glyph: '●', color: 'warning', id: short, who: cut(who, WHO_CELLS) }
+  if (state === 'CONDITIONAL') return { glyph: '◐', color: 'error', id: short }
+  if (state === 'AWAITING AUDIT') return { glyph: '◌', color: 'suggestion', id: short }
+  if (state === 'PENDING') return { glyph: '○', color: 'inactive', id: short }
+  return { glyph: '✗', color: 'error', id: short }
+}
+
+function chipText(c: Chip): string {
+  return `${c.glyph} ${c.id}${c.who ? ` ${c.who}` : ''}`
+}
+
+/**
+ * Chips packed several to a line, two cells apart, no line wider than `width`. Past
+ * `maxLines` the last line ends with `…+N`, N the chips left out.
+ */
+export function chipLines(chips: readonly Chip[], width: number, maxLines = 2): Seg[][] {
+  const lines: Chip[][] = []
+  let line: Chip[] = []
+  let used = 0
+  for (const c of chips) {
+    const w = cells(chipText(c))
+    const need = line.length === 0 ? w : used + 2 + w
+    if (line.length > 0 && need > width) {
+      lines.push(line)
+      line = []
+      used = 0
+    }
+    line.push(c)
+    used = line.length === 1 ? w : used + 2 + w
+  }
+  if (line.length > 0) lines.push(line)
+  let shown = lines
+  let left = 0
+  if (lines.length > maxLines) {
+    shown = lines.slice(0, maxLines)
+    left = chips.length - shown.reduce((n, l) => n + l.length, 0)
+    const last = shown[shown.length - 1]!
+    // Make room for the `…+N` at the end of the last line shown.
+    for (;;) {
+      const more = `…+${left}`
+      const lineW = last.reduce((n, c, i) => n + (i === 0 ? 0 : 2) + cells(chipText(c)), 0)
+      if (last.length === 0 || lineW + 2 + cells(more) <= width) break
+      last.pop()
+      left += 1
+    }
+  }
+  return shown.map((l, n) => {
+    const segs: Seg[] = []
+    l.forEach((c, i) => {
+      if (i > 0) segs.push({ text: '  ' })
+      segs.push({ text: `${c.glyph} `, color: c.color }, { text: c.id })
+      if (c.who) segs.push({ text: ` ${c.who}`, dim: true })
+    })
+    if (left > 0 && n === shown.length - 1) segs.push({ text: `${l.length > 0 ? '  ' : ''}…+${left}`, dim: true })
+    return segs
   })
 }
 

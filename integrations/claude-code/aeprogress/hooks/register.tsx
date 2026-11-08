@@ -15,8 +15,23 @@ import {
 import type { Kind, Limits, LiveWorker } from './limit'
 import { readMachine } from './machine'
 import { TOOL, cancel, compactNow, countdownLeft, pendingJob, resumeCountdown, schedule, startCountdown } from './compact'
-import { bandLayout, barParts, cut, footerRows, header, listRow, paneWidth, phaseRows, readLine, weighingLine } from './layout'
-import type { Seg } from './layout'
+import {
+  bandLayout,
+  barParts,
+  chipLines,
+  chipOf,
+  cells,
+  cut,
+  footerRows,
+  header,
+  listRow,
+  paneWidth,
+  phaseBarLine,
+  phaseRows,
+  readLine,
+  weighingLine,
+} from './layout'
+import type { PhaseInput, Seg } from './layout'
 import {
   ATTENTION,
   commandWorkers,
@@ -48,6 +63,11 @@ const snapshot = atom(
   { runDir: '', items: [], phases: [], workers: [], readAt: 0 } as Snapshot,
   { shape: 'snapshot-1' },
 )
+// The owner's own toggles of the pane's phases, written only by a press; a phase with
+// none is open while it is the active one.
+const phaseToggles = atom({ plugin: 'aeprogress', key: 'phaseToggles' } as const, {} as Record<string, boolean>, {
+  shape: 'phase-toggles-1',
+})
 const chosenDir = atom({ plugin: 'aeprogress', key: 'chosenDir' } as const, '')
 const spawned = atom({ plugin: 'aeprogress', key: 'spawned' } as const, {} as Record<string, string[]>)
 const kinds = atom({ plugin: 'aeprogress', key: 'kinds' } as const, {} as Kinds, { shape: 'kinds-1' })
@@ -574,7 +594,7 @@ export const register: Register = (on, rawOptions) => {
   })
 
   on('ui.render', { component: 'Pane', requestId: PANE }, async ($, e) => {
-    const { Box, Text } = $.ui.resolve(e)
+    const { Box, Button, Text } = $.ui.resolve(e)
     const snap = await read($, snapshot)
     const cols = e.props.bodyColumns ?? e.viewport?.columns ?? 60
     const width = paneWidth(cols, PAD)
@@ -608,7 +628,9 @@ export const register: Register = (on, rawOptions) => {
           <Text weight="bold" wrap="truncate-end">
             {cut('AEP progress', width)}
           </Text>
-          <Text dimColor>{snap.error ?? 'The run has no phases or tasks yet.'}</Text>
+          <Text dimColor wrap="wrap">
+            {snap.error ?? 'The run has no phases or tasks yet.'}
+          </Text>
         </Box>
       )
     }
@@ -631,10 +653,83 @@ export const register: Register = (on, rawOptions) => {
     const head = header(baseName(snap.runDir), percent(whole), width)
     const [title, ...rest] = head.left.split(' · ')
     const overallBar = barParts(whole, width)
-    const phases = phaseRows(
-      shares.map(p => ({ ...p, percent: percent(p.fraction) })),
-      width,
-    )
+    // The active phase, open until the owner closes it: the first with items not all APPROVED.
+    const toggles = await read($, phaseToggles)
+    const active = shares.find(p => p.total > 0 && p.approved < p.total)?.id
+    const isOpen = (id: string) => toggles[id] ?? id === active
+    const toggle = (id: string) => update($, phaseToggles, old => ({ ...old, [id]: !(old[id] ?? id === active) }))
+    const inputs: PhaseInput[] = shares.map(p => ({ ...p, percent: percent(p.fraction), open: isOpen(p.id) }))
+    const phases = phaseRows(inputs, width)
+    const byId = new Map(snap.items.map(i => [i.id.toUpperCase(), i]))
+    const workerOf = new Map<string, string>()
+    for (const w of snap.workers) if (!workerOf.has(w.taskId)) workerOf.set(w.taskId, w.who)
+    const chipsOf = (p: PhaseInput & { items: string[] }) =>
+      p.items.map(id => chipOf(id, byId.get(id.toUpperCase())?.state ?? 'PENDING', workerOf.get(id.toUpperCase())))
+    // The hover card only where a pointer can hover: the desktop app and the fullscreen
+    // terminal. The terminal's main screen never draws it.
+    const canHover = e.surface === 'desktop' || (e.surface === 'terminal' && e.viewport?.isFullscreen === true)
+    const INDENT = 2
+    const cardWidth = Math.min(width - INDENT, 44)
+    const phaseBlock = (p: (typeof inputs)[number] & { items: string[] }, segs: Seg[]) => {
+      const name = p.title || 'untitled'
+      const press = () => toggle(p.id)
+      if (p.open) {
+        const lead = `▾ ${p.id} `
+        return (
+          <Box flexDirection="column">
+            <Box flexDirection="row">
+              <Button key={`phase-${p.id}`} plain label={`${p.id} ${name}`} onPress={press}>
+                <Text mono>
+                  <Text color="inactive">▾ </Text>
+                  <Text weight="bold">{p.id}</Text>
+                </Text>
+              </Button>
+              <Text> </Text>
+              <Box width={Math.max(4, width - cells(lead))}>
+                <Text wrap="wrap">{name}</Text>
+              </Box>
+            </Box>
+            <Box flexDirection="column" paddingLeft={INDENT}>
+              {row(phaseBarLine(p, width - INDENT), true)}
+              {chipLines(chipsOf(p), width - INDENT).map(line => row(line))}
+            </Box>
+          </Box>
+        )
+      }
+      const button = (
+        <Button key={`phase-${p.id}`} plain label={`${p.id} ${name}`} onPress={press}>
+          <Text wrap="truncate-end" mono>
+            {segs.map(run)}
+          </Text>
+        </Button>
+      )
+      if (!canHover) return button
+      const inner = cardWidth - 4
+      return (
+        <Box key={`hover-${p.id}`} flexDirection="column">
+          {button}
+          <Box
+            position="absolute"
+            top={1}
+            left={INDENT}
+            width={cardWidth}
+            display="none"
+            hover={{ display: 'flex' }}
+            flexDirection="column"
+            borderStyle="round"
+            borderColor="subtle"
+            backgroundColor="inverseText"
+            paddingX={1}
+          >
+            <Text wrap="wrap">
+              <Text weight="bold">{p.id}</Text> {name}
+            </Text>
+            {row(phaseBarLine(p, inner), true)}
+            {chipLines(chipsOf(p), inner, 3).map(line => row(line))}
+          </Box>
+        </Box>
+      )
+    }
     const item = (dot: Seg['color'], id: string, main: string, tail: string): Seg[] => {
       const fit = listRow(id, main, tail, width)
       return [{ text: '● ', color: dot }, { text: id }, { text: fit.main ? `  ${fit.main}` : '' }, { text: fit.tail, dim: true }]
@@ -671,7 +766,7 @@ export const register: Register = (on, rawOptions) => {
         {row([{ text: overallBar.done, color: 'claude' }, { text: overallBar.rest, color: 'subtle' }], true)}
         {row([{ text: weighingLine(snap.phases.length, weighted, width), dim: true }])}
         {blank}
-        {phases.map(segs => row(segs, true))}
+        {phases.map((segs, n) => phaseBlock({ ...inputs[n]!, items: shares[n]!.items }, segs))}
         {blank}
         {snap.workers.length > 0 && label('IN PROGRESS')}
         {snap.workers.map(w => row(item('warning', w.taskId, w.who, sourceLabel[w.source])))}
@@ -682,9 +777,13 @@ export const register: Register = (on, rawOptions) => {
         {(snap.workers.length > 0 || awaiting.length > 0 || attention.length > 0) && blank}
         {footer.lines.map((line, n) => row(n === 0 ? [{ text: '● ', color: dot }, { text: line }] : [{ text: `  ${line}` }]))}
         {footer.detail && row([{ text: `  ${footer.detail}`, dim: true }])}
-        {tip && <Text color="warning">{tip}</Text>}
+        {tip && (
+          <Text color="warning" wrap="wrap">
+            {tip}
+          </Text>
+        )}
         {snap.error ? (
-          <Text>
+          <Text wrap="wrap">
             <Text color="error">Last read failed: </Text>
             <Text dimColor>{snap.error}</Text>
           </Text>

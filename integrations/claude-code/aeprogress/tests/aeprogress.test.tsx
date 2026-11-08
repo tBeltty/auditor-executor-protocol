@@ -1,12 +1,13 @@
 import { describe, expect, mock, test } from 'claude-code/testing'
 import type { AgentInfo, On, ProcessRunResult } from 'claude-code'
 
+import { chipLines, chipOf } from '../hooks/layout'
 import { orcaLaunch, refusals, spotlightBusy } from '../hooks/limit'
 import { indexerCpu, linuxMachine, sysctlMachine, windowsMachine } from '../hooks/machine'
 import { commandWorkers, orcaWorkers, overall, percent, phaseShares, taskIdsIn } from '../hooks/progress'
 import { CPUINFO, LOADAVG } from './fixtures/linux'
 import { STATUS } from './fixtures/status'
-import { overflowing } from './rows'
+import { cardsOf, linesOf, overflowing } from './rows'
 
 const RUN = 'docs/run'
 const PANE = {
@@ -147,7 +148,7 @@ test('the pane draws the %, a bar per phase and the open items, on every surface
     expect((await ui.find({ type: 'Text', text: /^43\.8%$/ }))?.text).toBe('43.8%')
     expect(await ui.find({ type: 'Text', text: /weighted by the plan/ })).toBeDefined()
     expect(await ui.find({ type: 'Text', text: /2\/2 · 100%/ })).toBeDefined()
-    expect(await ui.find({ type: 'Text', text: /1\/4 · 37\.5%/ })).toBeDefined()
+    expect(await ui.find({ type: 'Text', text: /1\/4 approved · 37\.5%/ })).toBeDefined()
     expect(await ui.find({ type: 'Text', text: /not broken down/ })).toBeDefined()
     expect(await ui.find({ type: 'Text', text: /AWAITING AUDIT/ })).toBeDefined()
     expect(await ui.find({ type: 'Text', text: /P1-T3 {2}Cy/ })).toBeDefined()
@@ -548,28 +549,112 @@ describe('the Spotlight recommendation', () => {
   })
 })
 
-describe('one line per row', () => {
-  const LINUX = { '/proc/loadavg': '2.80 2.00 1.00 1/2 3\n', '/proc/cpuinfo': 'processor : 0\nprocessor : 1\nprocessor : 2\nprocessor : 3\n' }
-  const LIVE = {
-    env: { ORCA_WORKTREE_ID: 'w', ORCA_CLI_BIN_DIR: '/opt/orca/bin' },
-    orcaPs: {
-      result: {
-        worktrees: [{ repoId: 'repo-1', displayName: 'Dee with a rather long worktree name | P1-G1', agents: [{ state: 'working' }] }],
-      },
+// The sample run with long titles, as a real plan has them.
+const LONG = {
+  ...STATUS,
+  phases: STATUS.phases.map(p =>
+    p.id === 'P1'
+      ? { ...p, title: 'Platform interfaces for capture and recording' }
+      : p.id === 'P2'
+        ? { ...p, title: 'Hardening the capture pipeline for long sessions' }
+        : p,
+  ),
+}
+const LINUX = { '/proc/loadavg': '2.80 2.00 1.00 1/2 3\n', '/proc/cpuinfo': 'processor : 0\nprocessor : 1\nprocessor : 2\nprocessor : 3\n' }
+const LIVE: Engine = {
+  env: { ORCA_WORKTREE_ID: 'w', ORCA_CLI_BIN_DIR: '/opt/orca/bin' },
+  orcaPs: {
+    result: {
+      worktrees: [{ repoId: 'repo-1', displayName: 'Dee with a rather long worktree name | P1-G1', agents: [{ state: 'working' }] }],
     },
-    files: LINUX,
-  }
+  },
+  files: LINUX,
+  aepkit: () => ran(JSON.stringify(LONG)),
+}
+const at = (bodyColumns: number) => ({ ...PANE.props, bodyColumns })
 
-  test('the pane fits every row at 30, 40, 60 and 120 columns', { options: { runDir: RUN } }, async ($, on) => {
+describe('expandable phases', () => {
+  test('the active phase opens by itself, with its full title and its chips', { options: { runDir: RUN } }, async ($, on) => {
     engine(on, LIVE)
     await $.session.start({ cwd: '/', surface: 'terminal', isInteractive: true })
     for (const surface of ['terminal', 'desktop'] as const) {
-      for (const bodyColumns of [28, 30, 40, 60, 120]) {
-        const ui = await $.ui.mount({ ...PANE, surface, props: { ...PANE.props, bodyColumns } })
+      const ui = await $.ui.mount({ ...PANE, surface, props: at(44) })
+      // P0 is all APPROVED, so P1 is the active phase.
+      expect(await ui.find({ type: 'Text', text: /^Platform interfaces for capture and recording$/ })).toBeDefined()
+      expect(await ui.find({ type: 'Text', text: /^✓ T1 {2}◐ T2 {2}◌ T3 {2}● G1 Dee with a…$/ })).toBeDefined()
+      expect(await ui.find({ type: 'Text', text: /^1\/4 approved · 37\.5%$/ })).toBeDefined()
+      expect((await ui.find({ key: 'phase-P1' }))?.props.label).toBe('P1 Platform interfaces for capture and recording')
+      // The others stay one row each, their titles cut.
+      expect(await ui.find({ type: 'Text', text: /^▸ P0 Groundwork/ })).toBeDefined()
+      expect(await ui.find({ type: 'Text', text: /^▸ P2 Hardening th…/ })).toBeDefined()
+      expect(await ui.find({ type: 'Text', text: /^Hardening the capture pipeline for long sessions$/ })).toBeUndefined()
+      await ui.unmount()
+    }
+  })
+
+  test('a press opens a closed phase and a second press closes it', { options: { runDir: RUN } }, async ($, on) => {
+    engine(on, LIVE)
+    await $.session.start({ cwd: '/', surface: 'terminal', isInteractive: true })
+    const ui = await $.ui.mount({ ...PANE, surface: 'terminal', props: at(44) })
+    expect(await ui.find({ type: 'Text', text: /^✓ T1 {2}✓ G1$/ })).toBeUndefined()
+    await ui.press({ key: 'phase-P0' })
+    expect(await ui.find({ type: 'Text', text: /^Groundwork$/ })).toBeDefined()
+    expect(await ui.find({ type: 'Text', text: /^✓ T1 {2}✓ G1$/ })).toBeDefined()
+    expect(await ui.find({ type: 'Text', text: /2\/2 approved · 100%/ })).toBeDefined()
+    await ui.press({ key: 'phase-P0' })
+    expect(await ui.find({ type: 'Text', text: /^✓ T1 {2}✓ G1$/ })).toBeUndefined()
+    expect(await ui.find({ type: 'Text', text: /^▸ P0 Groundwork/ })).toBeDefined()
+    await ui.unmount()
+  })
+
+  test('the active phase, once closed, stays closed', { options: { runDir: RUN } }, async ($, on) => {
+    engine(on, LIVE)
+    await $.session.start({ cwd: '/', surface: 'terminal', isInteractive: true })
+    const first = await $.ui.mount({ ...PANE, surface: 'terminal', props: at(44) })
+    await first.press({ key: 'phase-P1' })
+    expect(await first.find({ type: 'Text', text: /^Platform interfaces for capture and recording$/ })).toBeUndefined()
+    await first.unmount()
+
+    // A new read and a new drawing keep the owner's choice.
+    await $.command.run({ command: 'aeprogress', args: '', origin: { kind: 'composer' }, presentation: { isFullscreen: true, columns: 160 } })
+    const again = await $.ui.mount({ ...PANE, surface: 'desktop', props: at(44) })
+    expect(await again.find({ type: 'Text', text: /^Platform interfaces for capture and recording$/ })).toBeUndefined()
+    expect(await again.find({ type: 'Text', text: /^▸ P1 Platform/ })).toBeDefined()
+    await again.unmount()
+  })
+
+  test('each state has its glyph, and chips past two lines end with …+N', async () => {
+    const glyphs = [
+      chipOf('P2-T1', 'APPROVED', undefined),
+      chipOf('P2-T2', 'CONDITIONAL', undefined),
+      chipOf('P2-T3', 'PENDING', 'Ana'),
+      chipOf('P2-T4', 'AWAITING AUDIT', undefined),
+      chipOf('P2-T5', 'PENDING', undefined),
+      ...['REJECTED', 'FAILED', 'BLOCKED', 'CONFLICT'].map(state => chipOf('P2-G1', state, undefined)),
+    ].map(c => `${c.glyph} ${c.id}${c.who ? ` ${c.who}` : ''}`)
+    expect(glyphs).toEqual(['✓ T1', '◐ T2', '● T3 Ana', '◌ T4', '○ T5', '✗ G1', '✗ G1', '✗ G1', '✗ G1'])
+
+    const many = Array.from({ length: 14 }, (_, n) => chipOf(`P3-T${n + 1}`, 'PENDING', undefined))
+    const text = chipLines(many, 26).map(line => line.map(s => s.text).join(''))
+    expect(text).toEqual(['○ T1  ○ T2  ○ T3  ○ T4', '○ T5  ○ T6  ○ T7  …+7'])
+    expect(chipLines(many.slice(0, 4), 26)).toHaveLength(1)
+  })
+})
+
+describe('one line per row', () => {
+  test('the pane fits every row at 28 to 120 columns, a phase opened', { options: { runDir: RUN } }, async ($, on) => {
+    engine(on, LIVE)
+    await $.session.start({ cwd: '/', surface: 'terminal', isInteractive: true })
+    const opener = await $.ui.mount({ ...PANE, surface: 'terminal', props: at(60) })
+    await opener.press({ key: 'phase-P0' })
+    await opener.unmount()
+    for (const surface of ['terminal', 'desktop'] as const) {
+      for (const bodyColumns of [28, 30, 40, 44, 60, 120]) {
+        const ui = await $.ui.mount({ ...PANE, surface, props: at(bodyColumns) })
         const tree = await ui.drawn()
-        expect(overflowing(tree, bodyColumns)).toEqual([])
+        expect(overflowing(tree, bodyColumns, 1)).toEqual([])
         // Nothing is lost to the width: every phase, the live worker and the machine stay.
-        for (const text of [/^43\.8%$/, /^P0$/, /^P1$/, /^P2$/, /P1-G1/, /P1-T3/, /P1-T2/, /Machine/, /workers 0\/2/]) {
+        for (const text of [/^43\.8%$/, /^P0$/, /^P1$/, /P2/, /P1-G1/, /P1-T3/, /P1-T2/, /Machine/, /workers 0\/2/]) {
           expect(await ui.find({ type: 'Text', text })).toBeDefined()
         }
         await ui.unmount()
@@ -578,3 +663,42 @@ describe('one line per row', () => {
   })
 })
 
+describe('the hover card', () => {
+  test('where a pointer hovers, a closed phase carries a card with its full title', { options: { runDir: RUN } }, async ($, on) => {
+    engine(on, LIVE)
+    await $.session.start({ cwd: '/', surface: 'terminal', isInteractive: true })
+    const surfaces = [
+      { surface: 'desktop' as const, viewport: undefined },
+      { surface: 'terminal' as const, viewport: { columns: 160, rows: 50, isFullscreen: true } },
+    ]
+    for (const { surface, viewport } of surfaces) {
+      for (const bodyColumns of [28, 44, 120]) {
+        const ui = await $.ui.mount({ ...PANE, surface, viewport, props: at(bodyColumns) })
+        const tree = await ui.drawn()
+        // One card per closed phase (P0 and P2; P1 is open), hidden until hovered.
+        const cards = cardsOf(tree) as { props: Record<string, unknown>; hover?: Record<string, unknown> }[]
+        expect(cards).toHaveLength(2)
+        for (const card of cards) {
+          expect(card.props.display).toBe('none')
+          expect(card.hover?.display).toBe('flex')
+        }
+        expect(linesOf(cards[1] as never).join('\n')).toMatch(/P2 Hardening the capture pipeline for long sessions/)
+        expect(linesOf(cards[1] as never).join('\n')).toMatch(/not broken down/)
+        expect(linesOf(cards[0] as never).join('\n')).toMatch(bodyColumns > 30 ? /2\/2 approved · 100%/ : /2\/2/)
+        expect(linesOf(cards[0] as never).join('\n')).toMatch(/✓ T1 {2}✓ G1/)
+        expect(overflowing(tree, bodyColumns, 1)).toEqual([])
+        await ui.unmount()
+      }
+    }
+  })
+
+  test('the terminal main screen draws no card', { options: { runDir: RUN } }, async ($, on) => {
+    engine(on, LIVE)
+    await $.session.start({ cwd: '/', surface: 'terminal', isInteractive: true })
+    for (const viewport of [undefined, { columns: 120, rows: 40, isFullscreen: false }]) {
+      const ui = await $.ui.mount({ ...PANE, surface: 'terminal', viewport, props: at(44) })
+      expect(cardsOf(await ui.drawn())).toEqual([])
+      await ui.unmount()
+    }
+  })
+})
