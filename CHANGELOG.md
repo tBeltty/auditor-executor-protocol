@@ -7,6 +7,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.7.6] - 2026-11-08
+
+### Changed
+- Compaction at a phase close is now part of each mode. `SKILL.md` gains "Compacting at a
+  phase close" and a row in the modes table: in Guided mode the owner compacts by hand
+  (`/compact`, then a resume message the Auditor gives, with its template); in Autonomous
+  mode the Auditor compacts its own session with no action from the owner, where the harness
+  has a compaction tool such as the Claude Code plugin's `compact_and_resume`, and otherwise
+  goes on uncompacted. `references/autonomous-mode.md` turns its optional step into that
+  rule, orders the phase close (report, expand the next phase, update the brief, compact)
+  and adds the compaction tool to the Auditor brief.
+- `aeprogress` 0.5.1: the `compact_and_resume` tool tells the Auditor not to call it in
+  Guided mode.
+- Both READMEs: a plain-language pass, and the compaction rule per mode.
+
 ## [0.7.5] - 2026-11-08
 
 ### Changed
@@ -421,7 +436,8 @@ Fixes from an independent review of 0.3.0.
 - Multi-framework agent installation support for Antigravity, Claude Code, and Cursor.
 - Zero-dependency test runner (`tests/run.py`).
 
-[Unreleased]: https://github.com/tBeltty/auditor-executor-protocol/compare/v0.7.5...HEAD
+[Unreleased]: https://github.com/tBeltty/auditor-executor-protocol/compare/v0.7.6...HEAD
+[0.7.6]: https://github.com/tBeltty/auditor-executor-protocol/compare/v0.7.5...v0.7.6
 [0.7.5]: https://github.com/tBeltty/auditor-executor-protocol/compare/v0.7.4...v0.7.5
 [0.7.4]: https://github.com/tBeltty/auditor-executor-protocol/compare/v0.7.3...v0.7.4
 [0.7.3]: https://github.com/tBeltty/auditor-executor-protocol/compare/v0.7.2...v0.7.3

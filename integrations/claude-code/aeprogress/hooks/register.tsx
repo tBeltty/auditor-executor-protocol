@@ -635,7 +635,8 @@ export const register: Register = (on, rawOptions) => {
           `When the turn ends, a ${options.compactSeconds}-second countdown lets the owner cancel; then ` +
           'the session is compacted and `resume` is sent as the next message, which resumes you. Put in ' +
           '`resume` what to do next (for example: "Resume the plan from the brief: launch the first task ' +
-          'of P2"), and in `instructions` what the summary must keep.',
+          'of P2"), and in `instructions` what the summary must keep. In Guided mode do not call it: ' +
+          'end the phase report with a resume message for the owner, who compacts by hand.',
         inputSchema: {
           type: 'object',
           properties: {

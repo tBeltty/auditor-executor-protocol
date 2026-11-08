@@ -90,15 +90,31 @@ each handoff. The shape that has worked here:
 3. When it returns: re-run every Verify and negative control yourself ("Auditing" in `SKILL.md`).
 4. Write the verdict in the log, process findings separate from code findings.
 5. Not clean: write the remediation and relaunch. Clean: launch the next task in the same
-   turn. Gate `APPROVED`: send the owner the phase report and, if the next phase is not
-   yet expanded, expand it (tasks, gate, model per task, log sections) before launching
-   its first task.
+   turn. Gate `APPROVED`: send the owner the phase report; if the next phase is not yet
+   expanded, expand it (tasks, gate, model per task, log sections); bring the Auditor brief
+   up to date; then compact (below), with a resume message that launches the next phase's
+   first task.
 
-Optional, at a phase's close: once the gate is `APPROVED`, the work is pushed and the
-Auditor brief is up to date on disk, the Auditor may compact its own session and resume
-itself from the brief, so a long run does not carry every earlier phase in its context.
-On Claude Code the optional `aeprogress` mod offers this as a tool that waits out a short
-countdown the owner can cancel. The protocol does not depend on it.
+### Compacting at a phase close
+
+Once a phase's gate is `APPROVED`, its work is pushed and the Auditor brief is up to date on
+disk, the Auditor compacts its own session, so the next phase does not carry every earlier
+one. The owner does nothing.
+
+- **With the protocol's Claude Code plugin**, call its `compact_and_resume` tool with
+  `resume`, the message that starts the next turn (for example: "Resume from the brief:
+  launch P3-T1 with <model>"), and `instructions`, what the summary must keep (the brief's
+  location, open conditions, decisions made since the brief). Then end the turn. After a
+  40-second countdown the owner can cancel, the session is compacted and `resume` opens the
+  next turn.
+- **With another harness's compaction tool**, use it the same way: compact, then resume from
+  the brief.
+- **Without one**, go on uncompacted.
+
+A compaction that is cancelled, refused or vetoed is not on the critical-risk list: go on
+uncompacted and try again at the next phase's close. Compacting by hand, with `/compact` and
+a pasted resume message, belongs to Guided mode ("Compacting at a phase close" in
+`SKILL.md`).
 
 Do not end a turn between a verdict and the next launch unless something on the
 critical-risk list is open. A run that stops to report an `APPROVED` and wait is Guided
@@ -133,6 +149,8 @@ AUTONOMY (<governance decision>, "<charter>" section of the guide):
 - BLOCKED → decision entry or annex; the task continues.
 - Harness permissions needing the owner: one batched request.
 - Short report per closed phase, no questions except the list.
+- At each phase close: compact with <the compaction tool, e.g. compact_and_resume, or
+  "none available">, then resume from this brief.
 - ONLY reasons to interrupt the owner: <numbered critical-risk list>.
 
 EXECUTOR MODEL ASSIGNMENT: <per-task table, escalation rule, model always explicit,

@@ -48,6 +48,8 @@ One person can hold both roles, in two separate agent sessions. Keep them separa
 
 The owner picks one of two modes at the start of a run. In **Guided** mode the owner pastes each handoff into a fresh Executor session and sees every verdict. In **Autonomous** mode the Auditor launches Executors as subagents with an explicit model per task, answers their `BLOCKED` questions with a decision entry in the log, and reports once per closed phase, interrupting the owner only for a numbered critical-risk list ([`references/autonomous-mode.md`](https://github.com/tBeltty/auditor-executor-protocol/blob/main/references/autonomous-mode.md)).
 
+When a phase closes, the Auditor's session can be compacted and resumed from the documents on disk. In Guided mode the owner does it by hand: `/compact`, then the resume message the Auditor gives. In Autonomous mode the Auditor does it alone, with the Claude Code plugin's `compact_and_resume` tool ([section 6](#6-optional-the-claude-code-plugin)), and the owner only gets a countdown to cancel it.
+
 ---
 
 ## The four documents

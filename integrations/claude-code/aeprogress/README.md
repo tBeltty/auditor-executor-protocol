@@ -210,6 +210,11 @@ threshold. Other systems never show it.
 
 ## Compacting when a phase closes
 
+This is how the protocol's Autonomous mode compacts: the Auditor calls the tool at each
+phase close, and you don't have to do anything. In Guided mode the protocol keeps
+compaction manual (you run `/compact` and paste the resume message the Auditor gives), and
+the Auditor does not call this tool.
+
 In Autonomous mode the Auditor waits on its workers for long stretches, and a session
 that carries every earlier phase gets expensive whenever its prompt cache expires.
 When a phase closes (gate `APPROVED`, work pushed, Auditor brief up to date on disk),

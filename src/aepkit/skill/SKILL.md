@@ -61,6 +61,7 @@ The mode is optional and the owner's choice. Two ways to run the protocol:
 | Who launches Executors | The owner pastes each handoff into a fresh session | The Auditor, as subagents |
 | Who answers `BLOCKED` | The owner, or the Auditor through the owner | The Auditor, with a decision entry in the log |
 | Owner's role | Relays every message, sees every verdict | Receives one short report per closed phase; interrupted only for the critical-risk list |
+| Compaction at a phase close | Manual: the owner runs `/compact` and pastes the resume message the Auditor gives | Automatic where the harness has a compaction tool (on Claude Code, the plugin's `compact_and_resume`); otherwise none |
 | Fits when | The owner wants to watch and approve each step, the work is new territory, or the Auditor has no subagent tool | The plan is settled and the owner wants it run end to end |
 
 How the mode is chosen:
@@ -78,6 +79,30 @@ How the mode is chosen:
   engagement. Switching modes mid-run is allowed only when the owner asks, and is
   recorded by annex. The Auditor never switches itself from Guided to Autonomous; it may
   drop from Autonomous to Guided only through an item on the critical-risk list.
+
+### Compacting at a phase close
+
+A long run carries every closed phase in the Auditor's context. Once a phase's gate is
+`APPROVED`, its work is pushed and the state of the run is on disk (the plan of record, the
+execution guide, the compliance log and, in Autonomous mode, the Auditor brief), the
+Auditor's session can be compacted and resumed from those documents. Who compacts depends
+on the mode:
+
+- **Guided: the owner, by hand.** The Auditor ends the phase report with a message to paste
+  after compacting:
+
+  ```
+  RESUME: Auditor of <plan name>. Read <PLAN_OF_RECORD>, <EXECUTION_GUIDE> and
+  <COMPLIANCE_LOG>. Phase <n> is APPROVED. Next: <the next task and its handoff, or
+  "expand Phase <n+1>">.
+  ```
+
+  The owner runs `/compact` (or the agent's equivalent) and then pastes the message. In
+  Guided mode the Auditor never compacts its own session.
+- **Autonomous: the Auditor, with no action from the owner,** where the harness gives it a
+  compaction tool, such as `compact_and_resume` in the protocol's Claude Code plugin. Without
+  such a tool, the run goes on uncompacted. The rules are in
+  `references/autonomous-mode.md` ("Compacting at a phase close").
 
 Everything else in this document applies to both modes. Autonomous mode adds the rules in
 `references/autonomous-mode.md`; it removes none. Re-running, negative controls and separate
