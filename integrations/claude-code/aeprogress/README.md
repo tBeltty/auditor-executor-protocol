@@ -39,7 +39,7 @@ In Autonomous mode the Auditor reports to you once per phase. The pane lets you 
 the run in between without interrupting it.
 
 > **The pane needs a run.** aeprogress reads a run made with the protocol, through the
-> `aepkit` CLI. Without one it shows "No compliance-log.md under this folder", and its
+> `aepkit` CLI. Without one it shows "No compliance-log.md under the project root", and its
 > launch limit and its compaction stay off. Start with the steps in
 > [Start here](#start-here).
 
@@ -107,7 +107,7 @@ The pane makes no network request for it.
 ## Use
 
 ```
-/aeprogress              # open the pane on the run found under the working directory
+/aeprogress              # open the pane on the run found under the project root
 /aeprogress docs/my-run  # open it on this run folder for the rest of the session
 ```
 
@@ -121,10 +121,14 @@ with **Open at session start** in `/config`.
 ### Which run it reads
 
 1. The folder given to `/aeprogress <folder>`, for the rest of the session.
-2. **Run folder** in `/config`, relative to the workspace or absolute.
+2. **Run folder** in `/config`.
 3. Otherwise the most recently modified `compliance-log.md` up to three levels under the
-   working directory (hidden folders, `node_modules`, `venv`, `dist`, `build`, `target`
+   project root (hidden folders, `node_modules`, `venv`, `dist`, `build`, `target`
    skipped).
+
+A relative folder is read from the project root, the folder the session started in (or
+the one `/cd` moved it to). A `cd` the session runs in the shell does not move it, so
+`.run/port` names the same run wherever the shell is.
 
 ## Who is working on what
 
@@ -371,7 +375,7 @@ paired yourself.
 
 | Option | Default | What it does |
 |---|---|---|
-| Run folder | empty | The run to read; empty searches the working directory |
+| Run folder | empty | The run to read, relative to the project root or absolute; empty searches the project root |
 | External workers | `auto` | `auto`, `orca`, `file` or `off` |
 | Workers file | empty | The file another harness keeps with its running workers |
 | Open at session start | on | Open the pane when a run is found |

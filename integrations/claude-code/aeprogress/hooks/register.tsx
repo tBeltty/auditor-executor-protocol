@@ -117,14 +117,32 @@ function join(dir: string, name: string): string {
   return dir === '' || dir === '.' ? name : `${dir.replace(/[\\/]+$/, '')}/${name}`
 }
 
+function isAbsolute(path: string): boolean {
+  return /^(?:[\\/]|[A-Za-z]:[\\/])/.test(path)
+}
+
+/**
+ * A path the owner gave, made absolute against `base`. The session's own folder moves with
+ * every shell `cd`, so a relative path never goes through it.
+ */
+export function anchored(base: string, path: string): string {
+  return path === '' || isAbsolute(path) ? path : join(base, path)
+}
+
+/** A run folder as the owner sees it: relative to the project root when it lies beneath it. */
+export function shown(root: string, dir: string): string {
+  const base = root.replace(/[\\/]+$/, '')
+  return base && (dir.startsWith(`${base}/`) || dir.startsWith(`${base}\\`)) ? dir.slice(base.length + 1) : dir
+}
+
 function baseName(dir: string): string {
   return dir.replace(/[\\/]+$/, '').split(/[\\/]/).pop() || dir
 }
 
-/** The newest compliance-log.md under the working directory, a few levels down. */
-async function findRun($: EngineInterface): Promise<string> {
+/** The newest compliance-log.md under the project root, a few levels down, as an absolute path. */
+async function findRun($: EngineInterface, root: string): Promise<string> {
   let best = { dir: '', mtime: -1 }
-  let level = ['.']
+  let level = [root]
   for (let depth = 0; depth <= SEARCH_DEPTH && level.length > 0; depth++) {
     const next: string[] = []
     for (const dir of level) {
@@ -142,11 +160,13 @@ async function findRun($: EngineInterface): Promise<string> {
   return best.dir
 }
 
+/** The run folder, absolute: the one /aeprogress named, the option, or the newest found. */
 async function resolveRun($: EngineInterface, options: Options): Promise<string> {
+  const root = await $.session.root()
   const chosen = await read($, chosenDir)
-  if (chosen) return chosen
-  if (options.runDir) return options.runDir
-  return findRun($)
+  if (chosen) return anchored(root, chosen)
+  if (options.runDir) return anchored(root, options.runDir)
+  return findRun($, root)
 }
 
 // Module state: what a reload starts over with and works out again.
@@ -162,20 +182,29 @@ let interactive = true
  * pipx puts aepkit on the PATH; Windows names Python `python` or `py`. The way that worked
  * is kept for the session.
  */
-async function aepkitStatus($: EngineInterface, way: number, dir: string): Promise<ProcessRunResult | undefined> {
-  if (way === 0) return $.process.run(['aepkit', 'status', '--json', '.'], { cwd: dir, timeoutMs: 15_000 }).catch(() => undefined)
-  if (way === 1) return $.process.run(['python3', '-m', 'aepkit', 'status', '--json', '.'], { cwd: dir, timeoutMs: 15_000 }).catch(() => undefined)
-  if (way === 2) return $.process.run(['python', '-m', 'aepkit', 'status', '--json', '.'], { cwd: dir, timeoutMs: 15_000 }).catch(() => undefined)
-  return $.process.run(['py', '-m', 'aepkit', 'status', '--json', '.'], { cwd: dir, timeoutMs: 15_000 }).catch(() => undefined)
+async function aepkitStatus($: EngineInterface, way: number, dir: string): Promise<ProcessRunResult | Error> {
+  const failed = (err: unknown) => (err instanceof Error ? err : new Error(String(err)))
+  if (way === 0) return $.process.run(['aepkit', 'status', '--json', '.'], { cwd: dir, timeoutMs: 15_000 }).catch(failed)
+  if (way === 1) return $.process.run(['python3', '-m', 'aepkit', 'status', '--json', '.'], { cwd: dir, timeoutMs: 15_000 }).catch(failed)
+  if (way === 2) return $.process.run(['python', '-m', 'aepkit', 'status', '--json', '.'], { cwd: dir, timeoutMs: 15_000 }).catch(failed)
+  return $.process.run(['py', '-m', 'aepkit', 'status', '--json', '.'], { cwd: dir, timeoutMs: 15_000 }).catch(failed)
 }
+
+/** What became of the first way tried, when no way ran aepkit: why it could not start. */
+let aepkitFailure = ''
 
 async function runAepkit($: EngineInterface, dir: string) {
   const ways = aepkitWay !== undefined ? [aepkitWay] : [0, 1, 2, 3]
   let tooOld: ProcessRunResult | undefined
+  aepkitFailure = ''
   for (const way of ways) {
     const ran = await aepkitStatus($, way, dir)
+    if (ran instanceof Error) {
+      aepkitFailure ||= ran.message
+      continue
+    }
     // `python3 -m aepkit` without aepkit installed exits 1 with "No module named".
-    if (!ran || /No module named/.test(ran.stderr)) continue
+    if (/No module named/.test(ran.stderr)) continue
     // An aepkit older than 0.7.0: a newer one may still be reachable the next way.
     if (/unrecognized arguments: --json/.test(ran.stderr)) {
       tooOld ??= ran
@@ -198,7 +227,7 @@ async function externalWorkers($: EngineInterface, dir: string, known: Set<strin
   if (mode === 'off') return []
   if (mode === 'file' || (mode === 'auto' && options.workersFile)) {
     if (!options.workersFile) return []
-    const text = await $.fs.read(join(dir, options.workersFile)).catch(() => undefined)
+    const text = await $.fs.read(anchored(dir, options.workersFile)).catch(() => undefined)
     return typeof text === 'string' ? commandWorkers(text, known) : []
   }
   if (!(await usesOrca($))) return []
@@ -243,7 +272,7 @@ async function rootOf($: EngineInterface, dir: string): Promise<string> {
   const known = await read($, projectRoot)
   if (known) return known
   const git = await $.process.run(['git', 'rev-parse', '--show-toplevel'], { cwd: dir || '.', timeoutMs: 15_000 }).catch(() => undefined)
-  const root = git?.exitCode === 0 && git.stdout.trim() ? git.stdout.trim() : await $.session.cwd()
+  const root = git?.exitCode === 0 && git.stdout.trim() ? git.stdout.trim() : await $.session.root()
   await update($, projectRoot, () => root)
   return root
 }
@@ -266,15 +295,20 @@ async function readRun($: EngineInterface): Promise<void> {
   }
   if (!dir) {
     return fail(
-      'No compliance-log.md under this folder. Name the run folder with /aeprogress <folder>, ' +
+      'No compliance-log.md under the project root. Name the run folder with /aeprogress <folder>, ' +
         'or set "Run folder" in /config.',
     )
   }
+  // Checked before aepkit runs: a missing folder would fail the start like a missing program.
+  if (!(await $.fs.exists(join(dir, 'compliance-log.md')))) {
+    return fail(`No compliance-log.md in ${dir}. Check "Run folder" in /config, or name the folder with /aeprogress <folder>.`)
+  }
   const ran = await runAepkit($, dir)
   if (!ran) {
+    const reason = aepkitFailure ? ` (${aepkitFailure})` : ''
     return fail(
-      'aepkit is not installed where Claude Code can run it. Install it with ' +
-        '`pipx install aepkit`, or set "aepkit command" in /config to its full path.',
+      `Claude Code could not run aepkit${reason}. Install it with \`pipx install aepkit\`; if it is ` +
+        'installed, its folder must be on the PATH Claude Code started with.',
     )
   }
   if (ran.exitCode !== 0) {
@@ -531,7 +565,7 @@ async function compactNow($: EngineInterface): Promise<void> {
 // ---- Update check ----
 
 /** This copy's version; a test keeps it equal to the manifest's and the marketplace entry's. */
-const VERSION = '0.5.4'
+const VERSION = '0.5.5'
 
 const available = atom(
   { plugin: 'auditor-executor-protocol', key: 'updateAvailable' } as const,
@@ -739,8 +773,9 @@ export const register: Register = (on, rawOptions) => {
   })
 
   on('command.run', { command: 'aeprogress' }, async ($, e) => {
-    const dir = e.args.trim()
-    if (dir) {
+    const given = e.args.trim()
+    if (given) {
+      const dir = anchored(await $.session.root(), given)
       if (!(await $.fs.exists(join(dir, 'compliance-log.md')))) {
         return { text: `No compliance-log.md in ${dir}.` }
       }
@@ -754,7 +789,8 @@ export const register: Register = (on, rawOptions) => {
     const approved = snap.items.filter(i => i.state === 'APPROVED').length
     const found = await updateNotice($)
     const later = found ? ` aeprogress ${found.latest} is available (you have ${found.installed}).` : ''
-    return { text: `${whole} of ${snap.runDir}: ${approved}/${snap.items.length} approved. Progress pane opened.${later}` }
+    const where = shown(await $.session.root(), snap.runDir)
+    return { text: `${whole} of ${where}: ${approved}/${snap.items.length} approved. Progress pane opened.${later}` }
   })
 
   // Claude Code subagents: an Agent call whose prompt names a task of the run is an

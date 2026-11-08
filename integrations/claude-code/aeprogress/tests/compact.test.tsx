@@ -44,6 +44,7 @@ function engine(on: On, given: { skip?: boolean } = {}) {
   })
   on('session.start', (_, e) => ({ cwd: e.cwd }))
   on('session.cwd', () => ({ value: '/' }))
+  on('session.root', () => ({ value: '/' }))
   on('env.get', () => ({ value: undefined }))
   on('agent.list', () => ({ value: [] }))
   on('fs.list', () => ({ value: [] }))

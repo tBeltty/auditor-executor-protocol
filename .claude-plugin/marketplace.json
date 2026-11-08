@@ -10,7 +10,7 @@
     {
       "name": "auditor-executor-protocol",
       "source": "./integrations/claude-code/aeprogress",
-      "version": "0.5.4",
+      "version": "0.5.5",
       "description": "The Auditor/Executor protocol as a skill, plus the aeprogress pane, launch limit and phase-close compaction for a run."
     }
   ]

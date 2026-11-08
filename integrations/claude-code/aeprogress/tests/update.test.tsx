@@ -20,6 +20,7 @@ function engine(on: On): Seen & { clock: { settle: () => Promise<void> } } {
   })
   on('session.start', (_, e) => ({ cwd: e.cwd }))
   on('session.cwd', () => ({ value: '/' }))
+  on('session.root', () => ({ value: '/' }))
   on('env.get', () => ({ value: undefined }))
   on('agent.list', () => ({ value: [] }))
   on('fs.list', () => ({ value: [] }))

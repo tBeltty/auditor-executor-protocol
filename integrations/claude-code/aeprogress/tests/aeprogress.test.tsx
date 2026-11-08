@@ -2,6 +2,7 @@ import { describe, expect, mock, test } from 'claude-code/testing'
 import type { AgentInfo, On, ProcessRunResult } from 'claude-code'
 
 import { chipLines, chipOf } from '../hooks/layout'
+import { anchored, shown } from '../hooks/register'
 import { orcaLaunch, refusals, spotlightBusy } from '../hooks/limit'
 import { indexerCpu, linuxMachine, sysctlMachine, windowsMachine } from '../hooks/machine'
 import { commandWorkers, orcaWorkers, overall, percent, phaseShares, taskIdsIn } from '../hooks/progress'
@@ -41,8 +42,12 @@ type Engine = {
   commands?: Record<string, string>
   /** Live Orca dispatch ids for `worker-list`, or 'fail' when Orca cannot be asked. */
   orcaLive?: string[] | 'fail'
-  /** No run found under the working directory. */
+  /** No compliance-log.md anywhere. */
   noRun?: boolean
+  /** The shell's current folder; the project root stays /work/proj. */
+  cwd?: string
+  /** Filled with the folder each command ran in. */
+  cwds?: string[]
 }
 
 /** Hooks standing for the engine beneath the plugin, aepkit and the harnesses. */
@@ -73,13 +78,15 @@ function engine(on: On, given: Engine = {}): string[][] {
   on('env.get', (_, e) => ({ value: given.env?.[e.name] }))
   on('agent.list', () => ({ value: given.agents ?? [] }))
   on('ui.toast', () => ({ value: undefined }))
-  on('session.cwd', () => ({ value: '/work/session' }))
+  on('session.cwd', () => ({ value: given.cwd ?? '/work/proj' }))
+  on('session.root', () => ({ value: '/work/proj' }))
   on('fs.list', () => ({ value: [] }))
   // The engine hands a relative path over already resolved to an absolute one.
   const file = (path: string) =>
     given.files?.[path] ??
     Object.entries(given.files ?? {}).find(([name]) => !name.startsWith('/') && path.endsWith(`/${name}`))?.[1]
-  on('fs.exists', (_, e) => ({ value: file(e.path) !== undefined }))
+  const isLog = (path: string) => !given.noRun && path.endsWith('/compliance-log.md')
+  on('fs.exists', (_, e) => ({ value: file(e.path) !== undefined || isLog(e.path) }))
   on('fs.read', (_, e) => {
     const text = file(e.path)
     if (text === undefined) throw new Error(`ENOENT: ${e.path}`)
@@ -88,6 +95,7 @@ function engine(on: On, given: Engine = {}): string[][] {
   on('process.run', (_, e) => {
     const argv = [...e.argv]
     calls.push(argv)
+    given.cwds?.push(e.init?.cwd ?? '')
     const answer = given.commands?.[argv.join(' ')]
     if (answer !== undefined) return ran(answer)
     if (argv.includes('worker-list')) {
@@ -238,13 +246,68 @@ test(
   },
 )
 
-test('without aepkit the pane says how to install it', { options: { runDir: RUN } }, async ($, on) => {
+test('without aepkit the pane says how to install it, and names no option that does not exist', { options: { runDir: RUN } }, async ($, on) => {
   engine(on, { aepkit: () => ({ deny: 'ENOENT' }) })
   await $.session.start({ cwd: '/', surface: 'desktop', isInteractive: true })
 
   const ui = await $.ui.mount({ ...PANE, surface: 'desktop' })
+  expect(await ui.find({ type: 'Text', text: /could not run aepkit/ })).toBeDefined()
   expect(await ui.find({ type: 'Text', text: /pipx install aepkit/ })).toBeDefined()
+  expect(await ui.find({ type: 'Text', text: /aepkit command/ })).toBeUndefined()
   await ui.unmount()
+})
+
+describe('the run folder', () => {
+  test('a relative path is anchored to the project root; an absolute one is kept', async () => {
+    expect(anchored('/work/proj', 'docs/run')).toBe('/work/proj/docs/run')
+    expect(anchored('/work/proj/', '.run/port')).toBe('/work/proj/.run/port')
+    expect(anchored('/work/proj', '/elsewhere/run')).toBe('/elsewhere/run')
+    expect(anchored('C:\\proj', 'D:\\run')).toBe('D:\\run')
+    expect(anchored('/work/proj', '')).toBe('')
+    expect(shown('/work/proj', '/work/proj/docs/run')).toBe('docs/run')
+    expect(shown('/work/proj', '/elsewhere/run')).toBe('/elsewhere/run')
+    expect(shown('/work/proj', '/work/project-b/run')).toBe('/work/project-b/run')
+  })
+
+  test('a relative Run folder is read under the project root wherever the shell has moved', { options: { runDir: '.run/port' } }, async ($, on) => {
+    const cwds: string[] = []
+    const calls = engine(on, { cwd: '/work/proj/.run/port', cwds })
+    await $.session.start({ cwd: '/work/proj/.run/port', surface: 'terminal', isInteractive: true })
+    expect(calls[0]).toEqual(['aepkit', 'status', '--json', '.'])
+    expect(cwds[0]).toBe('/work/proj/.run/port')
+    const opened = await $.command.run({
+      command: 'aeprogress',
+      args: '',
+      origin: { kind: 'composer' },
+      presentation: { isFullscreen: true, columns: 160 },
+    })
+    expect(opened.text).toBe('43.8% of .run/port: 3/6 approved. Progress pane opened.')
+  })
+
+  test('/aeprogress <folder> is anchored to the project root too', async ($, on) => {
+    const cwds: string[] = []
+    engine(on, { cwd: '/work/proj/src', cwds })
+    await $.session.start({ cwd: '/work/proj/src', surface: 'terminal', isInteractive: true })
+    const opened = await $.command.run({
+      command: 'aeprogress',
+      args: 'docs/run',
+      origin: { kind: 'composer' },
+      presentation: { isFullscreen: true, columns: 160 },
+    })
+    expect(opened.text).toBe('43.8% of docs/run: 3/6 approved. Progress pane opened.')
+    expect(cwds.at(-1)).toBe('/work/proj/docs/run')
+  })
+
+  test('a Run folder without compliance-log.md is named, and aepkit is not run', { options: { runDir: 'docs/gone' } }, async ($, on) => {
+    const calls = engine(on, { noRun: true })
+    await $.session.start({ cwd: '/', surface: 'terminal', isInteractive: true })
+    expect(calls.some(c => c.includes('status'))).toBe(false)
+
+    const ui = await $.ui.mount({ ...PANE, surface: 'terminal' })
+    expect(await ui.find({ type: 'Text', text: /No compliance-log\.md in \/work\/proj\/docs\/gone/ })).toBeDefined()
+    expect(await ui.find({ type: 'Text', text: /aepkit/ })).toBeUndefined()
+    await ui.unmount()
+  })
 })
 
 test('an aepkit without --json is told to upgrade', { options: { runDir: RUN } }, async ($, on) => {
