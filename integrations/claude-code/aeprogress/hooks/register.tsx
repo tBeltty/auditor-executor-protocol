@@ -15,9 +15,10 @@ import {
 import type { Kind, Limits, LiveWorker } from './limit'
 import { readMachine } from './machine'
 import { TOOL, cancel, compactNow, countdownLeft, pendingJob, resumeCountdown, schedule, startCountdown } from './compact'
+import { bandLayout, barParts, cut, footerRows, header, listRow, paneWidth, phaseRows, readLine, weighingLine } from './layout'
+import type { Seg } from './layout'
 import {
   ATTENTION,
-  bar,
   commandWorkers,
   orcaWorkers,
   overall,
@@ -30,6 +31,8 @@ import {
 } from './progress'
 
 const PANE = 'aeprogress'
+// The pane's side padding, in cells on each side.
+const PAD = 1
 const REFRESH_MS = 20_000
 // Turn ends and subagent starts and stops come in bursts; one read covers a burst.
 const MIN_GAP_MS = 2_000
@@ -545,21 +548,27 @@ export const register: Register = (on, rawOptions) => {
     return result
   }).catch(($, e, next) => next(e))
 
+  // One line: the countdown and its two buttons, the words shortened to fit the band.
   on('ui.render', { component: 'AbovePrompt' }, async ($, e, next) => {
     const job = await pendingJob($)
     if (!job || e.props.hasSurvey) return next(e)
     const { Box, Button, Text } = $.ui.resolve(e)
     const left = await countdownLeft($)
+    const cols = e.props.bodyColumns ?? e.viewport?.columns ?? 60
+    const band = bandLayout(job.deadline === null ? null : left, cols)
     return (
-      <Box>
-        <Text>
-          {job.deadline === null ? 'Compaction scheduled for the end of this turn ' : `Compacting in ${left}s `}
+      <Box flexDirection="row">
+        <Text wrap="truncate-end">
+          {band.text}
+          {band.seconds && (
+            <Text weight="bold" color="warning" tabular>
+              {band.seconds}
+            </Text>
+          )}{' '}
         </Text>
-        <Button key="compact-cancel" label="Cancel" onPress={() => cancel($)} />
-        <Text> </Text>
-        {job.deadline !== null && (
-          <Button key="compact-now" label="Compact now" variant="primary" onPress={() => compactNow($)} />
-        )}
+        <Button key="compact-cancel" label={band.cancel} onPress={() => cancel($)} />
+        {band.now && <Text> </Text>}
+        {band.now && <Button key="compact-now" label={band.now} variant="primary" onPress={() => compactNow($)} />}
       </Box>
     )
   })
@@ -568,12 +577,45 @@ export const register: Register = (on, rawOptions) => {
     const { Box, Text } = $.ui.resolve(e)
     const snap = await read($, snapshot)
     const cols = e.props.bodyColumns ?? e.viewport?.columns ?? 60
-    const barWidth = Math.max(10, Math.min(40, cols - 22))
+    const width = paneWidth(cols, PAD)
+
+    // Every row but prose is one line of `width` cells at most; the cut is a safety net.
+    const run = (s: Seg) => {
+      const props: { color?: Seg['color']; dimColor?: boolean; weight?: 'bold' } = {}
+      if (s.color) props.color = s.color
+      if (s.dim) props.dimColor = true
+      if (s.bold) props.weight = 'bold'
+      return <Text {...props}>{s.text}</Text>
+    }
+    const row = (segs: readonly Seg[], mono = false) =>
+      mono ? (
+        <Text wrap="truncate-end" mono>
+          {segs.map(run)}
+        </Text>
+      ) : (
+        <Text wrap="truncate-end">{segs.map(run)}</Text>
+      )
+    const label = (text: string) => (
+      <Text dimColor weight="semibold" size="caption" wrap="truncate-end">
+        {cut(text, width)}
+      </Text>
+    )
+    const blank = <Text> </Text>
+
+    if (snap.phases.length === 0) {
+      return (
+        <Box flexDirection="column" paddingX={PAD}>
+          <Text weight="bold" wrap="truncate-end">
+            {cut('AEP progress', width)}
+          </Text>
+          <Text dimColor>{snap.error ?? 'The run has no phases or tasks yet.'}</Text>
+        </Box>
+      )
+    }
 
     const shares = phaseShares(snap.phases, snap.items)
     const whole = overall(shares)
     const weighted = snap.phases.some(p => p.weight !== 1)
-    const byId = new Map(snap.items.map(i => [i.id.toUpperCase(), i]))
     const working = new Set(snap.workers.map(w => w.taskId))
     const awaiting = snap.items.filter(i => i.state === 'AWAITING AUDIT' && !working.has(i.id.toUpperCase()))
     const attention = snap.items.filter(i => ATTENTION.has(i.state))
@@ -581,87 +623,75 @@ export const register: Register = (on, rawOptions) => {
     const sourceLabel = { subagent: 'subagent', orca: 'Orca', command: 'worker' } as const
     const m = snap.machine
     const limitOn = options.launchLimit && snap.runDir !== ''
-    const liveCount = snap.launches?.live ?? 0
-    const buildCount = snap.launches?.builds ?? 0
     const tip =
       options.spotlightTip && spotlightBusy(snap.indexerHistory ?? [], options.spotlightCpu)
         ? spotlightAdvice(m, await read($, projectRoot))
         : undefined
 
-    if (snap.phases.length === 0) {
-      return (
-        <Box flexDirection="column" paddingX={1}>
-          <Text weight="bold">Auditor/Executor progress</Text>
-          <Text dimColor>{snap.error ?? 'The run has no phases or tasks yet.'}</Text>
-        </Box>
-      )
+    const head = header(baseName(snap.runDir), percent(whole), width)
+    const [title, ...rest] = head.left.split(' · ')
+    const overallBar = barParts(whole, width)
+    const phases = phaseRows(
+      shares.map(p => ({ ...p, percent: percent(p.fraction) })),
+      width,
+    )
+    const item = (dot: Seg['color'], id: string, main: string, tail: string): Seg[] => {
+      const fit = listRow(id, main, tail, width)
+      return [{ text: '● ', color: dot }, { text: id }, { text: fit.main ? `  ${fit.main}` : '' }, { text: fit.tail, dim: true }]
     }
+    const footer = footerRows(
+      {
+        busy: m ? Math.round(m.busy * 100) : undefined,
+        detail: m?.detail,
+        limit: limitOn
+          ? {
+              live: snap.launches?.live ?? 0,
+              maxWorkers: options.limits.maxWorkers,
+              builds: snap.launches?.builds ?? 0,
+              maxBuilds: options.limits.maxBuilds,
+              maxBusy: options.limits.maxBusy,
+            }
+          : undefined,
+      },
+      width,
+    )
+    const dot: Seg['color'] = !m ? 'inactive' : m.busy > options.limits.maxBusy ? 'error' : m.busy > 0.4 ? 'warning' : 'success'
 
     return (
-      <Box flexDirection="column" paddingX={1}>
-        <Text weight="bold" size="title">
-          {percent(whole)}
-        </Text>
-        <Text color="claude">{bar(whole, barWidth + 10)}</Text>
-        <Text dimColor>
-          {snap.phases.length} {snap.phases.length === 1 ? 'phase' : 'phases'} · {weighted ? 'weighted by the plan' : 'equal weights'} · only
-          APPROVED closes
-        </Text>
-        <Text> </Text>
-        {shares.map(p => (
-          <Box flexDirection="column">
-            <Text>
-              <Text weight="bold">{p.id}</Text> {p.title || 'untitled'}
-            </Text>
-            <Text color={p.fraction >= 1 ? 'success' : p.total === 0 ? 'inactive' : 'claude'}>
-              {bar(p.fraction, barWidth)}{' '}
-              <Text dimColor>
-                {p.total === 0 ? 'not broken down' : `${p.approved}/${p.total} · ${percent(p.fraction)}`}
-              </Text>
-            </Text>
-          </Box>
-        ))}
-        <Text> </Text>
-        {snap.workers.length > 0 && <Text weight="bold">In progress</Text>}
-        {snap.workers.map(w => (
-          <Text>
-            <Text color="warning">●</Text> {w.taskId} · {w.who} <Text dimColor>({sourceLabel[w.source]})</Text>
+      <Box flexDirection="column" paddingX={PAD}>
+        <Box flexDirection="row" justifyContent="space-between">
+          <Text wrap="truncate-end">
+            <Text weight="bold">{title}</Text>
+            {rest.length > 0 && <Text dimColor>{` · ${rest.join(' · ')}`}</Text>}
           </Text>
-        ))}
-        {awaiting.length > 0 && <Text weight="bold">Awaiting audit</Text>}
-        {awaiting.map(i => (
-          <Text>
-            <Text color="suggestion">●</Text> {i.id}
-            {i.executor ? ` · ${i.executor}` : ''}
+          <Text weight="bold" size="heading" tabular>
+            {head.right}
           </Text>
-        ))}
-        {attention.length > 0 && <Text weight="bold">Needs attention</Text>}
-        {attention.map(i => (
-          <Text>
-            <Text color="error">●</Text> {i.id} · {i.state}
-            {i.executor ? ` · ${i.executor}` : ''}
-          </Text>
-        ))}
-        {m && (
-          <Text>
-            <Text color={m.busy > options.limits.maxBusy ? 'error' : m.busy > 0.4 ? 'warning' : 'success'}>●</Text>{' '}
-            Machine {Math.round(m.busy * 100)}% busy <Text dimColor>({m.detail})</Text>
-          </Text>
-        )}
-        {!m && <Text dimColor>Machine load unknown on this system</Text>}
-        {limitOn && (
-          <Text dimColor>
-            Launch limit: {liveCount}/{options.limits.maxWorkers} workers · {buildCount}/{options.limits.maxBuilds}{' '}
-            building · builds held above {Math.round(options.limits.maxBusy * 100)}%
-          </Text>
-        )}
+        </Box>
+        {row([{ text: overallBar.done, color: 'claude' }, { text: overallBar.rest, color: 'subtle' }], true)}
+        {row([{ text: weighingLine(snap.phases.length, weighted, width), dim: true }])}
+        {blank}
+        {phases.map(segs => row(segs, true))}
+        {blank}
+        {snap.workers.length > 0 && label('IN PROGRESS')}
+        {snap.workers.map(w => row(item('warning', w.taskId, w.who, sourceLabel[w.source])))}
+        {awaiting.length > 0 && label('AWAITING AUDIT')}
+        {awaiting.map(i => row(item('suggestion', i.id, i.executor ?? '', '')))}
+        {attention.length > 0 && label('NEEDS ATTENTION')}
+        {attention.map(i => row(item('error', i.id, i.state.toLowerCase(), i.executor ?? '')))}
+        {(snap.workers.length > 0 || awaiting.length > 0 || attention.length > 0) && blank}
+        {footer.lines.map((line, n) => row(n === 0 ? [{ text: '● ', color: dot }, { text: line }] : [{ text: `  ${line}` }]))}
+        {footer.detail && row([{ text: `  ${footer.detail}`, dim: true }])}
         {tip && <Text color="warning">{tip}</Text>}
-        <Text dimColor>
-          {snap.error
-            ? `Last read failed: ${snap.error}`
-            : `Read from ${baseName(snap.runDir)}/compliance-log.md at ${time}`}
-        </Text>
-        {byId.size === 0 && <Text dimColor>No tasks in the log yet.</Text>}
+        {snap.error ? (
+          <Text>
+            <Text color="error">Last read failed: </Text>
+            <Text dimColor>{snap.error}</Text>
+          </Text>
+        ) : (
+          row([{ text: readLine(baseName(snap.runDir), time, width), dim: true }])
+        )}
+        {snap.items.length === 0 && row([{ text: cut('No tasks in the log yet.', width), dim: true }])}
       </Box>
     )
   })

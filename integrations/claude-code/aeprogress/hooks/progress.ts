@@ -42,11 +42,6 @@ export function overall(shares: readonly PhaseShare[]): number {
   return weight === 0 ? 0 : shares.reduce((s, p) => s + p.weight * p.fraction, 0) / weight
 }
 
-export function bar(fraction: number, width: number): string {
-  const full = Math.round(Math.max(0, Math.min(1, fraction)) * width)
-  return '█'.repeat(full) + '░'.repeat(Math.max(0, width - full))
-}
-
 export function percent(fraction: number): string {
   return `${Math.round(fraction * 1000) / 10}%`
 }

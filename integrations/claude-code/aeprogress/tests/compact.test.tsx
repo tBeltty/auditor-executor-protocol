@@ -2,6 +2,8 @@ import { describe, expect, mock, test } from 'claude-code/testing'
 import type { TestBody } from 'claude-code/testing'
 import type { On } from 'claude-code'
 
+import { linesOf, overflowing } from './rows'
+
 const TOOL = 'mcp__aeprogress__compact_and_resume'
 const BAND = {
   plugin: 'aeprogress',
@@ -181,5 +183,32 @@ describe('compact on phase close', () => {
     await start($)
     expect(seen.registered).toBe(0)
     expect(JSON.stringify(await $.tool.call({ tool: TOOL, resume: 'x' } as never))).not.toMatch(/Compaction scheduled/)
+  })
+
+  test('the band is one line at 30, 40, 60 and 120 columns', async ($, on) => {
+    engine(on)
+    await start($)
+    await scheduleIt($)
+    const seen: string[] = []
+    for (const phase of ['scheduled', 'counting'] as const) {
+      if (phase === 'counting') await $.turn.complete(turnEnd())
+      for (const surface of ['terminal', 'desktop'] as const) {
+        for (const bodyColumns of [28, 30, 40, 60, 120]) {
+          const band = await $.ui.mount({ ...BAND, surface, props: { ...BAND.props, bodyColumns } })
+          const tree = await band.drawn()
+          expect(linesOf(tree as never)).toHaveLength(1)
+          expect(overflowing(tree, bodyColumns)).toEqual([])
+          // Both actions stay at every width, by their keys.
+          expect(await band.find({ key: 'compact-cancel' })).toBeDefined()
+          if (phase === 'counting') expect(await band.find({ key: 'compact-now' })).toBeDefined()
+          if (surface === 'terminal') seen.push(linesOf(tree as never)[0]!)
+          await band.unmount()
+        }
+      }
+    }
+    // The widest band says it all; the narrowest still names the seconds left.
+    expect(seen).toContain('Compaction scheduled for the end of this turn [ Cancel ]')
+    expect(seen).toContain('Compacting in 40s [ Cancel ] [ Compact now ]')
+    expect(seen.some(line => /^In 40s \[ Cancel \] \[ Now \]$/.test(line))).toBe(true)
   })
 })

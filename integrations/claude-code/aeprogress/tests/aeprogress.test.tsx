@@ -6,6 +6,7 @@ import { indexerCpu, linuxMachine, sysctlMachine, windowsMachine } from '../hook
 import { commandWorkers, orcaWorkers, overall, percent, phaseShares, taskIdsIn } from '../hooks/progress'
 import { CPUINFO, LOADAVG } from './fixtures/linux'
 import { STATUS } from './fixtures/status'
+import { overflowing } from './rows'
 
 const RUN = 'docs/run'
 const PANE = {
@@ -146,9 +147,15 @@ test('the pane draws the %, a bar per phase and the open items, on every surface
     expect(await ui.find({ type: 'Text', text: /2\/2 · 100%/ })).toBeDefined()
     expect(await ui.find({ type: 'Text', text: /1\/4 · 37\.5%/ })).toBeDefined()
     expect(await ui.find({ type: 'Text', text: /not broken down/ })).toBeDefined()
-    expect(await ui.find({ type: 'Text', text: /P1-T3 · Cy/ })).toBeDefined()
-    expect(await ui.find({ type: 'Text', text: /P1-T2 · CONDITIONAL · Bo/ })).toBeDefined()
-    expect(await ui.find({ type: 'Text', text: /In progress/ })).toBeUndefined()
+    expect(await ui.find({ type: 'Text', text: /AWAITING AUDIT/ })).toBeDefined()
+    expect(await ui.find({ type: 'Text', text: /P1-T3 {2}Cy/ })).toBeDefined()
+    expect(await ui.find({ type: 'Text', text: /NEEDS ATTENTION/ })).toBeDefined()
+    expect(await ui.find({ type: 'Text', text: /P1-T2 {2}conditional · Bo/ })).toBeDefined()
+    expect(await ui.find({ type: 'Text', text: /IN PROGRESS/ })).toBeUndefined()
+    // The launch limit's occupancy and its load threshold.
+    expect(await ui.find({ type: 'Text', text: /workers 0\/2 {3}building 0\/1/ })).toBeDefined()
+    expect(await ui.find({ type: 'Text', text: /Launch limit holds builds above 75%/ })).toBeDefined()
+    expect(await ui.find({ type: 'Text', text: /Read from run\/compliance-log\.md at/ })).toBeDefined()
     await ui.unmount()
   }
 })
@@ -178,8 +185,8 @@ test('a subagent whose spawn prompt names a task shows it in progress', { option
   expect(opened.text).toBe('43.8% of docs/run: 3/6 approved. Progress pane opened.')
 
   const ui = await $.ui.mount({ ...PANE, surface: 'desktop' })
-  expect(await ui.find({ type: 'Text', text: /In progress/ })).toBeDefined()
-  expect(await ui.find({ type: 'Text', text: /P1-G1 · Executor \(subagent\)/ })).toBeDefined()
+  expect(await ui.find({ type: 'Text', text: /IN PROGRESS/ })).toBeDefined()
+  expect(await ui.find({ type: 'Text', text: /P1-G1 {2}Executor · subagent/ })).toBeDefined()
   await ui.unmount()
 })
 
@@ -200,7 +207,7 @@ test('inside Orca, a worker of this repository shows in progress', { options: { 
   expect(calls.some(c => c[0] === '/opt/orca/bin/orca' && c.includes('ps'))).toBe(true)
 
   const ui = await $.ui.mount({ ...PANE, surface: 'terminal' })
-  expect(await ui.find({ type: 'Text', text: /P1-G1 · Dee \| P1-G1 \(Orca\)/ })).toBeDefined()
+  expect(await ui.find({ type: 'Text', text: /P1-G1 {2}Dee \| P1-G1 · Orca/ })).toBeDefined()
   expect(await ui.find({ type: 'Text', text: /Eve/ })).toBeUndefined()
   await ui.unmount()
 })
@@ -220,7 +227,7 @@ test(
     expect(calls.some(c => c.join(' ') === 'my-harness list --running')).toBe(true)
 
     const ui = await $.ui.mount({ ...PANE, surface: 'terminal' })
-    expect(await ui.find({ type: 'Text', text: /P1-G1 · job 7 {2}P1-G1 {2}running \(worker\)/ })).toBeDefined()
+    expect(await ui.find({ type: 'Text', text: /P1-G1 {2}job 7 {2}P1-G1 {2}running · worker/ })).toBeDefined()
     await ui.unmount()
   },
 )
@@ -304,13 +311,13 @@ describe('the machine readings', () => {
     expect(windowsMachine('')).toBeUndefined()
   })
 
-  for (const [name, given, line] of [
+  for (const [name, given, lines] of [
     [
       'Linux',
       { files: { '/proc/loadavg': '3.00 2.00 1.00 1/2 3\n', '/proc/cpuinfo': 'processor : 0\nprocessor : 1\nprocessor : 2\nprocessor : 3\n' } },
-      /Machine 75% busy \(load 3\.0 of 4 cores\)/,
+      [/Machine 75% busy/, /Load 3\.0 of 4 cores/],
     ],
-    ['macOS', { files: MAC, commands: macCommands('2.00') }, /Machine 25% busy \(load 2\.0 of 8 cores\)/],
+    ['macOS', { files: MAC, commands: macCommands('2.00') }, [/Machine 25% busy/, /Load 2\.0 of 8 cores/]],
     [
       'Windows',
       {
@@ -319,15 +326,15 @@ describe('the machine readings', () => {
           'powershell -NoProfile -Command (Get-CimInstance Win32_Processor | Measure-Object LoadPercentage -Average).Average': '42\r\n',
         },
       },
-      /Machine 42% busy \(CPU at 42%\)/,
+      [/Machine 42% busy/, /CPU at 42%/],
     ],
-    ['an unknown system', {}, /Machine load unknown/],
+    ['an unknown system', {}, [/Machine load unknown/]],
   ] as const) {
     test(`the pane shows the load on ${name}`, { options: { runDir: RUN } }, async ($, on) => {
       engine(on, given as Engine)
       await $.session.start({ cwd: '/', surface: 'terminal', isInteractive: true })
       const ui = await $.ui.mount({ ...PANE, surface: 'terminal' })
-      expect(await ui.find({ type: 'Text', text: line })).toBeDefined()
+      for (const line of lines) expect(await ui.find({ type: 'Text', text: line })).toBeDefined()
       await ui.unmount()
     })
   }
@@ -538,3 +545,34 @@ describe('the Spotlight recommendation', () => {
     expect(text).toMatch(/Spotlight is indexing at 73% CPU/)
   })
 })
+
+describe('one line per row', () => {
+  const LINUX = { '/proc/loadavg': '2.80 2.00 1.00 1/2 3\n', '/proc/cpuinfo': 'processor : 0\nprocessor : 1\nprocessor : 2\nprocessor : 3\n' }
+  const LIVE = {
+    env: { ORCA_WORKTREE_ID: 'w', ORCA_CLI_BIN_DIR: '/opt/orca/bin' },
+    orcaPs: {
+      result: {
+        worktrees: [{ repoId: 'repo-1', displayName: 'Dee with a rather long worktree name | P1-G1', agents: [{ state: 'working' }] }],
+      },
+    },
+    files: LINUX,
+  }
+
+  test('the pane fits every row at 30, 40, 60 and 120 columns', { options: { runDir: RUN } }, async ($, on) => {
+    engine(on, LIVE)
+    await $.session.start({ cwd: '/', surface: 'terminal', isInteractive: true })
+    for (const surface of ['terminal', 'desktop'] as const) {
+      for (const bodyColumns of [28, 30, 40, 60, 120]) {
+        const ui = await $.ui.mount({ ...PANE, surface, props: { ...PANE.props, bodyColumns } })
+        const tree = await ui.drawn()
+        expect(overflowing(tree, bodyColumns)).toEqual([])
+        // Nothing is lost to the width: every phase, the live worker and the machine stay.
+        for (const text of [/^43\.8%$/, /^P0$/, /^P1$/, /^P2$/, /P1-G1/, /P1-T3/, /P1-T2/, /Machine/, /workers 0\/2/]) {
+          expect(await ui.find({ type: 'Text', text })).toBeDefined()
+        }
+        await ui.unmount()
+      }
+    }
+  })
+})
+
