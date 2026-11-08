@@ -6,9 +6,9 @@ export const MEASURE = 72
 
 // East Asian wide and fullwidth letters and the emoji blocks take two cells.
 const WIDE =
-  /[ᄀ-ᅟ⺀-〾ぁ-㏿㐀-䶿一-鿿ꀀ-꓏가-힣豈-﫿︰-﹏＀-｠￠-￦\u{1f300}-\u{1f64f}\u{1f900}-\u{1f9ff}\u{20000}-\u{3fffd}]/u
+  /[\u{1100}-\u{115f}\u{2e80}-\u{303e}\u{3041}-\u{33ff}\u{3400}-\u{4dbf}\u{4e00}-\u{9fff}\u{a000}-\u{a4cf}\u{ac00}-\u{d7a3}\u{f900}-\u{faff}\u{fe30}-\u{fe4f}\u{ff00}-\u{ff60}\u{ffe0}-\u{ffe6}\u{1f300}-\u{1f64f}\u{1f900}-\u{1f9ff}\u{20000}-\u{3fffd}]/u
 // Combining marks, zero-width spaces and joiners, and variation selectors take none.
-const ZERO = /[\p{M}​-‏︀-️]/u
+const ZERO = /[\p{M}\u{200b}-\u{200f}\u{fe00}-\u{fe0f}]/u
 
 function charCells(ch: string): number {
   if (ZERO.test(ch)) return 0

@@ -1,7 +1,7 @@
 import { atom, read, update } from 'claude-code'
 import type { EngineInterface, ProcessRunResult, Register } from 'claude-code'
 
-import type { Kinds, Machine, Snapshot, Worker } from '../types'
+import type { Kinds, Machine, PendingCompaction, Snapshot, UpdateInfo, Worker } from '../types'
 import {
   dispatchIdIn,
   isDocsOnly,
@@ -13,10 +13,9 @@ import {
   spotlightBusy,
 } from './limit'
 import type { Kind, Limits, LiveWorker } from './limit'
-import { readMachine } from './machine'
-import { checkForUpdate, howToUpdate, updateNotice } from './update'
+import { linuxMachine, numbers, sysctlMachine, windowsMachine } from './machine'
+import { howToUpdate, installKind, isNewer, marketplaceDir, versionIn } from './update'
 import type { UpdateMode } from './update'
-import { TOOL, cancel, compactNow, countdownLeft, pendingJob, resumeCountdown, schedule, startCountdown } from './compact'
 import {
   bandLayout,
   barParts,
@@ -178,9 +177,7 @@ async function runAepkit($: EngineInterface, dir: string) {
         ]
   let tooOld: ProcessRunResult | undefined
   for (const argv of candidates) {
-    const ran = await $.process
-      .run([...argv, 'status', '--json', dir], { timeoutMs: RUN_TIMEOUT_MS })
-      .catch(() => undefined)
+    const ran = await $.process.run([...argv, 'status', '--json', dir], { timeoutMs: RUN_TIMEOUT_MS }).catch(() => undefined)
     // `python3 -m aepkit` without aepkit installed exits 1 with "No module named".
     if (!ran || /No module named/.test(ran.stderr)) continue
     // An aepkit older than 0.7.0: a newer one may still be reachable the next way.
@@ -214,9 +211,7 @@ async function externalWorkers($: EngineInterface, dir: string, known: Set<strin
   const orca = await orcaBinary($)
   if (!orca) return []
   if (orcaRepo?.dir !== dir) {
-    const current = await $.process
-      .run([orca, 'worktree', 'current', '--json'], { cwd: dir, timeoutMs: RUN_TIMEOUT_MS })
-      .catch(() => undefined)
+    const current = await $.process.run([orca, 'worktree', 'current', '--json'], { cwd: dir, timeoutMs: RUN_TIMEOUT_MS }).catch(() => undefined)
     let repoId: string | undefined
     try {
       repoId = current?.exitCode === 0 ? JSON.parse(current.stdout).result?.worktree?.repoId : undefined
@@ -225,9 +220,7 @@ async function externalWorkers($: EngineInterface, dir: string, known: Set<strin
     }
     orcaRepo = { dir, repoId }
   }
-  const ps = await $.process
-    .run([orca, 'worktree', 'ps', '--json'], { cwd: dir, timeoutMs: RUN_TIMEOUT_MS })
-    .catch(() => undefined)
+  const ps = await $.process.run([orca, 'worktree', 'ps', '--json'], { cwd: dir, timeoutMs: RUN_TIMEOUT_MS }).catch(() => undefined)
   if (!ps || ps.exitCode !== 0) return []
   try {
     return orcaWorkers(ps.stdout, orcaRepo.repoId, known)
@@ -257,9 +250,7 @@ async function readLoad($: EngineInterface, dir: string): Promise<void> {
 async function rootOf($: EngineInterface, dir: string): Promise<string> {
   const known = await read($, projectRoot)
   if (known) return known
-  const git = await $.process
-    .run(['git', 'rev-parse', '--show-toplevel'], { cwd: dir || '.', timeoutMs: RUN_TIMEOUT_MS })
-    .catch(() => undefined)
+  const git = await $.process.run(['git', 'rev-parse', '--show-toplevel'], { cwd: dir || '.', timeoutMs: RUN_TIMEOUT_MS }).catch(() => undefined)
   const root = git?.exitCode === 0 && git.stdout.trim() ? git.stdout.trim() : await $.session.cwd()
   await update($, projectRoot, () => root)
   return root
@@ -336,8 +327,12 @@ async function liveExecutors($: EngineInterface, orcaIds?: readonly string[]): P
   const known = await read($, kinds)
   const executors = await read($, spawned)
   const agents = await $.agent.list()
+  // An Executor is a live subagent recorded at its launch, or one whose description or name
+  // names a task of the run (a foreground subagent reports its id only when it ends).
+  const runIds = new Set((await read($, snapshot)).items.map(i => i.id.toUpperCase()))
+  const namesTask = (text: string) => taskIdsIn(text).some(id => runIds.size === 0 || runIds.has(id))
   const live: LiveWorker[] = agents
-    .filter(a => LIVE_AGENT.has(a.status) && a.id in executors)
+    .filter(a => LIVE_AGENT.has(a.status) && (a.id in executors || namesTask(`${a.description} ${a.name ?? ''}`)))
     .map(a => ({ id: a.id, kind: known[a.id] ?? 'build' }))
   let orca = orcaIds
   if (!orca && (await orcaBinary($))) orca = await orcaLiveIds($).catch(() => [])
@@ -398,6 +393,226 @@ async function open($: EngineInterface): Promise<void> {
   const snap = await read($, snapshot)
   const title = snap.runDir ? `AEP progress · ${baseName(snap.runDir)}` : 'AEP progress'
   await $.ui.open({ id: PANE, title })
+}
+
+
+// ---- Machine load ----
+
+/** The machine's load now, or undefined when no source answers. Never throws. */
+async function readMachine($: EngineInterface): Promise<Machine | undefined> {
+  const quick = { timeoutMs: 3_000 }
+  try {
+    if (await $.fs.exists('/proc/loadavg')) {
+      const loadavg = (await $.fs.read('/proc/loadavg')) as string
+      const cpuinfo = ((await $.fs.read('/proc/cpuinfo').catch(() => '')) as string) || ''
+      const fromProc = linuxMachine(loadavg, cpuinfo)
+      if (fromProc) return fromProc
+      // A /proc/cpuinfo without "processor" lines (some ARM boards): ask nproc.
+      const nproc = await $.process.run(['nproc'], quick).catch(() => undefined)
+      const cores = nproc?.exitCode === 0 ? (numbers(nproc.stdout)[0] ?? 0) : 0
+      return cores > 0 ? linuxMachine(loadavg, 'processor :\n'.repeat(cores)) : undefined
+    }
+    if (await $.fs.exists('/usr/sbin/sysctl')) {
+      const isMac = await $.fs.exists('/System/Library/CoreServices')
+      const loadavg = await $.process.run(['/usr/sbin/sysctl', '-n', 'vm.loadavg'], quick).catch(() => undefined)
+      const ncpu = await $.process.run(['/usr/sbin/sysctl', '-n', 'hw.ncpu'], quick).catch(() => undefined)
+      // Spotlight only exists on macOS; nowhere else is ps run for it.
+      const ps = isMac ? await $.process.run(['/bin/ps', '-A', '-o', '%cpu=,comm='], quick).catch(() => undefined) : undefined
+      return sysctlMachine(loadavg?.stdout ?? '', ncpu?.stdout ?? '', isMac ? 'macos' : 'bsd', ps?.stdout ?? '')
+    }
+    if (await $.fs.exists('/sbin/sysctl')) {
+      const loadavg = await $.process.run(['/sbin/sysctl', '-n', 'vm.loadavg'], quick).catch(() => undefined)
+      const ncpu = await $.process.run(['/sbin/sysctl', '-n', 'hw.ncpu'], quick).catch(() => undefined)
+      return sysctlMachine(loadavg?.stdout ?? '', ncpu?.stdout ?? '', 'bsd')
+    }
+    if ((await $.env.get('SystemRoot')) || (await $.env.get('WINDIR'))) {
+      const out = await $.process.run(['powershell', '-NoProfile', '-Command', '(Get-CimInstance Win32_Processor | Measure-Object LoadPercentage -Average).Average'], { timeoutMs: 8_000 }).catch(() => undefined)
+      return out?.exitCode === 0 ? windowsMachine(out.stdout) : undefined
+    }
+  } catch {
+    // Falls through: the load is unknown.
+  }
+  return undefined
+}
+
+// ---- Compacting when a phase closes ----
+
+const TOOL = 'compact_and_resume'
+
+const pending = atom(
+  { plugin: 'aeprogress', key: 'pendingCompaction' } as const,
+  null as PendingCompaction | null,
+  { shape: 'pending-1' },
+)
+const secondsLeft = atom({ plugin: 'aeprogress', key: 'compactSecondsLeft' } as const, 0)
+
+// Module state: a reload drops the timer, and `resumeCountdown` arms it again.
+let ticker: { cancel: () => void } | undefined
+let firing = false
+
+/** The scheduled compaction, if any. */
+async function pendingJob($: EngineInterface): Promise<PendingCompaction | null> {
+  return read($, pending)
+}
+
+/** Seconds left in a running countdown, read while drawing the band. */
+async function countdownLeft($: EngineInterface): Promise<number> {
+  return read($, secondsLeft)
+}
+
+function stopTicker(): void {
+  ticker?.cancel()
+  ticker = undefined
+}
+
+/** Keeps what to compact for and how to resume; the countdown waits for the turn's end. */
+async function schedule($: EngineInterface, resume: string, instructions?: string): Promise<void> {
+  stopTicker()
+  await update($, pending, () => ({ resume, ...(instructions ? { instructions } : {}), deadline: null }))
+}
+
+/** Drops a scheduled or running countdown: nothing is compacted or resumed. */
+async function cancel($: EngineInterface): Promise<void> {
+  stopTicker()
+  await update($, pending, () => null)
+  await update($, secondsLeft, () => 0)
+}
+
+async function tick($: EngineInterface): Promise<void> {
+  const job = await read($, pending)
+  if (!job || job.deadline === null) return stopTicker()
+  const left = Math.max(0, Math.ceil((job.deadline - (await $.clock.now())) / 1000))
+  await update($, secondsLeft, () => left)
+  if (left === 0) await compactNow($)
+}
+
+function arm($: EngineInterface): void {
+  stopTicker()
+  ticker = $.clock.every(1000, () => tick($))
+}
+
+/** Starts the countdown of a scheduled compaction, once the Auditor's turn has ended. */
+async function startCountdown($: EngineInterface, seconds: number): Promise<void> {
+  const job = await read($, pending)
+  if (!job || job.deadline !== null) return
+  const deadline = (await $.clock.now()) + seconds * 1000
+  await update($, pending, old => (old ? { ...old, deadline } : old))
+  await update($, secondsLeft, () => seconds)
+  arm($)
+}
+
+/** After a reload: a countdown that was running keeps running toward the same deadline. */
+async function resumeCountdown($: EngineInterface): Promise<void> {
+  const job = await read($, pending)
+  if (job && job.deadline !== null) {
+    arm($)
+    await tick($)
+  }
+}
+
+/**
+ * Compacts, then resumes the Auditor with its `resume` message. A compaction that is
+ * refused (a turn is running) or vetoed (`{ skip }`) resumes nothing: the owner decides.
+ */
+async function compactNow($: EngineInterface): Promise<void> {
+  if (firing) return
+  firing = true
+  try {
+    const job = await read($, pending)
+    if (!job) return
+    await cancel($)
+    let compacted
+    try {
+      compacted = await $.session.compact(job.instructions ? { instructions: job.instructions } : {})
+    } catch (err) {
+      $.ui.toast(`aeprogress did not compact (${String(err)}), so the Auditor was not resumed.`)
+      return
+    }
+    if (compacted.skip) {
+      $.ui.toast('aeprogress: another hook vetoed the compaction, so the Auditor was not resumed.')
+      return
+    }
+    await $.prompt.submit({ text: job.resume })
+  } finally {
+    firing = false
+  }
+}
+
+// ---- Update check ----
+
+// The version check: at most once a day, waiting at most this long for GitHub.
+const DAY_MS = 86_400_000
+const FETCH_TIMEOUT_MS = 8_000
+const STORE_KEY = 'updateCheck'
+
+const available = atom(
+  { plugin: 'aeprogress', key: 'updateAvailable' } as const,
+  null as UpdateInfo | null,
+  { shape: 'update-1' },
+)
+
+async function readVersion($: EngineInterface, path: string): Promise<string | undefined> {
+  const text = await $.fs.read(path).catch(() => undefined)
+  return typeof text === 'string' ? versionIn(text) : undefined
+}
+
+/** The version the on-disk marketplace catalog lists, refreshed whenever Claude Code updates it. */
+async function catalogVersion($: EngineInterface, root: string): Promise<string | undefined> {
+  const dir = marketplaceDir(root)
+  if (!dir) return undefined
+  const text = await $.fs.read(`${dir}/.claude-plugin/marketplace.json`).catch(() => undefined)
+  if (typeof text !== 'string') return undefined
+  try {
+    const entries = (JSON.parse(text) as { plugins?: { name?: string; source?: unknown }[] }).plugins ?? []
+    const source = entries.find(p => p.name === $.plugin.name)?.source
+    if (typeof source !== 'string' || !source.startsWith('./')) return undefined
+    return readVersion($, `${dir}/${source.slice(2).replace(/\/+$/, '')}/.claude-plugin/plugin.json`)
+  } catch {
+    return undefined
+  }
+}
+
+/** The published version, asked of GitHub at most once a day; the answer is kept between sessions. */
+async function remoteVersion($: EngineInterface): Promise<string | undefined> {
+  if (await $.env.get('CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC')) return undefined
+  const now = await $.clock.now()
+  const last = (await $.store.get(STORE_KEY).catch(() => undefined)) as { at?: number; version?: string } | undefined
+  if (last && typeof last.at === 'number' && now - last.at < DAY_MS) return last.version
+  const timeout = $.clock.sleep(FETCH_TIMEOUT_MS).then(() => undefined)
+  const response = await Promise.race([$.http.fetch('https://raw.githubusercontent.com/tBeltty/auditor-executor-protocol/main/integrations/claude-code/aeprogress/.claude-plugin/plugin.json').catch(() => undefined), timeout])
+  const version = response && response.ok ? versionIn(response.text) : undefined
+  await $.store.set(STORE_KEY, { at: now, ...(version ? { version } : {}) }).catch(() => undefined)
+  return version
+}
+
+/** Looks for a newer version and keeps what it found for the pane; never throws. */
+export async function checkForUpdate($: EngineInterface, mode: UpdateMode): Promise<void> {
+  try {
+    if (mode === 'off') return
+    const root = $.plugin.root
+    const kind = installKind(root)
+    if (kind === 'synced') return
+    const installed = await readVersion($, `${root}/.claude-plugin/plugin.json`)
+    if (!installed) return
+    const found = [
+      kind === 'marketplace' ? await catalogVersion($, root) : undefined,
+      mode === 'daily' ? await remoteVersion($) : undefined,
+    ].filter((v): v is string => v !== undefined)
+    const latest = found.reduce<string | undefined>((best, v) => (!best || isNewer(v, best) ? v : best), undefined)
+    if (!latest || !isNewer(latest, installed)) {
+      await update($, available, () => null)
+      return
+    }
+    await update($, available, () => ({ installed, latest, kind }))
+    $.ui.toast(`aeprogress ${latest} is available (you have ${installed}). ${howToUpdate(kind)}`)
+  } catch {
+    // An update check that fails changes nothing.
+  }
+}
+
+/** What the last check found, read while drawing the pane. */
+export async function updateNotice($: EngineInterface): Promise<UpdateInfo | null> {
+  return read($, available)
 }
 
 export const register: Register = (on, rawOptions) => {
@@ -463,28 +678,34 @@ export const register: Register = (on, rawOptions) => {
     return { text: `${whole} of ${snap.runDir}: ${approved}/${snap.items.length} approved. Progress pane opened.${later}` }
   })
 
-  // A subagent's spawn prompt names the task it executes: that makes it an Executor, which
-  // the launch limit holds back past the limits. Any other subagent goes untouched.
-  on('agent.spawn', async ($, e, next) => {
-    const ids = taskIdsIn(`${e.description} ${e.prompt}`)
+  // Claude Code subagents: an Agent call whose prompt names a task of the run is an
+  // Executor launch, which the launch limit holds back past the limits. Any other Agent
+  // call goes through untouched. After it starts, the subagent's id is kept with the task
+  // IDs its prompt named, so the pane can show it in progress.
+  on('tool.call', { tool: 'Agent' }, async ($, e, next) => {
+    const input = e as unknown as { prompt?: unknown; description?: unknown }
+    const prompt = typeof input.prompt === 'string' ? input.prompt : ''
+    const description = typeof input.description === 'string' ? input.description : ''
+    const ids = taskIdsIn(`${description} ${prompt}`)
     const snap = await read($, snapshot)
     const runIds = new Set(snap.items.map(i => i.id.toUpperCase()))
-    const isExecutor = ids.some(id => runIds.size === 0 || runIds.has(id)) && !e.workflow
-    const kind: Kind = isDocsOnly(e.prompt) ? 'docs' : 'build'
+    const isExecutor = ids.some(id => runIds.size === 0 || runIds.has(id))
+    const kind: Kind = isDocsOnly(prompt) ? 'docs' : 'build'
     let live: LiveWorker[] = []
     if (isExecutor && (await runActive($))) {
       live = await liveExecutors($)
       const refusal = await judgeLaunch($, kind, live)
       if (refusal) return { deny: refusal }
     }
-    const result = await next(e)
-    if ('agentId' in result && result.agentId && ids.length > 0) {
-      const agentId = result.agentId
+    const ran = await next(e)
+    const record = ran.result as { agentId?: unknown } | undefined
+    const agentId = record && typeof record.agentId === 'string' ? record.agentId : undefined
+    if (agentId && ids.length > 0) {
       await update($, spawned, old => ({ ...old, [agentId]: ids }))
       if (isExecutor) await remember($, agentId, kind, live)
     }
     void refresh($)
-    return result
+    return ran
   }).catch(($, e, next) =>
     next.called
       ? next(e)
@@ -681,11 +902,7 @@ export const register: Register = (on, rawOptions) => {
     for (const w of snap.workers) if (!workerOf.has(w.taskId)) workerOf.set(w.taskId, w.who)
     const chipsOf = (p: PhaseInput & { items: string[] }) =>
       p.items.map(id => chipOf(id, byId.get(id.toUpperCase())?.state ?? 'PENDING', workerOf.get(id.toUpperCase())))
-    // The hover card only where a pointer can hover: the desktop app and the fullscreen
-    // terminal. The terminal's main screen never draws it.
-    const canHover = e.surface === 'desktop' || (e.surface === 'terminal' && e.viewport?.isFullscreen === true)
     const INDENT = 2
-    const cardWidth = Math.min(width - INDENT, 44)
     const phaseBlock = (p: (typeof inputs)[number] & { items: string[] }, segs: Seg[]) => {
       const name = p.title || 'untitled'
       const press = () => toggle(p.id)
@@ -719,32 +936,7 @@ export const register: Register = (on, rawOptions) => {
           </Text>
         </Button>
       )
-      if (!canHover) return button
-      const inner = cardWidth - 4
-      return (
-        <Box key={`hover-${p.id}`} flexDirection="column">
-          {button}
-          <Box
-            position="absolute"
-            top={1}
-            left={INDENT}
-            width={cardWidth}
-            display="none"
-            hover={{ display: 'flex' }}
-            flexDirection="column"
-            borderStyle="round"
-            borderColor="subtle"
-            backgroundColor="inverseText"
-            paddingX={1}
-          >
-            <Text wrap="wrap">
-              <Text weight="bold">{p.id}</Text> {name}
-            </Text>
-            {row(phaseBarLine(p, inner), true)}
-            {chipLines(chipsOf(p), inner, 3).map(line => row(line))}
-          </Box>
-        </Box>
-      )
+      return button
     }
     const item = (dot: Seg['color'], id: string, main: string, tail: string): Seg[] => {
       const fit = listRow(id, main, tail, width)

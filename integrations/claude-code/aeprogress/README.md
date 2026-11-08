@@ -12,8 +12,7 @@ Auditor/Executor run. The protocol does not depend on it. It reads the run's
   Enter) to open it: its full title, its bar, and its tasks and gate with their state
   (✓ approved, ◐ conditional, ● in progress with who, ◌ awaiting audit, ○ pending,
   ✗ rejected, failed, blocked or conflict). The active phase, the first not fully
-  approved, opens by itself until you close it. In the desktop app and the fullscreen
-  terminal, hovering a closed phase shows the same in a card;
+  approved, opens by itself until you close it;
 - **In progress**: who is working on which task ID right now, whether a Claude Code
   subagent, an Orca worker or a worker of any other harness;
 - **Awaiting audit**: items reported `DONE` that have no verdict yet;
@@ -271,25 +270,50 @@ levels, to find a run; the `--spec-file` an Orca `worker-start` names, to look f
 
 **Environment variables it reads.** `HOME` and `USERPROFILE` (to find aepkit),
 `ORCA_CLI_BIN_DIR` and `ORCA_WORKTREE_ID` (to know it runs inside Orca), `SystemRoot`
-and `WINDIR` (to know it runs on Windows). It sets none.
+and `WINDIR` (to know it runs on Windows), and `CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC`
+(to skip the version check). It sets none.
 
 **What it can refuse.** While a run is found and **Launch limit** is on, it refuses:
 
-- a Claude Code subagent launch whose prompt names a task ID of the run (an Executor),
-  past the limits in [The launch limit](#the-launch-limit);
+- a call to Claude Code's `Agent` tool whose prompt or description names a task ID of the
+  run (an Executor launch), past the limits in [The launch limit](#the-launch-limit);
 - a Bash command that runs `orca orchestration worker-start`, or `orca orchestration
   send` to a dispatch that is not live, past the same limits, or when Orca cannot count
   its workers.
 
-Every refusal says why. Nothing else is held back: any other subagent, command or tool
-call goes through untouched. The limit exists to keep your own machine from being
+Every refusal says why. The mod answers those two tools' calls itself only to refuse
+them; a launch within the limits goes on unchanged, and the tool's own result comes back
+as it was. Nothing else is held back: any other subagent, command or tool call goes
+through untouched. The limit exists to keep your own machine from being
 saturated by your own run; turn it off with **Launch limit** in `/config`.
 
 **What it does to your session.** It registers the `/aeprogress` command and one tool,
 `compact_and_resume`, that Claude can call. After that tool is called and the turn ends,
 and only if nobody cancels the 40-second countdown, it compacts the session (as
 `/compact` does) and submits the `resume` text Claude gave as the next prompt. It shows
-toasts for a refused launch, a vetoed compaction and the Spotlight recommendation.
+toasts for a refused launch, a vetoed compaction, a newer version and the Spotlight
+recommendation.
+
+**The prompts it submits.** Only one kind: after a compaction it submits, as the next
+prompt, the `resume` text exactly as Claude passed it to `compact_and_resume`, with
+nothing added, removed or rewritten. It submits nothing else, and it never edits a prompt
+you type.
+
+**Every hook it registers, and what each one does with what it sees.**
+
+| Hook | What it does | What it changes |
+|---|---|---|
+| `session.start` | Registers `/aeprogress` and the `compact_and_resume` tool, reads the run, starts the 20-second timer (it reads only while the pane is open), opens the pane when a run is found, and starts the version check in the background | Nothing: the session starts as it would |
+| `command.run`, for `/aeprogress` only | Reads the run, opens the pane, and answers with a one-line summary | Nothing else; it answers only its own command |
+| `tool.call`, for `Agent` | Reads the call's prompt and description for task IDs of the run; for an Executor launch past the limits, answers with a refusal; after a launch, keeps the new subagent's id with those task IDs | Only the refusal; otherwise the call and its result pass unchanged |
+| `tool.call`, for `Bash` | Looks only for `orca orchestration worker-start`, or `orca orchestration send` to a dispatch that is not live; past the limits, answers with a refusal; after a launch, keeps the dispatch id it printed | Only the refusal; every other command, and every result, passes unchanged |
+| `tool.call`, for `mcp__aeprogress__compact_and_resume` | Its own tool: keeps the compaction to run when the turn ends and answers with a sentence asking Claude to end its turn | Nothing outside its own tool |
+| `classic.SubagentStop` | Reads the run again, so the pane drops the finished subagent | Nothing |
+| `turn.complete` | Reads the run again while the pane is open; at the end of the main conversation's turn starts a scheduled compaction's countdown, or drops it if you pressed Esc | Nothing |
+| `prompt.submit` | When you type a prompt while a compaction is scheduled, drops the countdown, since you took over | Nothing: your prompt passes as you typed it |
+| `session.compact` | When you run `/compact` yourself while a countdown is pending, drops the countdown and, after your compaction ends, submits the `resume` prompt once | Nothing: your compaction runs as you asked |
+| `ui.render`, for the pane | Draws the pane | Only its own pane |
+| `ui.render`, for the band above the prompt | Draws the countdown band while a compaction is scheduled | Nothing at any other time: the band is left to Claude Code |
 
 ## Privacy
 

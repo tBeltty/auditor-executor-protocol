@@ -1,6 +1,6 @@
 {
   "name": "aeprogress",
-  "version": "0.4.0",
+  "version": "0.4.1",
   "description": "Optional progress pane and launch limit for an Auditor/Executor protocol run: overall %, a bar per phase, who is working on what (Claude Code subagents, Orca workers or any harness), the machine's load, and a limit that holds back worker launches past a worker count or a load. When a phase closes, the Auditor can compact its session and resume itself after a countdown the owner can cancel. Opens with /aeprogress.",
   "author": {
     "name": "tBeltty"

@@ -50,7 +50,19 @@ function engine(on: On, given: Engine = {}): string[][] {
   const calls: string[][] = []
   mock.clock(on)
   // The shell beneath the plugin: what reaches it is recorded, as `SHELL <command>`.
+  // Beneath the plugin, an Agent call starts a subagent (a1, a2, ...) and any other tool
+  // is the shell, recorded as `SHELL <command>`.
+  let started = 0
   on('tool.call', (_, e) => {
+    if (e.tool === 'Agent') {
+      started += 1
+      const id = `a${started}`
+      if (given.agents && !given.agents.some(a => a.id === id)) {
+        given.agents.push({ id, description: 'Executor', type: 'general-purpose', status: 'running' })
+      }
+      calls.push(['AGENT', id])
+      return { result: { agentId: id, status: 'async_launched' } } as never
+    }
     calls.push(['SHELL', String((e as { command?: string }).command)])
     return { result: 'Started worker dispatchId=ctx_new1' } as never
   })
@@ -167,18 +179,8 @@ test('a subagent whose spawn prompt names a task shows it in progress', { option
   engine(on, {
     agents: [{ id: 'a1', description: 'Executor', type: 'general-purpose', status: 'running' }],
   })
-  on('agent.spawn', () => ({ model: 'haiku', agentId: 'a1' }))
   await $.session.start({ cwd: '/', surface: 'desktop', isInteractive: true })
-  await $.agent.spawn({
-    tool_use_id: 't1',
-    prompt: 'ROLE: Executor, reporting on P1-G1.',
-    description: 'Executor',
-    subagentType: 'general-purpose',
-    provider: { plugin: 'engine', tier: 'core' },
-    parentModel: 'opus',
-    background: true,
-    fork: false,
-  })
+  await $.tool.call({ tool: 'Agent', prompt: 'ROLE: Executor, reporting on P1-G1.', description: 'Executor' } as never)
   const opened = await $.command.run({
     command: 'aeprogress',
     args: '',
@@ -449,54 +451,29 @@ describe('the launch limit on Orca', () => {
 })
 
 describe('the launch limit on Claude Code subagents', () => {
-  const spawnInput = (prompt: string) => ({
-    tool_use_id: 't',
-    prompt,
-    description: 'Executor',
-    subagentType: 'general-purpose',
-    provider: { plugin: 'engine', tier: 'core' as const },
-    parentModel: 'opus',
-    background: true,
-    fork: false,
-  })
-  const agent = (id: string): AgentInfo => ({ id, description: 'Executor', type: 'general-purpose', status: 'running' })
+  /** Launches a subagent through the Agent tool and answers what the call returned, as text. */
+  const launch = async ($: Engine$, prompt: string) =>
+    JSON.stringify(await $.tool.call({ tool: 'Agent', prompt, description: 'Executor' } as never))
 
   test('a third Executor is refused; a subagent with no task of the run is not', { options: { runDir: RUN } }, async ($, on) => {
     const agents: AgentInfo[] = []
     engine(on, { files: MAC, commands: macCommands('1.00'), agents })
-    let n = 0
-    on('agent.spawn', () => {
-      n += 1
-      agents.push(agent(`a${n}`))
-      return { model: 'haiku', agentId: `a${n}` }
-    })
     await $.session.start({ cwd: '/', surface: 'terminal', isInteractive: true })
 
-    expect(await $.agent.spawn(spawnInput('ROLE: Executor, reporting on P1-T3.\nLoad: docs-only'))).toMatchObject({ agentId: 'a1' })
-    expect(await $.agent.spawn(spawnInput('ROLE: Executor, reporting on P1-G1.\nLoad: docs-only'))).toMatchObject({ agentId: 'a2' })
-    const third = await $.agent.spawn(spawnInput('ROLE: Executor, reporting on P1-T2.'))
-    expect(JSON.stringify(third)).toMatch(/2 workers are live \(limit 2\)/)
-    expect(await $.agent.spawn(spawnInput('Find where the parser is defined.'))).toMatchObject({ agentId: 'a3' })
+    expect(await launch($, 'ROLE: Executor, reporting on P1-T3.\nLoad: docs-only')).toMatch(/"agentId":"a1"/)
+    expect(await launch($, 'ROLE: Executor, reporting on P1-G1.\nLoad: docs-only')).toMatch(/"agentId":"a2"/)
+    expect(await launch($, 'ROLE: Executor, reporting on P1-T2.')).toMatch(/2 workers are live \(limit 2\)/)
+    expect(await launch($, 'Find where the parser is defined.')).toMatch(/"agentId":"a3"/)
   })
 
   test('a building Executor waits for the live build; a docs-only one does not', { options: { runDir: RUN } }, async ($, on) => {
     const agents: AgentInfo[] = []
     engine(on, { files: MAC, commands: macCommands('1.00'), agents })
-    let n = 0
-    on('agent.spawn', () => {
-      n += 1
-      agents.push(agent(`a${n}`))
-      return { model: 'haiku', agentId: `a${n}` }
-    })
     await $.session.start({ cwd: '/', surface: 'terminal', isInteractive: true })
 
-    await $.agent.spawn(spawnInput('ROLE: Executor, reporting on P1-T3.'))
-    expect(JSON.stringify(await $.agent.spawn(spawnInput('ROLE: Executor, reporting on P1-G1.')))).toMatch(
-      /1 building worker is live/,
-    )
-    expect(await $.agent.spawn(spawnInput('ROLE: Executor, reporting on P1-G1.\nLoad: docs-only'))).toMatchObject({
-      agentId: 'a2',
-    })
+    expect(await launch($, 'ROLE: Executor, reporting on P1-T3.')).toMatch(/"agentId":"a1"/)
+    expect(await launch($, 'ROLE: Executor, reporting on P1-G1.')).toMatch(/1 building worker is live/)
+    expect(await launch($, 'ROLE: Executor, reporting on P1-G1.\nLoad: docs-only')).toMatch(/"agentId":"a2"/)
   })
 })
 
@@ -663,40 +640,12 @@ describe('one line per row', () => {
   })
 })
 
-describe('the hover card', () => {
-  test('where a pointer hovers, a closed phase carries a card with its full title', { options: { runDir: RUN } }, async ($, on) => {
+describe('no hover card', () => {
+  test('no surface draws a card over the rows: the phase rows open instead', { options: { runDir: RUN } }, async ($, on) => {
     engine(on, LIVE)
     await $.session.start({ cwd: '/', surface: 'terminal', isInteractive: true })
-    const surfaces = [
-      { surface: 'desktop' as const, viewport: undefined },
-      { surface: 'terminal' as const, viewport: { columns: 160, rows: 50, isFullscreen: true } },
-    ]
-    for (const { surface, viewport } of surfaces) {
-      for (const bodyColumns of [28, 44, 120]) {
-        const ui = await $.ui.mount({ ...PANE, surface, viewport, props: at(bodyColumns) })
-        const tree = await ui.drawn()
-        // One card per closed phase (P0 and P2; P1 is open), hidden until hovered.
-        const cards = cardsOf(tree) as { props: Record<string, unknown>; hover?: Record<string, unknown> }[]
-        expect(cards).toHaveLength(2)
-        for (const card of cards) {
-          expect(card.props.display).toBe('none')
-          expect(card.hover?.display).toBe('flex')
-        }
-        expect(linesOf(cards[1] as never).join('\n')).toMatch(/P2 Hardening the capture pipeline for long sessions/)
-        expect(linesOf(cards[1] as never).join('\n')).toMatch(/not broken down/)
-        expect(linesOf(cards[0] as never).join('\n')).toMatch(bodyColumns > 30 ? /2\/2 approved · 100%/ : /2\/2/)
-        expect(linesOf(cards[0] as never).join('\n')).toMatch(/✓ T1 {2}✓ G1/)
-        expect(overflowing(tree, bodyColumns, 1)).toEqual([])
-        await ui.unmount()
-      }
-    }
-  })
-
-  test('the terminal main screen draws no card', { options: { runDir: RUN } }, async ($, on) => {
-    engine(on, LIVE)
-    await $.session.start({ cwd: '/', surface: 'terminal', isInteractive: true })
-    for (const viewport of [undefined, { columns: 120, rows: 40, isFullscreen: false }]) {
-      const ui = await $.ui.mount({ ...PANE, surface: 'terminal', viewport, props: at(44) })
+    for (const surface of ['terminal', 'desktop'] as const) {
+      const ui = await $.ui.mount({ ...PANE, surface, props: at(44) })
       expect(cardsOf(await ui.drawn())).toEqual([])
       await ui.unmount()
     }

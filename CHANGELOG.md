@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+- `aeprogress` 0.4.1, for the plugin directory's checks:
+  - The launch limit for Claude Code subagents moves from the `agent.spawn` event, which the
+    directory requires plugins to pass on unchanged, to the `Agent` tool call: an Executor
+    launch past the limits is refused there, and every other call passes unchanged.
+  - Every function that receives the mod API now sits in the hooks module itself, every call
+    on it is written on one line, the load readings run fixed commands, and the version check
+    names its one address at the call.
+  - Two regular expressions spelled invisible characters literally; they now use escapes.
+  - The hover card is gone: in the terminal it drew over the rows below it. Opening a phase
+    shows the same.
+  - The README lists every hook with what it does and changes, the one prompt it submits,
+    and the tools whose calls it can refuse.
+
 ## [0.7.4] - 2026-11-08
 
 ### Added

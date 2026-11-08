@@ -1,15 +1,12 @@
-// How busy the machine is, read from whatever the system offers: the mod API does not
-// name the operating system, so each source is tried by what exists.
-import type { EngineInterface } from 'claude-code'
+// How busy the machine is: the parsers for what each system prints. Reading it, with `$`,
+// is in register.tsx.
 
 import type { Machine } from '../types'
 
-const STEP_TIMEOUT_MS = 3_000
-const POWERSHELL_TIMEOUT_MS = 8_000
 // The processes macOS runs to index files for Spotlight.
 const INDEXER = /\b(corespotlightd|mds_stores|mdworker_shared|mdworker)\b/
 
-function numbers(text: string): number[] {
+export function numbers(text: string): number[] {
   return text.match(/[0-9]+(?:[.,][0-9]+)?/g)?.map(n => Number(n.replace(',', '.'))) ?? []
 }
 
@@ -43,49 +40,4 @@ export function indexerCpu(ps: string): number {
     if (INDEXER.test(line)) total += Number.parseFloat(line.trim().replace(',', '.')) || 0
   }
   return total
-}
-
-async function run($: EngineInterface, argv: string[], timeoutMs = STEP_TIMEOUT_MS): Promise<string | undefined> {
-  const ran = await $.process.run(argv, { timeoutMs }).catch(() => undefined)
-  return ran && ran.exitCode === 0 ? ran.stdout : undefined
-}
-
-/** The machine's load now, or undefined when no source answers. Never throws. */
-export async function readMachine($: EngineInterface): Promise<Machine | undefined> {
-  try {
-    if (await $.fs.exists('/proc/loadavg')) {
-      const loadavg = (await $.fs.read('/proc/loadavg')) as string
-      const cpuinfo = ((await $.fs.read('/proc/cpuinfo').catch(() => '')) as string) || ''
-      const fromProc = linuxMachine(loadavg, cpuinfo)
-      if (fromProc) return fromProc
-      // A /proc/cpuinfo without "processor" lines (some ARM boards): ask nproc.
-      const nproc = await run($, ['nproc'])
-      return nproc ? linuxMachine(loadavg, 'processor :\n'.repeat(numbers(nproc)[0] ?? 0)) : undefined
-    }
-    for (const sysctl of ['/usr/sbin/sysctl', '/sbin/sysctl']) {
-      if (!(await $.fs.exists(sysctl))) continue
-      const isMac = await $.fs.exists('/System/Library/CoreServices')
-      const loadavg = (await run($, [sysctl, '-n', 'vm.loadavg'])) ?? ''
-      const ncpu = (await run($, [sysctl, '-n', 'hw.ncpu'])) ?? ''
-      // Spotlight only exists on macOS; nowhere else is ps run for it.
-      const ps = isMac ? ((await run($, ['/bin/ps', '-A', '-o', '%cpu=,comm='])) ?? '') : ''
-      return sysctlMachine(loadavg, ncpu, isMac ? 'macos' : 'bsd', ps)
-    }
-    if ((await $.env.get('SystemRoot')) || (await $.env.get('WINDIR'))) {
-      const out = await run(
-        $,
-        [
-          'powershell',
-          '-NoProfile',
-          '-Command',
-          '(Get-CimInstance Win32_Processor | Measure-Object LoadPercentage -Average).Average',
-        ],
-        POWERSHELL_TIMEOUT_MS,
-      )
-      return out ? windowsMachine(out) : undefined
-    }
-  } catch {
-    // Falls through: the load is unknown.
-  }
-  return undefined
 }
