@@ -9,119 +9,81 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.7.7] - 2026-11-08
 
-The protocol and the `aepkit` CLI are unchanged. This release carries the Claude Code plugin's
-changes since 0.7.6, from 0.5.2 to 0.5.6, and the README that PyPI shows.
+The protocol and the `aepkit` CLI are unchanged. This release carries the Claude Code plugin
+from 0.5.2 to 0.5.6 and the matching README on PyPI.
 
 ### Added
-- Claude Code plugin 0.5.6: `/aeprogress close` closes the progress pane. A pane the owner
-  closes, with the command or the mark on its frame, stays closed for the rest of the
-  session, a plugin reload included, until `/aeprogress` opens it again.
+- Plugin 0.5.6: `/aeprogress close` closes the progress pane. A closed pane stays closed for
+  the rest of the session, plugin reloads included, until `/aeprogress` opens it again.
 
 ### Changed
-- The README says the Claude Code plugin makes no network requests, and that another
-  harness reports its workers through a file it keeps.
-- Claude Code plugin 0.5.4, fewer things for the directory's review to hold:
-  - No network request at all: the daily version check on GitHub is gone. The pane still says
-    when the marketplace catalog Claude Code keeps on disk lists a newer version (option
-    **Update check**: `on` or `off`); copies from the claude.ai directory update themselves.
-  - It no longer reads its own manifest: its version is a constant in the code, and the
-    catalog's version comes from the marketplace entry, which now carries it. A test keeps the
-    three equal.
-  - Windows reads the load with `typeperf`, a program every Windows ships, in place of a
-    PowerShell command; a CI job runs it on a real Windows through the plugin's own parser.
-  - Every process call writes its options at the call, the `classic.SubagentStop` hook is gone
-    (`turn.complete` covers a subagent's end), `documentationUrl` (the same as `homepage`) is
-    gone, and the icon's SVG source moves out of the plugin folder, to
-    `integrations/claude-code/icon-source/`.
-  - The pane's drawing renamed a local helper that shadowed `isOpen`.
-- Claude Code plugin 0.5.2, for the plugin directory's checks:
-  - Every process it runs names a fixed program with fixed arguments: `aepkit status --json .`
-    runs in the run folder (or `python3`, `python`, `py -m aepkit`), `orca` by its plain name,
-    and the Windows load reading as a chain of plain PowerShell cmdlets.
-  - The **Workers command** option becomes **Workers file**: another harness keeps a text file
-    of its running workers and the plugin only reads it, running nothing. The **aepkit command**
-    option is gone; aepkit must be on the PATH or importable by `python3`.
-  - The guarded hooks no longer chain `.catch` on their registration: each asks a function in
-    the hooks module whether to refuse, then passes the call on, and handles its own errors.
+- Plugin 0.5.4: no network requests. The daily version check on GitHub is gone; the pane
+  reports a newer version only from the marketplace catalog Claude Code keeps on disk
+  (option **Update check**: `on` or `off`).
+- Plugin 0.5.4: on Windows the machine load is read with `typeperf`. A CI job checks the
+  plugin's parser against its output on a real Windows runner.
+- Plugin 0.5.2: the **Workers command** option becomes **Workers file**, a text file another
+  harness keeps with its running workers; the plugin only reads it. The **aepkit command**
+  option is removed: `aepkit` must be on the `PATH` or importable by `python3`.
+- Plugin 0.5.2 to 0.5.4: changes asked for by the Claude Code plugin directory, with no change
+  in behavior. Every process the plugin starts has fixed arguments, the `classic.SubagentStop`
+  hook and `documentationUrl` are removed, and the icon's SVG source moves to
+  `integrations/claude-code/icon-source/`.
 
 ### Fixed
-- Claude Code plugin 0.5.5, the run folder:
-  - A relative **Run folder**, or a relative folder given to `/aeprogress`, is read from the
-    project root. It was read from the shell's current folder, which moves with every `cd`
-    the session runs, so a run set as `.run/port` was looked for in `.run/port/.run/port`.
-    The search for a run without one set starts at the project root too.
-  - A **Workers file** given as an absolute path is read as given.
-  - A run folder without `compliance-log.md` is named in the pane, and aepkit is not run in it.
-  - When aepkit cannot start, the pane gives the reason the system gave. It no longer says
-    every failure means aepkit is missing, and no longer points to an "aepkit command" option
-    that 0.5.2 removed.
+- Plugin 0.5.5: a relative **Run folder**, or one passed to `/aeprogress`, is resolved from
+  the project root. It was resolved from the shell's current folder, so after a `cd` a run
+  set as `.run/port` was looked for in `.run/port/.run/port`.
+- Plugin 0.5.5: a run folder without `compliance-log.md` is named in the pane, and when
+  `aepkit` cannot start the pane shows the system's error. It used to report every failure
+  as a missing `aepkit`.
 
 ## [0.7.6] - 2026-11-08
 
 ### Changed
-- Compaction at a phase close is now part of each mode. `SKILL.md` gains "Compacting at a
-  phase close" and a row in the modes table: in Guided mode the owner compacts by hand
-  (`/compact`, then a resume message the Auditor gives, with its template); in Autonomous
-  mode the Auditor compacts its own session with no action from the owner, where the harness
-  has a compaction tool such as the Claude Code plugin's `compact_and_resume`, and otherwise
-  goes on uncompacted. `references/autonomous-mode.md` turns its optional step into that
-  rule, orders the phase close (report, expand the next phase, update the brief, compact)
-  and adds the compaction tool to the Auditor brief.
-- `aeprogress` 0.5.1: the `compact_and_resume` tool tells the Auditor not to call it in
-  Guided mode.
-- Both READMEs: a plain-language pass, and the compaction rule per mode.
+- `SKILL.md`: a section on compacting at a phase close, and a row for it in the modes table.
+  In Guided mode the owner runs `/compact` and pastes the resume message the Auditor gives.
+  In Autonomous mode the Auditor compacts its own session through a harness compaction tool,
+  such as the plugin's `compact_and_resume`, and continues uncompacted when there is none.
+- `references/autonomous-mode.md`: the phase close follows a fixed order (report, expand the
+  next phase, update the brief, compact), and the Auditor brief names the compaction tool.
+- Plugin 0.5.1: `compact_and_resume` tells the Auditor not to call it in Guided mode.
+- Both READMEs rewritten in plainer language, with the compaction rule for each mode.
 
 ## [0.7.5] - 2026-11-08
 
 ### Changed
-- The Claude Code plugin is now `auditor-executor-protocol` (it was `aeprogress`) and brings the
-  protocol itself as a skill, the same `SKILL.md` and `references/` as the repository root (a
-  test keeps the copy in sync), together with the `aeprogress` pane. Its listing and README start
-  with what the protocol is, what the plugin brings, and the steps to start a run, and say that
-  the pane does nothing without one. Install it with
-  `/plugin install auditor-executor-protocol --marketplace tBeltty/auditor-executor-protocol`; a
-  copy installed as `aeprogress` has to be uninstalled and installed again under the new name.
-  The `/aeprogress` command is unchanged. Plugin version 0.5.0.
-- README: section 6 describes the plugin, and section 2 points Claude Code users to it.
-- `references/autonomous-mode.md`: the plugin update command uses the new name.
-
-### Changed
-- `aeprogress` 0.4.1, for the plugin directory's checks:
-  - The launch limit for Claude Code subagents moves from the `agent.spawn` event, which the
-    directory requires plugins to pass on unchanged, to the `Agent` tool call: an Executor
-    launch past the limits is refused there, and every other call passes unchanged.
-  - Every function that receives the mod API now sits in the hooks module itself, every call
-    on it is written on one line, the load readings run fixed commands, and the version check
-    names its one address at the call.
-  - Two regular expressions spelled invisible characters literally; they now use escapes.
-  - The hover card is gone: in the terminal it drew over the rows below it. Opening a phase
-    shows the same.
-  - The README lists every hook with what it does and changes, the one prompt it submits,
-    and the tools whose calls it can refuse.
+- The Claude Code plugin is renamed `auditor-executor-protocol` (it was `aeprogress`) and
+  ships the protocol's `SKILL.md` and `references/` as a skill next to the `aeprogress` pane;
+  a test keeps that copy equal to the repository root. Install it with
+  `/plugin install auditor-executor-protocol --marketplace tBeltty/auditor-executor-protocol`.
+  A copy installed as `aeprogress` has to be uninstalled and installed again. The
+  `/aeprogress` command is unchanged. Plugin version 0.5.0.
+- `aeprogress` 0.4.1: the launch limit for Claude Code subagents applies at the `Agent` tool
+  call. It used the `agent.spawn` event, which plugins must pass on unchanged.
+- `aeprogress` 0.4.1: the hover card on closed phases is removed, since in the terminal it
+  drew over the rows below it. Opening a phase shows the same content.
+- `aeprogress` 0.4.1: the README lists every hook, the one prompt the plugin submits, and the
+  tools whose calls it can refuse.
+- README: section 6 describes the plugin and section 2 points Claude Code users to it.
+  `references/autonomous-mode.md` uses the new name in the plugin update command.
 
 ## [0.7.4] - 2026-11-08
 
 ### Added
-- `references/autonomous-mode.md`: "Tool versions at the start of a run". Before the first task
-  the Auditor updates the tools the run depends on (`aepkit`, any plugin or harness) and records
-  their versions in the plan of record; the Auditor brief gains a `TOOLS` field for it.
-- `aeprogress` 0.4.0:
-  - Expandable phases: each phase row opens its full title, its bar and count, and its tasks and
-    gate as state chips (approved, conditional, in progress with the worker, awaiting audit,
-    pending, rejected). The active phase opens by itself; a phase the owner closes stays closed.
-    Where the surface reports hover (desktop app, fullscreen terminal), a closed phase shows the
-    same in a card.
-  - Update check: the pane and `/aeprogress` say when a newer version exists, from the
-    marketplace catalog Claude Code keeps on disk and, at most once a day, from the version
-    published on GitHub (one request for a public file; option **Update check**: `daily`,
-    `offline` or `off`; skipped for copies from the claude.ai directory and when
-    `CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC` is set). The README explains how to turn on
-    auto-update for this marketplace.
-  - An icon (`.claude-plugin/icon.png`, source in `assets/icon.svg`), and `documentationUrl`,
-    `supportUrl` and `privacyPolicyUrl` in `plugin.json`, for the plugin directory. The README
-    gains "What it does on your machine" (every process it starts, the files and variables it
-    reads, the one network request, and what it can refuse) and "Privacy", and shows its
-    screenshots as Markdown images inside the plugin.
+- `references/autonomous-mode.md`: "Tool versions at the start of a run". Before the first
+  task the Auditor updates the tools the run depends on (`aepkit`, plugins, the harness) and
+  records their versions in the plan of record. The Auditor brief gains a `TOOLS` field.
+- `aeprogress` 0.4.0: expandable phases. A phase row opens to its full title, bar and count,
+  and its tasks and gate as state chips (approved, conditional, in progress with the worker,
+  awaiting audit, pending, rejected). The active phase opens by itself. Where the surface
+  reports hover, a closed phase shows the same in a card.
+- `aeprogress` 0.4.0: an update check against the marketplace catalog on disk and, at most
+  once a day, the version published on GitHub (option **Update check**: `daily`, `offline` or
+  `off`), skipped when `CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC` is set. 0.7.7 keeps only the
+  check on disk.
+- `aeprogress` 0.4.0: an icon; `documentationUrl`, `supportUrl` and `privacyPolicyUrl` in
+  `plugin.json`; and the README sections "What it does on your machine" and "Privacy".
 
 ## [0.7.3] - 2026-11-08
 
