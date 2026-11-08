@@ -7,7 +7,7 @@ authors:
     given-names: Jhonatan
     orcid: "https://orcid.org/0009-0006-7779-8729"
     affiliation: "tBelt"
-version: "0.7.2"
+version: "0.7.3"
 doi: "10.5281/zenodo.23633244"
 license: MIT
 repository-code: "https://github.com/tBeltty/auditor-executor-protocol"

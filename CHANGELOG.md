@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.7.3] - 2026-11-08
+
+No change to the package's code. This release puts the new README on PyPI: the protocol's
+Guided and Autonomous modes, the `aeprogress` section with screenshots, and the DOI badge.
+
 ### Changed
 - CI runs `claude plugin validate` (the mod and the marketplace) and `claude plugin test` for
   `aeprogress`, on Claude Code 2.1.319, the release the mod is tested against.
@@ -364,7 +369,8 @@ Fixes from an independent review of 0.3.0.
 - Multi-framework agent installation support for Antigravity, Claude Code, and Cursor.
 - Zero-dependency test runner (`tests/run.py`).
 
-[Unreleased]: https://github.com/tBeltty/auditor-executor-protocol/compare/v0.7.2...HEAD
+[Unreleased]: https://github.com/tBeltty/auditor-executor-protocol/compare/v0.7.3...HEAD
+[0.7.3]: https://github.com/tBeltty/auditor-executor-protocol/compare/v0.7.2...v0.7.3
 [0.7.2]: https://github.com/tBeltty/auditor-executor-protocol/compare/v0.7.1...v0.7.2
 [0.7.1]: https://github.com/tBeltty/auditor-executor-protocol/compare/v0.7.0...v0.7.1
 [0.7.0]: https://github.com/tBeltty/auditor-executor-protocol/compare/v0.6.0...v0.7.0
