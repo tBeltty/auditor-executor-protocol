@@ -1,0 +1,16 @@
+{
+  "name": "auditor-executor-protocol",
+  "owner": {
+    "name": "tBeltty"
+  },
+  "metadata": {
+    "description": "Optional Claude Code add-ons for the Auditor/Executor protocol."
+  },
+  "plugins": [
+    {
+      "name": "aeprogress",
+      "source": "./integrations/claude-code/aeprogress",
+      "description": "Optional progress pane for an Auditor/Executor protocol run, opened with /aeprogress."
+    }
+  ]
+}

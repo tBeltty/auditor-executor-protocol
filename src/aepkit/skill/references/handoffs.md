@@ -120,7 +120,7 @@ Auditor's own rule 4 ("The Auditor is bound by rule 4 too" in `SKILL.md`).
 
 **No verdict ends the loop by itself if anything is left to run — and "anything left to
 run" is not only "a phase remains" or "a remediation order is needed."** It also covers
-the most common case of all: a plain `PASS` on one task, mid-phase, with something else
+the most common case of all: a plain `APPROVED` on one task, mid-phase, with something else
 already outstanding — an earlier remediation, the next task in line. That case has no
 name of its own in the Verdicts table of `SKILL.md`, which is exactly why it's the easiest one
 to ship without a handoff: closing with a status sentence that *describes* what's still

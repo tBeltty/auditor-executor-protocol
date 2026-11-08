@@ -47,6 +47,10 @@ it from a governance decision in the plan of record. It has four parts:
    made: <decision-entry IDs, or "none">. Next: <phase/task already launched>.
    ```
 
+   Between reports, an owner on Claude Code can follow the run in the optional
+   `aeprogress` pane (`integrations/claude-code/aeprogress/` in the repository), which
+   reads the compliance log and never messages the Auditor. The run does not depend on it.
+
    Harness permission prompts that need the owner go in **one batched request**, not one
    at a time. When every phase is `APPROVED` and the plan of record declares no further
    phase, say so as its own line — see "Closing the run" in `SKILL.md`.
@@ -91,7 +95,7 @@ each handoff. The shape that has worked here:
    its first task.
 
 Do not end a turn between a verdict and the next launch unless something on the
-critical-risk list is open. A run that stops to report a `PASS` and wait is Guided
+critical-risk list is open. A run that stops to report an `APPROVED` and wait is Guided
 mode by accident.
 
 ### Starting the Auditor (the Auditor brief)

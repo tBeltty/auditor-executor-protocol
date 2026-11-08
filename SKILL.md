@@ -298,7 +298,7 @@ report's job is to point at the evidence, not to argue for a verdict.
    for the whole feature.
 8. **Before sending the verdict, check what it's missing, not just what it says.** This
    applies to every verdict, not only a full-phase `APPROVED` or a `CONDITIONAL`/
-   `REJECTED` with an obvious remediation — a plain `PASS` on one task, mid-phase, with
+   `REJECTED` with an obvious remediation — a plain `APPROVED` on one task, mid-phase, with
    something else already outstanding (an earlier remediation, the next task) needs the
    same discipline: it does not end the message on its own. If anything is left to do —
    a remediation handoff, the next task's handoff, or a re-statement of a handoff already
@@ -444,6 +444,11 @@ If `aepkit` is installed, prefer it over doing these by hand:
   instead of passing it. Without `--expect`, such output is only flagged as a warning.
 - `aepkit status <dir>` — combines the status board verdicts with the latest report
   per ID and prints what's still open. Only `APPROVED` closes an item; a `DONE` with no
-  verdict is listed as awaiting audit.
+  verdict is listed as awaiting audit. `--json` prints the same reading, with the phases
+  from the guide and the plan, for tools to use instead of parsing the log themselves.
+- Optional, Claude Code only: the `aeprogress` mod keeps a pane beside the chat with the
+  run's progress per phase and who is working on which ID (subagents, Orca workers, or
+  any harness through a command). The protocol does not depend on it. See
+  `integrations/claude-code/aeprogress/` in the repository.
 
 Install instructions: https://github.com/tBeltty/auditor-executor-protocol#quickstart

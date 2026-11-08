@@ -7,6 +7,30 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.7.0] - 2026-11-08
+
+### Added
+- `aepkit status --json` prints the status reading as one JSON object: each ID with its
+  phase, kind, effective state, verdict, latest report, executor (a status board column
+  named `Executor`, `Worker`, `Agent`, `Owner` or `Assignee`) and any board/header
+  conflict; the phases with their titles from `execution-guide.md` and the plan's phase
+  table, an optional `Weight` column, and phases the guide has not broken down; IDs the
+  guide lists that the log has no entry for yet, marked `inLog: false`. The text output
+  is unchanged.
+- `aeprogress`, an optional Claude Code mod in `integrations/claude-code/aeprogress/`:
+  a pane with the run's progress per phase, who is working on which ID (Claude Code
+  subagents, Orca workers, or any harness through a command), what awaits audit and what
+  needs attention, opened with `/aeprogress`. `.claude-plugin/marketplace.json` makes the
+  repository installable with
+  `/plugin install aeprogress --marketplace tBeltty/auditor-executor-protocol`.
+
+### Fixed
+- `SKILL.md`, `references/handoffs.md`, `references/autonomous-mode.md` and
+  `references/failure-modes-and-example.md` spoke of "a plain `PASS`" on one task. `PASS`
+  is not a verdict (the verdicts are `APPROVED`, `CONDITIONAL` and `REJECTED`), and a log
+  that used it showed the task as awaiting audit in `aepkit status`. The four sentences
+  now say `APPROVED`.
+
 ## [0.6.0] - 2026-10-24
 
 ### Added
@@ -291,7 +315,8 @@ Fixes from an independent review of 0.3.0.
 - Multi-framework agent installation support for Antigravity, Claude Code, and Cursor.
 - Zero-dependency test runner (`tests/run.py`).
 
-[Unreleased]: https://github.com/tBeltty/auditor-executor-protocol/compare/v0.6.0...HEAD
+[Unreleased]: https://github.com/tBeltty/auditor-executor-protocol/compare/v0.7.0...HEAD
+[0.7.0]: https://github.com/tBeltty/auditor-executor-protocol/compare/v0.6.0...v0.7.0
 [0.6.0]: https://github.com/tBeltty/auditor-executor-protocol/compare/v0.5.1...v0.6.0
 [0.5.1]: https://github.com/tBeltty/auditor-executor-protocol/compare/v0.5.0...v0.5.1
 [0.5.0]: https://github.com/tBeltty/auditor-executor-protocol/compare/v0.4.0...v0.5.0
