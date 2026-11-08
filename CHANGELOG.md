@@ -7,12 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.7.7] - 2026-11-08
+
+The protocol and the `aepkit` CLI are unchanged. This release carries the Claude Code plugin's
+changes since 0.7.6, from 0.5.2 to 0.5.6, and the README that PyPI shows.
+
 ### Added
 - Claude Code plugin 0.5.6: `/aeprogress close` closes the progress pane. A pane the owner
   closes, with the command or the mark on its frame, stays closed for the rest of the
   session, a plugin reload included, until `/aeprogress` opens it again.
 
 ### Changed
+- The README says the Claude Code plugin makes no network requests, and that another
+  harness reports its workers through a file it keeps.
 - Claude Code plugin 0.5.4, fewer things for the directory's review to hold:
   - No network request at all: the daily version check on GitHub is gone. The pane still says
     when the marketplace catalog Claude Code keeps on disk lists a newer version (option
@@ -478,7 +485,8 @@ Fixes from an independent review of 0.3.0.
 - Multi-framework agent installation support for Antigravity, Claude Code, and Cursor.
 - Zero-dependency test runner (`tests/run.py`).
 
-[Unreleased]: https://github.com/tBeltty/auditor-executor-protocol/compare/v0.7.6...HEAD
+[Unreleased]: https://github.com/tBeltty/auditor-executor-protocol/compare/v0.7.7...HEAD
+[0.7.7]: https://github.com/tBeltty/auditor-executor-protocol/compare/v0.7.6...v0.7.7
 [0.7.6]: https://github.com/tBeltty/auditor-executor-protocol/compare/v0.7.5...v0.7.6
 [0.7.5]: https://github.com/tBeltty/auditor-executor-protocol/compare/v0.7.4...v0.7.5
 [0.7.4]: https://github.com/tBeltty/auditor-executor-protocol/compare/v0.7.3...v0.7.4
